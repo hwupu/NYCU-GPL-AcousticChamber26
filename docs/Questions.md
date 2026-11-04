@@ -1,18 +1,36 @@
-# Open questions for the PO (2026-11-05)
+# Questions for the PO
 
-Each question has a proposed default. Answer briefly ("Q3: B") or correct the default. Answers become ADRs.
+## Round 1 (2026-11-05): answered
+| # | Topic | PO answer (summary) | Where |
+|---|---|---|---|
+| Q1 | Chambers | Independent studies / explorations / demos, chosen from a Main Hall; each chamber has an HW2-style menu (Study ID, Start, Debug); some are demos without a Study ID. Rebuild HW2 as a chamber. | Architecture 5, 6, 12 |
+| Q2 | IDs | **Study ID**, not participant ID; entered in the chamber menu. | Architecture 6 |
+| Q3 | Resume | Back to the chamber menu (the experimenter is the user there): Resume (same Study ID) / Start new / Back; then hand over and resume silently. Multiple unfinished sessions. | ADR-0003 |
+| Q4 | Modes | Explore = Debug; keep the name "Debug" for now. | Architecture 7 |
+| Q5 | Packaging | (Question was unclear.) Decision: modules are plain folders under `Assets/AcousticChamber/Modules`. | Architecture 4 |
+| Q6 | Posture | Seated, standing or room-scale, per chamber; the experimenter may stand and hand over to a seated participant. | Architecture 8 |
+| Q7 | Hearing loss | On the final left/right device output, not on sources. | Architecture 11 |
+| Q8 | Languages | English and 中文 (label exactly "中文"). | CLAUDE.md |
+| Q9 | Reuse | Reuse HW2, refactored: shared code generic, chamber-specific code in the chamber. Ignore BaseProject. | ADR-0001 |
+| Q10 | Remote | No GitHub repo yet; create it if `gh` is available. | (gh not installed) |
+| Q11 | Platforms | Same as HW2. | — |
+| Q12 | Restarted blocks | (Question was unclear; explained in Architecture 6.2.) Default: analyze only the highest complete attempt of each block. | Architecture 6.2 |
+| — | Extra | Own root folder (third-party assets); per-chamber key bindings, Y = Stop dialog; parameters editable in Debug, saved as presets, active preset used by real runs and shown on the Study ID screen; swappable native keyboard / number pad. | ADR-0002, ADR-0003 |
 
-| # | Question | Proposed default |
-|---|---|---|
-| Q1 | **First chambers.** Which designs come first, and in what order? Candidates: (a) **Hearing loss** in a white room: unilateral/bilateral, preset or ANSI-predicted, task = localization or speech-in-noise; (b) **Moving source**: grab or watch a source moving around you (spatial audio experience); (c) **Hidden source**: invisible source at a random position, participant points/walks to it; (d) a realistic room; (e) outdoor. For the first one, is it an experiment (with an RQ and data) or an experience/demo? | (c) Hidden source first (exercises placement, responses, logging, resume), then (a) on top of it (same task, HL as a factor), then (b). |
-| Q2 | **Main Hall and participant flow.** Is the participant ID entered once in the Hall (and carried into chambers), or in each chamber? Can one participant visit several chambers in one visit (one session per chamber)? Is the Hall a plain panel or a walkable space (doors, portals)? | ID in the Hall; one session per chamber; Hall = a calm white room with a panel listing chambers (title, short description, unfinished sessions). |
-| Q3 | **Auto-resume.** When the app starts and a real session is unfinished: load that chamber directly and show the resume screen there (Resume / Start new / Back to Hall), or resume without any screen? May two unfinished sessions exist at the same time (different chambers or participants)? | Load the chamber directly and show the resume screen (experimenter confirms). Only one *active* session; other unfinished sessions are listed in the Hall and can be resumed by hand. |
-| Q4 | **Modes.** Besides Experiment and Debug (test bench, as in HW2), do you want a separate **Explore** mode (no ID, no data, free controls of the factors: HL per ear, RT60, background, move the source)? Or is Explore the same as Debug? | Separate Explore mode; it reuses the Debug bench controls but hides the trial machinery. Logging off (optional switch). |
-| Q5 | **Module packaging.** Modules as folders under `Assets/GPL` (copy-paste), or as embedded UPM packages under `Packages/com.nycu.gpl.*` (add by git URL)? | Folders now; promote stable modules to UPM packages later. |
-| Q6 | **Homing methods.** Which re-centering methods matter to you beyond HW2's head gate + Meta recenter? Is the participant always seated in a swivel/fixed chair? Is walking (room-scale, e.g. walk to the hidden source) in scope? | Seated, fixed chair. Build HeadGate, SystemRecenterListener, SoftwareRecenter, AlignToTarget first; AudioHoming for HL chambers; PhysicalAnchor and room-scale later. |
-| Q7 | **Hearing-loss decisions** (HLSIM_GUIDELINES section 12): 1500 Hz `Xi` (faithful / corrected), 8 kHz Q (12 effective / 24 intended), licensing note (unofficial port, not endorsed by NIOSH/CDC), source of sound files (NIOSH sounds or our own). Should HL apply to everything heard (listener level, including GUI sounds) or only to experiment sources? | Faithful values (Xi as recovered, Q 12), label as unofficial port; our own -23 LUFS sounds; listener level (all sound, after spatialization, per ear). |
-| Q8 | **Languages.** English + Traditional Chinese again (Noto Sans TC), experimenter menu English only? | Yes. |
-| Q9 | **Reuse of HW2 code.** OK to copy HW2 source into the modules (refactored, generalized, with provenance in each module README)? Are `../115A-535655-HumPer-Final` and `../BaseProject` also references I should read? | Yes to HW2; please tell me about Final and BaseProject. |
-| Q10 | **Git remote.** Is there a GitHub repository for this project (URL, org)? Push only when you say so. | Local only until you give a remote. |
-| Q11 | **Platforms.** Same as HW2: Windows (Link + builds) and macOS (builds), standalone Quest 3, package id `com.nycu.AcousticChamber26` (already set)? | Yes. |
-| Q12 | **Restarted blocks in the analysis.** When a block is redone (`BlockStart` resume), analyze only the last complete attempt, or keep both and model attempt? | Last complete attempt; earlier attempts stay in the CSV, flagged by `attempt`. |
+## Round 2 (2026-11-05): answered
+| # | Topic | PO answer | Where |
+|---|---|---|---|
+| — | HW2 chamber name | `HumPerHW2` | Architecture 12 |
+| Q5 | Packaging | Plain folders with a README, so a folder can be copied or scanned by an AI agent. | Architecture 4 |
+| Q12 | Restarted blocks | Analyze only the highest complete attempt. | Architecture 6.2 |
+| Q13 | GitHub | PO creates the repo and sends the URL. | PB-03 |
+| Q14 | HumPerHW2 data | New common columns + HW2 trial columns; **no analysis scripts**: a document describing the data scheme (for analysis with other tools / AI). | Architecture 10 |
+| Q15 | Study ID | Number pad, up to 4 digits, leading zeros + prefix: `1` -> `S0001`. | Architecture 6 |
+| Q16 | Demo chambers | No separate demo type: all chambers are equal. | Architecture 5, 6 |
+| Q17 | Unsaved Debug values | Ignore: real sessions always use the active preset; the default config is the active preset until another is chosen. | ADR-0002 |
+| — | Data manager | Button in each chamber's Debug menu to list and delete that chamber's data (CSV + session file as a pair), one or all. | Architecture 10.1 |
+
+## Round 3: open
+| # | Question |
+|---|---|
+| Q18 | Visual design: answered: agent proposal accepted (`DesignSystem.md`). |

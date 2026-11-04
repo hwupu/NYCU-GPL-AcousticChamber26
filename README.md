@@ -1,8 +1,8 @@
 # AcousticChamber26 — exploratory acoustic-perception chambers in VR
 
-Unity project for **Meta Quest 3** (standalone Android; Quest Link for development). A Main Hall lets the experimenter pick a **chamber**: one experiment design or experience (hearing loss on one or both ears, moving sound sources, finding an invisible source, realistic rooms, outdoor scenes, ...). Features are built as portable modules (`Assets/GPL`) that can be copied into other projects.
+Unity project for **Meta Quest 3** (standalone Android; Quest Link for development). A Main Hall lets the experimenter pick a **chamber**: one experiment design or experience (an independent study, exploration or demo: hearing loss on one or both ears, moving sound sources, finding an invisible source, the HW2 ventriloquist study, realistic rooms, outdoor scenes, ...). Features are built as portable modules (`Assets/AcousticChamber/Modules`) that can be copied into other projects.
 
-Status: setup and architecture (proposed). See [docs/Architecture.md](docs/Architecture.md) and the open questions in [docs/Questions.md](docs/Questions.md).
+Status: architecture accepted, no code yet. See [docs/Architecture.md](docs/Architecture.md) and the open questions in [docs/Questions.md](docs/Questions.md).
 
 ## Requirements
 - Unity **6000.6.6f1** (URP, OpenXR) with Android Build Support

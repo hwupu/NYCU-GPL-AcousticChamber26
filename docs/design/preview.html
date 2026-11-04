@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AcousticChamber26 — design preview (HW2 vs proposed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* Scale: 1 canvas unit = 0.5 px here (1000-unit panel = 500 px). */
+  body { margin: 0; padding: 24px; background: #e9e9e9; font-family: system-ui, sans-serif; color: #222; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.note { margin: 0 0 20px; font-size: 13px; color: #555; }
+  .row { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .col h2 { font-size: 15px; margin: 0 0 8px; }
+  /* the "room": light background like the white room */
+  .room { background: #f4f4f4; padding: 24px; border: 1px solid #ccc; }
+  .panel { width: 500px; height: 350px; position: relative; box-sizing: border-box; padding: 16px; color: #fff; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; color: #fff; box-sizing: border-box; cursor: pointer; user-select: none; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; max-width: 548px; }
+  .sw { width: 100px; font-size: 11px; }
+  .sw div { height: 36px; border: 1px solid #0002; }
+
+  /* ---------- HW2 ---------- */
+  .hw2 .panel { background: #171A24; font-family: Arial, "Noto Sans TC", sans-serif; }
+  .hw2 .title { text-align: center; font-size: 22px; margin-top: 4px; }
+  .hw2 .id { width: 310px; height: 40px; margin: 10px auto; background: #292E3D; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .hw2 .pad { width: 310px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 55px); gap: 7px; justify-content: center; }
+  .hw2 .pad .btn { height: 40px; background: #384052; font-size: 22px; }
+  .hw2 .pad .wide { grid-column: span 2; background: #6B521F; font-size: 18px; }
+  .hw2 .actions { display: flex; gap: 20px; justify-content: center; margin-top: 14px; }
+  .hw2 .actions .btn { width: 200px; height: 50px; font-size: 18px; }
+  .hw2 .btn:hover { filter: brightness(1.6); }
+  .hw2 .status { text-align: center; font-size: 14px; margin-top: 10px; }
+
+  /* ---------- Proposed ---------- */
+  .new { --surface:#171A24; --raised:#292E3D; --neutral:#384052; --primary:#216B3D; --warning:#8A6A1F; --danger:#A62E2E;
+         --accent:#3D7BD9; --text2:#B8BECC; --chamber:#7A5CC4; }
+  .new .panel { background: var(--surface); font-family: "Noto Sans TC", sans-serif; padding: 0; border-radius: 8px; overflow: hidden; }
+  .new .bar { height: 30px; background: var(--chamber); display: flex; align-items: center; padding: 0 12px; font-weight: 700; font-size: 15px; }
+  .new .badge { position: absolute; top: 5px; right: 8px; background: var(--warning); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .new .body { display: flex; gap: 18px; padding: 12px 16px; }
+  .new .left { width: 180px; }
+  .new .label { font-size: 14px; color: var(--text2); }
+  .new .id { height: 40px; background: var(--raised); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; margin: 4px 0 8px; letter-spacing: 1px; }
+  .new .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .new .pad .btn { height: 34px; background: var(--neutral); border-radius: 6px; font-size: 18px; }
+  .new .right { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .new .btn { border-radius: 6px; outline: 2px solid transparent; }
+  .new .btn:hover { filter: brightness(1.35); outline-color: var(--accent); }
+  .new .right .btn { height: 44px; font-size: 18px; }
+  .new .primary { background: var(--primary); font-weight: 700; }
+  .new .neutral { background: var(--neutral); }
+  .new .warning { background: var(--warning); }
+  .new .info { font-size: 14px; color: var(--text2); line-height: 1.5; margin-top: 4px; }
+  .new .info b { color: #fff; font-weight: 400; }
+  .new .dialog { width: 470px; margin: 0 auto; background: var(--surface); border-radius: 8px; overflow: hidden; color: #fff; font-family: "Noto Sans TC", sans-serif; }
+  .new .dialog .top { height: 6px; background: var(--danger); }
+  .new .dialog .txt { padding: 12px 16px 6px; font-size: 16px; }
+  .new .dialog .btns { display: flex; gap: 8px; padding: 8px 16px 14px; }
+  .new .dialog .btn { flex: 1; height: 40px; font-size: 14px; }
+  .new .danger { background: var(--danger); }
+  .new .lang { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .new .lang .btn { width: 160px; height: 56px; font-size: 22px; background: var(--neutral); font-family: "Noto Sans TC", sans-serif; }
+</style>
+</head>
+<body>
+<h1>Design preview: HW2 vs proposed</h1>
+<p class="note">Flat 2D approximation of the 1000 × 700-unit panel (1 unit = 0.5 px here). Colors and proportions are faithful; real sharpness and size must be judged in the headset. Hover the buttons. See <code>docs/DesignSystem.md</code>.</p>
+
+<div class="row">
+  <div class="col hw2">
+    <h2>HW2 (from HumPerSetup.cs)</h2>
+    <div class="room">
+      <div class="panel">
+        <div class="title">Participant ID</div>
+        <div class="id">12</div>
+        <div class="pad">
+          <div class="btn">1</div><div class="btn">2</div><div class="btn">3</div><div class="btn">4</div><div class="btn">5</div>
+          <div class="btn">6</div><div class="btn">7</div><div class="btn">8</div><div class="btn">9</div><div class="btn">0</div>
+          <div class="btn wide" style="background:#6B2E2E">&lt;</div><div class="btn wide" style="grid-column: 4 / span 2">Clear</div>
+        </div>
+        <div class="actions">
+          <div class="btn" style="background:#216B3D">Start Experiment</div>
+          <div class="btn" style="background:#6B521F">Debug</div>
+        </div>
+        <div class="status">Unfinished: ID 12 (Reverb, 3 of 6 trials done)</div>
+      </div>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div style="background:#171A24"></div>panel #171A24</div>
+      <div class="sw"><div style="background:#292E3D"></div>field #292E3D</div>
+      <div class="sw"><div style="background:#384052"></div>gray #384052</div>
+      <div class="sw"><div style="background:#216B3D"></div>green #216B3D</div>
+      <div class="sw"><div style="background:#6B521F"></div>orange #6B521F</div>
+      <div class="sw"><div style="background:#6B2E2E"></div>red #6B2E2E</div>
+      <div class="sw"><div style="background:#4D1414"></div>dialog #4D1414</div>
+      <div class="sw"><div style="background:#A62E2E"></div>cancel #A62E2E</div>
+      <div class="sw"><div style="background:#FF731A"></div>debug sphere #FF731A</div>
+    </div>
+  </div>
+
+  <div class="col new">
+    <h2>Proposed (chamber menu, Debug badge shown for illustration)</h2>
+    <div class="room">
+      <div class="panel">
+        <div class="bar">HumPerHW2 — Ventriloquist effect</div>
+        <div class="badge">DEBUG</div>
+        <div class="body">
+          <div class="left">
+            <div class="label">Study ID</div>
+            <div class="id">S0012</div>
+            <div class="pad">
+              <div class="btn">1</div><div class="btn">2</div><div class="btn">3</div>
+              <div class="btn">4</div><div class="btn">5</div><div class="btn">6</div>
+              <div class="btn">7</div><div class="btn">8</div><div class="btn">9</div>
+              <div class="btn">Clear</div><div class="btn">0</div><div class="btn">⌫</div>
+            </div>
+          </div>
+          <div class="right">
+            <div class="btn primary">Start</div>
+            <div class="btn warning">Debug</div>
+            <div class="btn neutral">Back to Hall</div>
+            <div class="info">Preset: <b>Pilot-A</b><br>Unfinished: <b>S0012</b> — Noisy, 3 of 6 trials done<br>Unfinished: <b>S0007</b> — practice</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="room" style="margin-top:12px">
+      <div class="dialog">
+        <div class="top"></div>
+        <div class="txt">Session S0012 is paused.</div>
+        <div class="btns">
+          <div class="btn primary">Keep going</div>
+          <div class="btn neutral">Pause and back to menu</div>
+          <div class="btn danger">Drop out</div>
+        </div>
+      </div>
+      <div class="lang"><div class="btn">中文</div><div class="btn">English</div></div>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div style="background:#171A24"></div>surface #171A24</div>
+      <div class="sw"><div style="background:#292E3D"></div>raised #292E3D</div>
+      <div class="sw"><div style="background:#384052"></div>neutral #384052</div>
+      <div class="sw"><div style="background:#216B3D"></div>primary #216B3D</div>
+      <div class="sw"><div style="background:#8A6A1F"></div>warning #8A6A1F</div>
+      <div class="sw"><div style="background:#A62E2E"></div>danger #A62E2E</div>
+      <div class="sw"><div style="background:#3D7BD9"></div>accent #3D7BD9</div>
+      <div class="sw"><div style="background:#B8BECC"></div>text-2 #B8BECC</div>
+      <div class="sw"><div style="background:#7A5CC4"></div>chamber accent (example)</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
