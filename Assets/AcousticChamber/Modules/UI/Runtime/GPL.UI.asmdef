@@ -1,0 +1,14 @@
+{
+    "name": "GPL.UI",
+    "rootNamespace": "GPL.UI",
+    "references": ["GPL.Core", "GPL.UI.Core", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

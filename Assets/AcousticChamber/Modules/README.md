@@ -10,8 +10,9 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 | [Params](Params/README.md) | `GPL.Params.Core` | parameter schema, validated parameter sets, presets with an active preset | Core |
 | [Logging](Logging/README.md) | `GPL.Logging.Core` | CSV event log: common + chamber columns, flushed per row, safe append on resume | Core |
 | [Session](Session/README.md) | `GPL.Session.Core` | session record, cursor, attempts, resume policies, session store, data manager (list/delete file pairs) | Core |
+| [UI](UI/README.md) | `GPL.UI.Core` + `GPL.UI` | overlay canvas placement, ray pointer, themed buttons/text (TextMeshPro, English + 中文), number pad (`ITextEntry`), modal dialogs, localization | Core, Meta XR Core, uGUI/TMP |
 
-Planned (Architecture section 4): Protocol, Input, UI, Homing, Acoustics, HearingLoss, SpatialSources, Responses, DebugBench.
+Planned (Architecture section 4): Protocol, Input, Homing, Acoustics, HearingLoss, SpatialSources, Responses, DebugBench.
 
 Conventions
 - Folder layout: `Core/` (pure, `noEngineReferences: true`), `Runtime/` (Unity), `Editor/`, `Tests/EditMode/`, `README.md`.

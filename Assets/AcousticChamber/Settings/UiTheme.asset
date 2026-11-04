@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f5af53bdc58b3345aee2f178997c8bc, type: 3}
+  m_Name: UiTheme
+  m_EditorClassIdentifier: GPL.UI::GPL.UI.UiTheme
+  regular: {fileID: 11400000, guid: 2f324174c6812f64e81d014a11e329eb, type: 2}
+  bold: {fileID: 11400000, guid: 7a7dfddc8d802834cac01ee225f62b65, type: 2}
+  surface: {r: 0.09019608, g: 0.101960786, b: 0.14117648, a: 1}
+  surfaceRaised: {r: 0.16078432, g: 0.18039216, b: 0.23921569, a: 1}
+  neutral: {r: 0.21960784, g: 0.2509804, b: 0.32156864, a: 1}
+  primary: {r: 0.12941177, g: 0.41960785, b: 0.23921569, a: 1}
+  warning: {r: 0.5411765, g: 0.41568628, b: 0.12156863, a: 1}
+  danger: {r: 0.6509804, g: 0.18039216, b: 0.18039216, a: 1}
+  accent: {r: 0.23921569, g: 0.48235294, b: 0.8509804, a: 1}
+  text: {r: 1, g: 1, b: 1, a: 1}
+  textSecondary: {r: 0.72156864, g: 0.74509805, b: 0.8, a: 1}
+  textDisabled: {r: 0.41960785, g: 0.4509804, b: 0.52156866, a: 1}
+  titleSize: 56
+  headingSize: 44
+  bodySize: 36
+  buttonSize: 36
+  smallSize: 28
+  minimumSize: 24
+  buttonHeight: 80
+  buttonMinWidth: 220
+  gap: 20
+  cornerRadius: 12
+  outlineWidth: 4
+  hoverMix: 0.35
+  pressedMix: 0.6
+  disabledAlpha: 0.4

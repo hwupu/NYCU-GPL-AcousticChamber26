@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.App.Editor",
+    "rootNamespace": "AcousticChamber.App.Editor",
+    "references": ["GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

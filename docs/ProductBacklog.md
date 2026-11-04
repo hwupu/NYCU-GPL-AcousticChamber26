@@ -6,7 +6,7 @@ Product Owner: researcher. Status: Done / Open / Blocked (waiting for PO) / Clos
 |---|---|---|---|
 | PB-01 | Project hygiene | Git repo, `.gitignore`, Git LFS, CLAUDE.md, AGENTS.md symlink | Done |
 | PB-02 | Architecture | `docs/Architecture.md`, ADR-0001..0003 accepted | Done (rounds 1-2 answered) |
-| PB-03 | GitHub remote | Private repo created, `main` and LFS objects pushed | In progress (remote added, push awaits approval) |
+| PB-03 | GitHub remote | Private repo created, `main` and LFS objects pushed | Done (pushed 2026-11-05) |
 | PB-04 | GPL.Core / Params / Logging / Session (pure) | HW2 log + progress refactored and generalized (schema, presets, cursor, resume policy); EditMode tests pass headless | Done (49 EditMode tests pass headless, 2026-11-05) |
 | PB-05 | GPL.Input + GPL.UI + GPL.Homing runtime | Bindings, Stop dialog, overlay canvas, pointer, `ITextEntry` (number pad first), panel placer, slides; head gate, recenter listener, software recenter, handover | Open |
 | PB-06 | Main Hall + catalog + routing | Hall scene, chamber list, routing to the chamber menu of unfinished sessions | Open |

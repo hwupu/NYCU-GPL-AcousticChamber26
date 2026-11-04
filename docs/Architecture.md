@@ -69,9 +69,9 @@ Rule: a module may reference `GPL.Core` and the external packages named in its R
 Modules stay plain folders (copy the folder plus `GPL.Core`). Turning a stable module into a Unity package later is optional.
 
 ## 5. App shell (`Assets/AcousticChamber/App`)
-- **`ChamberDefinition`** (ScriptableObject in each chamber folder): `id`, title (English / 中文), description, thumbnail, scene, `version` (written into every log row), supported modes, default `ResumePolicy`, input bindings, posture, enabled flag.
+- **`ChamberDefinition`** (ScriptableObject in each chamber folder): `id` (the chamber name, e.g. `HumPerHW2`: folder, data folder, file names, `chamber` column), `label` (display ID `C01`, `C02`, ...; Hall and README only, may change without touching data), title (English / 中文), description, thumbnail, scene, `version` (written into every log row), supported modes, default `ResumePolicy`, input bindings, posture, enabled flag.
 - **`ChamberCatalog`**: list shown in the Hall. `Magic > App > Sync Chambers` collects every `ChamberDefinition`, updates the catalog and the build profile scene list. Removing a chamber = delete its folder + Sync. `Validate Setup` flags orphans.
-- **Main Hall** (`Hall.unity`): own rig and GUI; panel listing the chambers (title, number of unfinished sessions). No Study ID here.
+- **Main Hall** (`MainHall.unity`): own rig and GUI; panel listing the chambers (title, number of unfinished sessions). No Study ID here.
 - **`SessionRouter`**: on launch, if the last used chamber has unfinished sessions it opens **that chamber's menu** (not the trials). Otherwise the Hall.
 - **Scenes:** one scene per chamber, each with its own Building Blocks rig, loaded singly behind a fade. A small persistent object hands over only the mode and language.
 

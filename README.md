@@ -28,7 +28,7 @@ and **Meta Quest Developer Hub** (MQDH).
 4. **Play:** in the headset, open **Library > Unknown sources > AcousticChamber26**.
 
 **Windows only:** you can also skip the build and play in the editor through **Quest Link**: start Link in the headset,
-open `Assets/AcousticChamber/App/Scenes/Hall.unity` and press Play.
+open `Assets/AcousticChamber/App/Scenes/MainHall.unity` and press Play.
 
 **Mac:** Quest Link does not exist on macOS, so always build (step 3). You can also install an APK by dragging it onto the
 headset in MQDH.

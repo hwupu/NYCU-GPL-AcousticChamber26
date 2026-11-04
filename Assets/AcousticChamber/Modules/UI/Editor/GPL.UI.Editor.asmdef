@@ -1,0 +1,14 @@
+{
+    "name": "GPL.UI.Editor",
+    "rootNamespace": "GPL.UI.Editor",
+    "references": ["GPL.Core", "GPL.UI.Core", "GPL.UI", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

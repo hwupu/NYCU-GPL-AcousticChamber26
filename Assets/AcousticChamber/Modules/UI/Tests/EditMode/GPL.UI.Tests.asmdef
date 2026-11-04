@@ -1,0 +1,14 @@
+{
+    "name": "GPL.UI.Tests",
+    "rootNamespace": "GPL.UI.Tests",
+    "references": ["GPL.Core", "GPL.UI.Core", "GPL.UI", "Unity.TextMeshPro", "UnityEngine.UI", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
