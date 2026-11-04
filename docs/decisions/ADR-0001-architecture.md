@@ -10,7 +10,7 @@ Status: **accepted** (PO answers round 1, [../Questions.md](../Questions.md)).
 3. Each module: own folder, asmdefs (pure `Core`, `Runtime`, `Editor`, `Tests`), README; depends only on `GPL.Core` and named packages. Modules stay plain folders.
 4. HW2 is refactored: generic parts into modules, HW2-specific parts into a `HumPerHW2` chamber that rebuilds the study.
 5. One scene per chamber with its own Meta rig, plus a Hall scene; chambers registered by `ChamberDefinition` assets in a `ChamberCatalog`.
-6. Logs: common columns + chamber-declared columns, explicit factor columns, `attempt` column, never delete rows, JSON session snapshot.
+6. Logs: common columns + chamber-declared columns, explicit factor columns, `attempt` column, never delete rows, a session file (key=value) with the parameter snapshot, next to its CSV.
 7. Homing methods are interchangeable (`IHomingMethod`); posture (seated, standing, room-scale) is per chamber with a handover stage.
 8. Hearing loss on the final stereo output, per ear.
 

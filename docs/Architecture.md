@@ -54,7 +54,7 @@ Rule: a module may reference `GPL.Core` and the external packages named in its R
 |---|---|---|---|
 | **GPL.Core** | atomic file write, seeded RNG, CSV escaping, azimuth/pose math, ID sanitizing, `IClock` | console prefix, `HeadPose` (wait for valid height) | `Maths`, parts of `ExperimentLog` |
 | **GPL.Params** | `ParameterSchema` (name, type, default, min/max/step, label, group), `ParameterSet` (flat key/value, typed access, hash), `PresetStore` (default file = preset "Default", presets, active preset, Debug working copy) | `ParameterPanel` (generates Debug controls from the schema) | new (section 7) |
-| **GPL.Logging** | `LogSchema` (common + chamber columns), `EventLog` (flush per row, mirror), file naming, session JSON snapshot | `EventLogHost` (persistentDataPath, pause/resume events) | `ExperimentLog` generalized |
+| **GPL.Logging** | `LogSchema` (common + chamber columns), `EventLog` (flush per row, mirror), safe append on resume | `EventLogHost` (persistentDataPath, pause/resume events) | `ExperimentLog` generalized |
 | **GPL.Session** | `SessionRecord`, `SessionCursor`, `ResumePolicy`, `SessionStore` (atomic, list unfinished per chamber), `DataFiles` (pair each CSV with its session file, list, delete one / all) | `DataManagerPanel` (section 10.1) | `SessionProgress` / `ProgressStore` generalized |
 | **GPL.Protocol** | stage tree (stage > block > trial), `TrialPlan`, planners (seeded shuffle, Latin square, balanced repeats, forbidden values), resume resolution | `ProtocolRunner` (coroutine state machine), stock stages (Language, Onboarding slides, Handover, Practice, Block, Rest, Thanks) | `ExperimentFlow`, `TrialPlanner` split |
 | **GPL.Input** | binding table (action -> button, controller), reserved actions | `ActionReader` over `OVRInput`, `GlobalActions` (Stop dialog trigger) | Y-button and A/trigger handling |
@@ -84,8 +84,8 @@ Every chamber starts at its **chamber menu** (generic, from `GPL.UI` + `GPL.Sess
 - **Start new** over an unfinished session: the old one is logged `session_superseded` and closed (never deleted).
 
 ### 6.1 Session record
-One JSON file per session in `persistentDataPath/<ChamberId>/sessions/` (atomic write):
-`session_id, chamber_id, chamber_version, study_id, mode, status (InProgress | Completed | Stopped | DroppedOut | Superseded), seed, language, csv_file, preset_name, params (full snapshot), params_hash, plan_hash, cursor {stage, block, trial, attempt}, custom {key: value}, created, updated, app_version`.
+One key=value text file per session, `<base>.session`, **next to its CSV** `<base>.csv` in `persistentDataPath/<ChamberId>/` (atomic write; the base name `yyyyMMdd_HHmmss_<ChamberId>_<StudyId>` is the session ID). Real sessions only; Debug runs have a CSV and no session file. Implemented in `GPL.Session` (PB-04):
+`session_id, chamber, chamber_version, study_id, status (InProgress | Completed | DroppedOut | Superseded), seed, language, preset, params_hash, plan_hash, app_version, created, updated, cursor.{stage, block, trials_done, attempt}, resume_from, attempt.<stage>.<block>, param.<key> (full snapshot), custom.<key>`. A Stop-dialog pause keeps the status `InProgress` (logged as `session_paused`).
 
 **A resumed session uses its own parameter snapshot**, not the currently active preset (the menu warns if they differ).
 
@@ -137,11 +137,11 @@ Fixes the HW2 problem that Debug changes did not carry over to real trials.
 ## 10. Logging scheme
 Long format, one row per event. Common columns (every chamber):
 `event, timestamp_local, elapsed_s, session_id, chamber, chamber_version, study_id, mode, preset, params_hash, stage, block, condition, trial, attempt, note`
-then the chamber's columns (declared in its `LogSchema`; writing an undeclared column fails a unit test). RM-ANOVA factors are **explicit columns** (e.g. `hl_side`, `hl_level`, `rt60_target_s`), never parsed from notes.
+then the chamber's columns, then `note` (always the last column) (declared in its `LogSchema`; writing an undeclared column fails a unit test). RM-ANOVA factors are **explicit columns** (e.g. `hl_side`, `hl_level`, `rt60_target_s`), never parsed from notes.
 
 Common events: `session_start` (app version, device, headset volume step entered by the experimenter), `session_resume`, `stage_begin/end`, `block_begin/end`, `block_restart`, `trial`, `homing`, `recenter`, `handover`, `app_paused/app_resumed`, `session_paused`, `participant_dropout`, `session_superseded`, `session_end`, `debug_*`, `param_change` (Debug).
 
-Files: `persistentDataPath/<ChamberId>/yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` (resume appends) and the session JSON. Each chamber's `AnalysisPlan.md`: within factors, levels, DV, per-cell aggregation, exclusions (Debug, dropout, superseded, lower attempts). Each chamber also has `DataFormat.md` written for an analyst (human or AI): files, columns, units, events, how to rebuild the trial table and the per-cell means. No analysis scripts in the repo.
+Files: `persistentDataPath/<ChamberId>/yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` (resume appends) and the `.session` file (the parameter snapshot lives there). Each chamber's `AnalysisPlan.md`: within factors, levels, DV, per-cell aggregation, exclusions (Debug, dropout, superseded, lower attempts). Each chamber also has `DataFormat.md` written for an analyst (human or AI): files, columns, units, events, how to rebuild the trial table and the per-cell means. No analysis scripts in the repo.
 
 ### 10.1 Data manager (in each chamber's Debug menu)
 MQDH does not list the per-app folder, so files are managed in the headset.

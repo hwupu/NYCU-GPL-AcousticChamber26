@@ -36,8 +36,8 @@ Reference implementation: `../115A-535655-HumPer-HW2` (the earlier ventriloquist
 10. Terms: **Study ID** (not participant ID): number pad, up to 4 digits, shown as `S0001`. Languages: English and 中文 (label it exactly "中文", nothing longer).
 
 ## Engineering rules (INSTRUCTIONS.md section 2-3, enforced)
-- **Verify before handoff.** The PO usually has the project open in Unity, so batch mode cannot use it. Mirror `Assets`, `Packages`, `ProjectSettings` to `D:/UnityVerify/AcousticChamber26` (reuse it; first import is slow) and run
-  `"C:/Program Files/Unity/Hub/Editor/6000.6.6f1/Editor/Unity.exe" -batchmode -nographics -projectPath D:/UnityVerify/AcousticChamber26 -runTests -testPlatform EditMode -testResults <file>` (and `-executeMethod` for setup steps, then `-quit`). Fix every compile error and failing test before reporting. Inspect saved scenes afterwards.
+- **Verify before handoff.** The PO usually has the project open in Unity, so batch mode cannot use it. Run `powershell -ExecutionPolicy Bypass -File Tools/Verify-Headless.ps1` (mirrors `Assets`, `Packages`, `ProjectSettings` to `D:/UnityVerify/AcousticChamber26`, runs EditMode tests, prints failures and compile errors; `-ExecuteMethod <Class.Method>` runs a setup step first). Fix every compile error and failing test before reporting. Inspect saved scenes afterwards.
+- **New files get their `.meta` from the mirror:** after a verify run, copy `.meta` files that exist in the mirror but not in the project back into the project (stable GUIDs), unless the PO's editor already created them.
 - **Scene setup by Editor scripts, never at runtime.** Menu **Magic** (`Magic > <Chamber> > Step N ...`, `Magic > Validate Setup`, `Magic > Hot Fix`). Steps are idempotent, edit only the open scene, never touch Meta Building Blocks the PO added by hand. Never edit scene YAML while the editor is open.
 - **Read SDK source before using an API** (`Library/PackageCache/com.meta.xr.*`). Do not guess class or field names.
 - Hierarchy root groups: `XR`, `Audio`, `Stimuli`, `Experiment`, `Environment`, `UI` (identity transforms).
@@ -57,7 +57,7 @@ Reference implementation: `../115A-535655-HumPer-HW2` (the earlier ventriloquist
 - Build-time audio settings guard (HW2 `AudioBuildSettingsGuard`): Meta's Project Setup Tool can rewrite sample rate / DSP buffer.
 
 ## Logging and data
-- CSV per session, one row per event, **flush every row**, console mirror. File `yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` in `Application.persistentDataPath/<ChamberId>/` plus a `_session.json` snapshot (all parameters, seed, versions).
+- CSV per session, one row per event, **flush every row**, console mirror. File `yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` in `Application.persistentDataPath/<ChamberId>/` plus a `<same base>.session` key=value file next to it (status, seed, cursor, attempts, full parameter snapshot); see `Assets/AcousticChamber/Modules/Session/README.md`.
 - Quest path `/sdcard/Android/data/com.nycu.AcousticChamber26/files/`; Windows Editor `%USERPROFILE%\AppData\LocalLow\NYCU\AcousticChamber26\`.
 - Participant data never goes into git (`/ParticipantData/` is ignored).
 
@@ -73,5 +73,5 @@ Assets/AcousticChamber/App/                 Main Hall, chamber catalog, routing 
 Assets/AcousticChamber/Chambers/<Id>/       one chamber per folder (Config/default.params, Scenes, Scripts, Editor, Tests, Docs)
 Assets/AcousticChamber/Chambers/_Template/  copy to start a new chamber
 docs/                                       process docs, architecture, ADRs (docs/decisions), questions, references
-Tools/<ChamberId>/                          analysis helpers
+Tools/                                      developer scripts (Verify-Headless.ps1); no analysis scripts (data schemes are documented instead)
 ```

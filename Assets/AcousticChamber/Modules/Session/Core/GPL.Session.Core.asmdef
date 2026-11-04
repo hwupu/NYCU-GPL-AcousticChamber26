@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Session.Core",
+    "rootNamespace": "GPL.Session",
+    "references": ["GPL.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
