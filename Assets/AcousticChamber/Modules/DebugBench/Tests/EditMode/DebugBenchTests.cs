@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using GPL.Core;
 using GPL.Params;
+using GPL.Session;
 using GPL.UI;
 using NUnit.Framework;
 using TMPro;
@@ -266,6 +268,79 @@ namespace GPL.DebugBench.Tests
                 Assert.AreEqual(presets, pages.Top);
                 Assert.IsFalse(pages.Top.GetComponentsInChildren<UiButton>(true).Any(b => b.name == "Row Custom"));
                 Assert.AreEqual(0, Sheet.Stack(canvas.transform).Count);
+            }
+            finally { Object.DestroyImmediate(canvas); }
+        }
+
+        [Test]
+        public void DataPageDeletesOneOrAllAfterConfirming()
+        {
+            var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
+            string data = Path.Combine(_dir, "data");
+            try
+            {
+                Directory.CreateDirectory(data);
+                var t0 = new System.DateTime(2026, 11, 5, 10, 0, 0);
+                var sessions = new SessionStore(data);
+                foreach (var (min, id, status) in new[] { (0, "S0001", SessionStatus.Completed), (10, "S0002", SessionStatus.InProgress), (20, "S0003", SessionStatus.Completed) })
+                {
+                    var r = new SessionRecord { SessionId = DataFileNames.BaseName(t0.AddMinutes(min), "C00", id, false), ChamberId = "C00", StudyId = id, Status = status };
+                    sessions.Save(r, t0);
+                    File.WriteAllText(sessions.CsvPathFor(r.SessionId), "event,note\ntrial,\ntrial,\n");
+                }
+                File.WriteAllText(Path.Combine(data, DataFileNames.BaseName(t0.AddMinutes(30), "C00", "", true) + ".csv"), "event\ntrial,\n");
+                Directory.CreateDirectory(Path.Combine(data, "presets"));
+                File.WriteAllText(Path.Combine(data, "presets", "Custom.params"), "x");
+
+                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
+                var pages = PageStack.On(UiKit.Window(canvas.transform));
+                pages.Push("Menu");
+                var bench = new DebugBench(pages, canvas.transform, new WorkingCopy(_store)) { Files = new DataFiles(data, "C00") };
+                UiButton Labeled(Component root, string label) => root.GetComponentsInChildren<UiButton>(true).Single(b => UiKit.LabelOf(b).text == label);
+                RectTransform RowOf(string baseName) => pages.Top.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row " + baseName);
+                TextMeshProUGUI DialogText(string name) => ModalDialog.Current.GetComponentsInChildren<TextMeshProUGUI>(true).First(t => t.name == name);
+
+                var debug = bench.OpenDebugPage();
+                var dataRow = debug.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Data files");
+                Assert.AreEqual("4 files  ›", UiKit.RowText(dataRow.transform, "Value").text);
+                dataRow.onClick.Invoke();
+                var page = pages.Top;
+                Assert.AreEqual("Data files", page.Title);
+                string s2 = DataFileNames.BaseName(t0.AddMinutes(10), "C00", "S0002", false);
+                Assert.AreEqual(s2, UiKit.RowText(RowOf(s2), "Label").text, "the file name is the row title");
+                Assert.IsNull(UiKit.RowText(RowOf(s2), "Sub"), "one line: no description");
+                Assert.AreEqual(0f, UiKit.RowText(RowOf(s2), "Label").rectTransform.offsetMin.y, "the file name is vertically centered");
+                string dbg = DataFileNames.BaseName(t0.AddMinutes(30), "C00", "", true);
+                Assert.AreEqual(dbg, UiKit.RowText(RowOf(dbg), "Label").text);
+
+                // Delete one: confirm first (Cancel keeps it)
+                var del = RowOf(s2).Find("Delete").GetComponent<UiButton>();
+                Assert.AreEqual(UiStyle.DestructiveText, del.Style);
+                del.onClick.Invoke();
+                Assert.AreEqual("Delete S0002's session?", DialogText("Title").text);
+                StringAssert.StartsWith("The CSV and session file are removed", DialogText("Message").text);
+                StringAssert.Contains("can no longer resume", DialogText("Message").text);
+                Labeled(ModalDialog.Current, "Cancel").onClick.Invoke();
+                Assert.IsTrue(File.Exists(sessions.CsvPathFor(s2)));
+                RowOf(s2).Find("Delete").GetComponent<UiButton>().onClick.Invoke();
+                Labeled(ModalDialog.Current, "Delete").onClick.Invoke();
+                Assert.IsFalse(File.Exists(sessions.CsvPathFor(s2)));
+                Assert.IsFalse(File.Exists(sessions.PathFor(s2)));
+                Assert.IsFalse(page.GetComponentsInChildren<RectTransform>(true).Any(t => t.name == "Row " + s2), "the page is rebuilt");
+
+                // Delete all: one confirmation naming the count
+                var all = Labeled(page, "Delete all");
+                all.onClick.Invoke();
+                Assert.AreEqual("Delete all 3 files?", DialogText("Title").text);
+                Assert.AreEqual(3, bench.Files.List().Count, "nothing deleted before the confirmation");
+                Labeled(ModalDialog.Current, "Delete 3 files").onClick.Invoke();
+                Assert.IsNull(ModalDialog.Current);
+                Assert.AreEqual(0, bench.Files.List().Count);
+                Assert.IsTrue(File.Exists(Path.Combine(data, "presets", "Custom.params")), "presets are not data files");
+                Assert.IsFalse(all.interactable, "nothing left to delete");
+
+                page.BackButton.onClick.Invoke();
+                Assert.AreEqual("none  ›", UiKit.RowText(dataRow.transform, "Value").text);
             }
             finally { Object.DestroyImmediate(canvas); }
         }

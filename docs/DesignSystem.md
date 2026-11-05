@@ -125,7 +125,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - Real session: **Drop out** (red text) · **Keep going** (prominent); Drop out asks once more: "Drop out S0012?" Cancel · Drop out (destructive). Debug run: Back to the chamber menu (borderless) · Keep going (prominent). The session is frozen while it is open.
 
 ### Debug bench
-- Pages: **Debug** (Run · Parameters · Presets · chamber groups · Data) → **Parameters** (working copy of the active preset: − / +, Revert to the active preset, Save as Custom: creates or overwrites Custom and makes it active) → **Presets** (Default and Custom; ✓ active; tap → sheet: Make active, which also loads it into the working copy; Delete for Custom) → **Data files** (Delete → confirm; Delete all confirms twice and names the count).
+- Pages: **Debug** (Run · Parameters · Presets · chamber groups · Data) → **Parameters** (working copy of the active preset: − / +, Revert to the active preset, Save as Custom: creates or overwrites Custom and makes it active) → **Presets** (Default and Custom; ✓ active; tap → sheet: Make active, which also loads it into the working copy; Delete for Custom) → **Data files** (Delete → confirm; Delete all confirms once and names the count; one-line rows: the file name, no description).
 - No DEBUG tag on the Debug pages. Playback tests (play stimulus, play background) and Debug-only display switches are **not saved** in presets (ADR-0002).
 
 ### Mode indicator

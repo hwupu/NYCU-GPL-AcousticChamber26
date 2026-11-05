@@ -41,4 +41,4 @@ Rows of an interrupted attempt stay in the CSV; the analysis uses the highest co
 ## Data manager core (`DataFiles`)
 Lists one entry per session file pair (`<base>.csv` + `<base>.session`; Debug runs: CSV only) of ONE chamber folder, with Study ID,
 Debug flag, status, size and number of `trial` rows; deletes one entry (both files) or all. Sub-folders (`presets/`) and files of
-other chambers or with other names are never touched. The headset UI for it comes with the Runtime part (PB-15).
+other chambers or with other names are never touched. The headset UI for it is the Debug bench's Data files page (`GPL.DebugBench`, PB-19c); `Folder` is the listed folder.

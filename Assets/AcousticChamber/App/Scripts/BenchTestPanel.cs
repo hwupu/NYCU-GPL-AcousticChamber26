@@ -1,6 +1,10 @@
+using System;
 using System.IO;
+using System.Text;
+using GPL.Core;
 using GPL.DebugBench;
 using GPL.Params;
+using GPL.Session;
 using GPL.UI;
 using TMPro;
 using UnityEngine;
@@ -44,7 +48,8 @@ namespace AcousticChamber.App
             pages.RootBack = () => Debug.Log("[GPL] BenchTestPanel: Back (would return to the Hall)");
 
             var schema = DemoSchema();
-            string dir = Path.Combine(Application.persistentDataPath, ChamberId, "presets");
+            string dataDir = Path.Combine(Application.persistentDataPath, ChamberId);
+            string dir = Path.Combine(dataDir, "presets");
             var store = new PresetStore(dir, schema, schema.Defaults().Serialize("demo default.params"));
             var work = new WorkingCopy(store);
             work.ParamChanged += (k, o, n) => Debug.Log("[GPL] BenchTestPanel: param_change " + k + " " + o + " -> " + n);
@@ -60,8 +65,15 @@ namespace AcousticChamber.App
                     col.Label("Display (Debug only, not saved)");
                     var d = col.Group("Display", 1);
                     UiKit.SwitchRow(d, 0, "Show audio sphere", "always, not only after the answer", _sphere, on => { _sphere = on; _bench.SetStatus(on ? "Audio sphere always visible." : "Audio sphere only after the answer."); });
+                    col.Label("Test data (bench test only)");
+                    col.Buttons("Test data", ("Create 3 demo data files", UiStyle.Borderless, () =>
+                    {
+                        CreateDemoFiles(dataDir);
+                        _bench.RefreshDebugPage();
+                        _bench.SetStatus("Created 3 demo data files in " + dataDir);
+                    }));
                 },
-                DataSummary = () => "0 files",
+                Files = new DataFiles(dataDir, ChamberId),
             };
             _bench.RunRequested += () => Debug.Log("[GPL] BenchTestPanel: run with " + work.Label + " hash " + work.Values.Hash());
 
@@ -76,6 +88,40 @@ namespace AcousticChamber.App
             UiKit.Button(r, "Debug", "Debug", UiStyle.Gray, new Vector2(x - 110f, -30f), new Vector2(420f, 0f), () => _bench.OpenDebugPage());
             menu.Returned += () => ShowPreset(store);
             ShowPreset(store);
+        }
+
+        /// <summary>
+        /// Writes a completed session (S0001), an unfinished one (S0002) and a Debug run (CSV only) to try the Data files
+        /// page. Fake content, not a real log format.
+        /// </summary>
+        public static void CreateDemoFiles(string dataDir)
+        {
+            Directory.CreateDirectory(dataDir);
+            var now = DateTime.Now;
+            var store = new SessionStore(dataDir);
+            void Session(DateTime start, string studyId, SessionStatus status, int trials)
+            {
+                var r = new SessionRecord
+                {
+                    SessionId = DataFileNames.BaseName(start, ChamberId, studyId, false),
+                    ChamberId = ChamberId, ChamberVersion = "0", StudyId = studyId, PresetName = "Default", Created = start,
+                };
+                r.EnterStage(0, ResumeFrom.NextTrial);
+                r.Status = status;
+                store.Save(r, now);
+                File.WriteAllText(store.CsvPathFor(r.SessionId), DemoCsv(trials));
+            }
+            Session(now.AddMinutes(-30), "S0001", SessionStatus.Completed, 6);
+            Session(now.AddMinutes(-20), "S0002", SessionStatus.InProgress, 3);
+            File.WriteAllText(Path.Combine(dataDir, DataFileNames.BaseName(now.AddMinutes(-10), ChamberId, "", true) + DataFileNames.CsvExtension),
+                              DemoCsv(2));
+        }
+
+        static string DemoCsv(int trials)
+        {
+            var sb = new StringBuilder("event,note\nsession_start,demo\n");
+            for (int i = 0; i < trials; i++) sb.Append("trial,demo\n");
+            return sb.ToString();
         }
 
         void ShowPreset(PresetStore store) => _preset.text = "Study ID S0001 · Preset: " + store.ActiveName;

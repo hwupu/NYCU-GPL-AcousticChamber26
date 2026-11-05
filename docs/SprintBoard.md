@@ -17,8 +17,8 @@
 | PB-05b GPL.Input + Stop dialog | Done (`6ff98de`) | headset test passed; 72 EditMode tests pass headless; `Magic > App > Input Test Panel` replaces the UI test panel in MainHall; Stop dialog without Pause (PO, ADR-0003 amended) |
 | PB-17 UI components + motion | Done | headset test passed (PO: "perfect"); 78 EditMode tests pass headless (before the 72 u glyph token, which the PO's editor compiled); UiButton, theme v2 + migration, motion, hit regions, v2 number pad and dialogs; ADR-0005 |
 | PB-18 Sheets, pages, scrolling | Done (uncommitted) | headset tests passed (18a sheets, 18b pages, 18c scrolling, group padding 8 u + full content width); EditMode tests pass headless (in the 91 of PB-19a) |
-| PB-19 Debug bench + preset manager | In progress | 19a done (headset test passed; committed with PB-18): `GPL.DebugBench` (WorkingCopy core, Debug + Parameters pages), GPL.UI Column / InfoRow / switch / header action, `Magic > App > Debug Bench Test Panel`; 92 EditMode tests pass headless. 19b Presets page done (headset test passed; Default + Custom flow, ADR-0002 amended; 94 EditMode tests pass headless). Next 19c Data files |
+| PB-19 Debug bench + preset manager | In progress | 19a done (headset test passed; committed with PB-18): `GPL.DebugBench` (WorkingCopy core, Debug + Parameters pages), GPL.UI Column / InfoRow / switch / header action, `Magic > App > Debug Bench Test Panel`; 92 EditMode tests pass headless. 19b Presets page done (headset test passed; Default + Custom flow, ADR-0002 amended; 94 EditMode tests pass headless). 19c Data files page done (headset test passed; `DebugBench.Files` = `DataFiles`; Delete confirms, Delete all confirms once with the count; test panel can create 3 demo files); one-line rows; 95 EditMode tests pass headless |
 | PB-05c GPL.Homing | Open | after PB-17/18 |
 | PB-06 Hall + catalog + routing | Open | |
 | PB-07 `_Template` chamber | Open | first headset test after PB-05..07 |
-| PB-15 Data manager UI | Open | core done in PB-04 (`DataFiles`) |
+| PB-15 Data manager UI | In progress | core done in PB-04 (`DataFiles`); headset page is PB-19c (Debug bench Data files) |

@@ -18,6 +18,8 @@ namespace GPL.DebugBench
     /// Revert in the header (back to the active preset), Save as Custom (creates Custom, or overwrites it after a
     /// confirmation; Custom becomes active).</item>
     /// <item><b>Presets</b> (DebugBench.Presets.cs): ✓ active; tap → sheet: Make active (loads it), Delete (Custom).</item>
+    /// <item><b>Data files</b> (DebugBench.Data.cs, needs <see cref="Files"/>): Delete per row (confirms), Delete all
+    /// (confirms once, names the count).</item>
     /// </list>
     /// No DEBUG tag on these pages. The bench never runs anything itself: it raises <see cref="RunRequested"/> /
     /// <see cref="PracticeRequested"/>; the chamber runs with <see cref="Work"/>.<c>Values</c> and logs
@@ -37,14 +39,8 @@ namespace GPL.DebugBench
         public event Action RunRequested;
         public event Action PracticeRequested;
 
-        /// <summary>Data files › (PB-19c).</summary>
-        public event Action DataRequested;
-
         /// <summary>The chamber's own sections on the Debug page, between Parameters and Data (labels + groups on the column).</summary>
         public Action<Column> ChamberSections;
-
-        /// <summary>Value shown on the Data files row (e.g. "12 files").</summary>
-        public Func<string> DataSummary;
 
         /// <param name="pages">The chamber panel's page stack (the chamber menu is its root page).</param>
         /// <param name="canvas">The canvas sheets open on (Save as, confirmations).</param>
@@ -84,11 +80,9 @@ namespace GPL.DebugBench
 
             col.Label("Data");
             var d = col.Group("Data", 1);
-            UiKit.Row(d, 0, "Data files", DataSummary?.Invoke(), () =>
-            {
-                if (DataRequested != null) DataRequested();
-                else SetStatus("Data files page: PB-19c");
-            });
+            var data = UiKit.Row(d, 0, "Data files", DataSummary(), () => OpenDataPage(), sub: "this chamber's CSV and session files");
+            data.interactable = Files != null;
+            _dataValue = UiKit.RowText(data.transform, "Value");
             col.Finish();
 
             var th = UiKit.Theme;
@@ -104,10 +98,12 @@ namespace GPL.DebugBench
             return page;
         }
 
-        void RefreshDebugPage()
+        /// <summary>Updates the Debug page's row values (working copy, active preset, data count).</summary>
+        public void RefreshDebugPage()
         {
             if (_workValue != null) _workValue.text = Work.Label + "  ›";
             if (_presetsValue != null) _presetsValue.text = "Active: " + Work.Store.ActiveName + "  ›";
+            if (_dataValue != null) _dataValue.text = DataSummary() + "  ›";
         }
 
         // ---- Parameters page -----------------------------------------------------------------------------------

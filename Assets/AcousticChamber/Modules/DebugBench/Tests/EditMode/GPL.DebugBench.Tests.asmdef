@@ -1,7 +1,7 @@
 {
     "name": "GPL.DebugBench.Tests",
     "rootNamespace": "GPL.DebugBench.Tests",
-    "references": ["GPL.Core", "GPL.Params.Core", "GPL.DebugBench.Core", "GPL.DebugBench", "GPL.UI.Core", "GPL.UI", "Unity.TextMeshPro", "UnityEngine.UI", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.DebugBench.Core", "GPL.DebugBench", "GPL.UI.Core", "GPL.UI", "Unity.TextMeshPro", "UnityEngine.UI", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

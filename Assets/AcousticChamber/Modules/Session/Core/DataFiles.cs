@@ -37,6 +37,9 @@ namespace GPL.Session
             _chamberId = Ids.SanitizeToken(chamberId);
         }
 
+        /// <summary>The chamber data folder this instance lists.</summary>
+        public string Folder => _dir;
+
         /// <summary>Entries of this chamber, newest first.</summary>
         public List<DataEntry> List()
         {
