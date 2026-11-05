@@ -1,0 +1,14 @@
+{
+    "name": "GPL.DebugBench",
+    "rootNamespace": "GPL.DebugBench",
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.DebugBench.Core", "GPL.UI.Core", "GPL.UI", "Unity.TextMeshPro", "UnityEngine.UI"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

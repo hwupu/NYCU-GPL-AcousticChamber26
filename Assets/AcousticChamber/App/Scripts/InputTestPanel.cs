@@ -44,10 +44,10 @@ namespace AcousticChamber.App
             }
 
             var th = UiKit.Theme;
-            var root = (RectTransform)transform;
-            UiKit.Clear(root);
-            root.sizeDelta = Size;
-            UiKit.Background(root);
+            var canvas = (RectTransform)transform;
+            UiKit.Clear(canvas);
+            canvas.sizeDelta = Size;
+            var root = UiKit.Window(canvas); // the Stop dialog pushes it back
             UiKit.Text(root, "Title", "GPL.Input test panel", th.titleSize, new Vector2(-Size.x / 2f + 48f + 300f, Size.y / 2f - 80f),
                        new Vector2(600f, 80f), bold: true, align: TextAlignmentOptions.Left);
             UiKit.DebugTag(root);

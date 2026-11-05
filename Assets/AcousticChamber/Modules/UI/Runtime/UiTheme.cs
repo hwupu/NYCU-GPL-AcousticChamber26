@@ -93,15 +93,24 @@ namespace GPL.UI
         public float gap = 20f;
         [Tooltip("Padding between a container and the shapes inside it, and between those shapes.")]
         public float inset = 4f;
+        [Tooltip("Padding from a group's edge to its rows (rows are inset apart from each other).")]
+        public float groupPadding = 8f;
         public float panelRadius = 32f;
         public float groupRadius = 36f;
         [Range(0.8f, 1f)] public float pressedScale = 0.97f;
+        [Tooltip("Scale a sheet appears from (and leaves to).")]
+        [Range(0.8f, 1f)] public float sheetScale = 0.94f;
+        [Tooltip("Scale of a layer per sheet on top of it (94 %, two levels 88 %).")]
+        [Range(0.8f, 1f)] public float pushScale = 0.94f;
 
         [Header("Motion (s, unscaled time; curve = Motion.Settle)")]
         public float hoverIn = 0.15f;
         public float hoverOut = 0.35f;
         public float release = 0.25f;
         public float sheet = 0.45f;
+        public float page = 0.45f;
+        [Tooltip("Scale a page appears from (and leaves to); pages change in place.")]
+        [Range(0.8f, 1f)] public float pageScale = 0.98f;
         public float push = 0.45f;
         [Tooltip("Every transition instant (accessibility, or tests).")]
         public bool reduceMotion;

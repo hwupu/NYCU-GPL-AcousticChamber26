@@ -9,7 +9,9 @@ namespace GPL.UI
     /// number pad (borderless keys), one button per style, the Stop dialog, a motion switch and English / 中文 for the
     /// localization check. Builds itself on Start under its canvas.
     /// Check: both eyes sharp; hover settles in and out; pressed is the brightest; the 60 u hit region; S0001 formatting;
-    /// the dialog blocks the panel behind it.
+    /// the Stop dialog appears in place and pushes the panel back (94 %), its confirmation pushes both (88 %), only the
+    /// top sheet takes the ray. Debug opens a page demo (Debug → Parameters with a × sheet, Data files with a delete
+    /// confirmation): pages change in place, ‹ goes back.
     /// </summary>
     public class UiShowcase : MonoBehaviour
     {
@@ -18,6 +20,7 @@ namespace GPL.UI
         TextMeshProUGUI _status;
         NumberPadEntry _pad;
         UiButton _motion;
+        PageStack _pages;
 
         void Start() => Build();
 
@@ -25,18 +28,13 @@ namespace GPL.UI
         {
             UiStrings.EnsureRegistered();
             var th = UiKit.Theme;
-            var root = (RectTransform)transform;
-            UiKit.Clear(root);
-            root.sizeDelta = Size;
-
-            UiKit.Background(root);
-            // header: ‹ at the top left, title, DEBUG tag at the right
-            float headerY = Size.y / 2f - 40f - th.iconButtonSize / 2f;
-            UiKit.IconButton(root, "Back", UiKit.BackGlyph, new Vector2(-Size.x / 2f + 48f + th.iconButtonSize / 2f, headerY), () => SetStatus("Back"));
-            float titleLeft = -Size.x / 2f + 48f + th.iconButtonSize + UiKit.IconTitleGap;
-            UiKit.Text(root, "Title", "GPL.UI test panel", th.titleSize, new Vector2(titleLeft + 300f, headerY), new Vector2(600f, 80f),
-                       bold: true, align: TextAlignmentOptions.Left);
-            UiKit.DebugTag(root);
+            var canvas = (RectTransform)transform;
+            UiKit.Clear(canvas);
+            canvas.sizeDelta = Size;
+            var window = UiKit.Window(canvas); // sheets (Stop dialog) push it back
+            _pages = PageStack.On(window);
+            _pages.RootBack = () => SetStatus("Back (would return to the Hall)");
+            var root = _pages.Push("GPL.UI test panel", debugTag: true).Rect;
 
             // left column: Study ID
             const float leftX = -250f;
@@ -53,7 +51,7 @@ namespace GPL.UI
             y -= 60f;
             UiKit.Button(root, "Start", "Start", UiStyle.Prominent, new Vector2(rightX, y), new Vector2(w, 0f), () => SetStatus("Start"));
             y -= 100f;
-            UiKit.Button(root, "Debug", "Debug", UiStyle.Gray, new Vector2(rightX, y), new Vector2(w, 0f), () => SetStatus("Debug"));
+            UiKit.Button(root, "Debug", "Debug", UiStyle.Gray, new Vector2(rightX, y), new Vector2(w, 0f), OpenDebugPage);
             y -= 100f;
             UiKit.Button(root, "Stop Dialog", "Stop dialog (Y)", UiStyle.Borderless, new Vector2(rightX, y), new Vector2(w, 0f), OpenStopDialog);
             y -= 100f;
@@ -71,8 +69,80 @@ namespace GPL.UI
             disabled.interactable = false;
             ShowMotion();
 
-            _status = UiKit.Text(root, "Status", "Point at a button and pull the trigger.", th.minimumSize, new Vector2(leftX, -Size.y / 2f + 34f),
+            _status = UiKit.Text(window, "Status", "Point at a button and pull the trigger.", th.minimumSize, new Vector2(leftX, -Size.y / 2f + 34f),
                                  new Vector2(NumberPadEntry.Width, 36f), color: th.text2, align: TextAlignmentOptions.Left);
+        }
+
+        // ---- page demo: Debug -> Parameters / Data files (layout only; the real bench is PB-19) ----------------
+
+        static readonly float GroupWidth = Page.ContentWidth(Size.x); // aligned with the header edges (48 u from the window edge)
+
+        void OpenDebugPage()
+        {
+            var page = _pages.Push("Debug").Rect;
+            float top = Size.y / 2f - Page.HeaderHeight - 20f;
+            var g = UiKit.Group(page, "Group", Vector2.zero, GroupWidth, 3);
+            g.anchoredPosition = new Vector2(0f, top - g.sizeDelta.y / 2f);
+            UiKit.Row(g, 0, "Parameters", "Default", OpenParametersPage);
+            UiKit.Row(g, 1, "Presets", "2", () => SetStatus("Presets page: PB-19"));
+            UiKit.Row(g, 2, "Data files", "3", OpenDataPage);
+            SetStatus("Debug page (‹ goes back)");
+        }
+
+        void OpenParametersPage()
+        {
+            var page = _pages.Push("Parameters").Rect;
+            float top = Size.y / 2f - Page.HeaderHeight - 20f;
+            var g = UiKit.Group(page, "Group", Vector2.zero, GroupWidth, 2);
+            g.anchoredPosition = new Vector2(0f, top - g.sizeDelta.y / 2f);
+            UiKit.Row(g, 0, "Trials per block", "24", chevron: false);
+            UiKit.Row(g, 1, "Inter-trial interval", "1.5 s", chevron: false);
+            UiKit.Button(page, "Save As", "Save as…", UiStyle.Gray, new Vector2(0f, g.anchoredPosition.y - g.sizeDelta.y / 2f - 80f),
+                         new Vector2(300f, 0f), OpenSaveAsSheet);
+            SetStatus("Parameters page");
+        }
+
+        void OpenSaveAsSheet()
+        {
+            var th = UiKit.Theme;
+            var sheet = Sheet.Open(transform, "Save As Sheet", Vector2.zero, new Vector2(820f, 360f));
+            float y = 360f / 2f - Page.TopPad - th.iconButtonSize / 2f;
+            float left = -820f / 2f + Page.EdgePad + th.iconButtonSize + UiKit.IconTitleGap;
+            sheet.AddCloseButton(() => SetStatus("Save as: closed with ×"));
+            UiKit.Text(sheet.Rect, "Title", "Save as", th.headingSize, new Vector2(left + 250f, y), new Vector2(500f, 80f), bold: true,
+                       align: TextAlignmentOptions.MidlineLeft);
+            UiKit.Text(sheet.Rect, "Message", "A sheet that may be left without a choice has × instead of Cancel.", th.smallSize,
+                       new Vector2(0f, -10f), new Vector2(820f - 2f * Page.EdgePad, 80f), color: th.text2, align: TextAlignmentOptions.TopLeft);
+            UiKit.Button(sheet.Rect, "Save", "Save", UiStyle.Prominent, new Vector2(820f / 2f - Page.EdgePad - 110f, -360f / 2f + 48f + 40f),
+                         new Vector2(220f, 0f), () => { sheet.Close(); SetStatus("Save as: saved (demo)"); });
+        }
+
+        void OpenDataPage()
+        {
+            const int files = 12;
+            var page = _pages.Push("Data files").Rect;
+            var th = UiKit.Theme;
+
+            // header action at the right: borderless, red text
+            float headerY = Size.y / 2f - Page.TopPad - th.iconButtonSize / 2f;
+            UiKit.Button(page, "Delete All", "Delete all", UiStyle.DestructiveText, new Vector2(Size.x / 2f - Page.EdgePad - 120f, headerY),
+                         new Vector2(240f, 0f), () =>
+                             ModalDialog.Show(transform, "Delete all " + files + " files?", "The files are removed from this headset.",
+                                 new DialogButton("Cancel", UiStyle.Borderless, () => SetStatus("Delete all: cancelled")),
+                                 new DialogButton("Delete", UiStyle.Destructive, () => SetStatus("Delete all: deleted (demo)"))));
+
+            // borderless scroll list from below the header to above the status line
+            float top = Size.y / 2f - Page.HeaderHeight - 8f, bottom = -Size.y / 2f + 64f;
+            var list = ScrollList.Create(page, "Files", new Vector2(0f, (top + bottom) / 2f), new Vector2(GroupWidth + 2f * 20f, top - bottom));
+            var g = UiKit.Group(list.Content, "Group", Vector2.zero, GroupWidth, files);
+            ScrollList.TopAnchored(g, 0f);
+            for (int i = 0; i < files; i++)
+            {
+                string name = "20261105_" + (9 + i).ToString("00") + "1500_C04_S" + (i + 1).ToString("0000") + ".csv";
+                UiKit.Row(g, i, name, null, () => SetStatus("Clicked " + name), chevron: false);
+            }
+            list.ContentHeight = g.sizeDelta.y;
+            SetStatus("Data files: drag with the trigger or use the right thumbstick");
         }
 
         void OpenStopDialog()

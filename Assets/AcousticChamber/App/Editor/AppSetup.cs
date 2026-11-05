@@ -24,6 +24,7 @@ namespace AcousticChamber.App.Editor
         const string GroupXR = "XR";
         const string TestPanelName = "UI Test Panel";
         const string InputTestPanelName = "Input Test Panel";
+        const string BenchTestPanelName = "Debug Bench Test Panel";
 
         [MenuItem("Magic/App/Step 1 - UI theme and fonts", priority = 1)]
         public static UiTheme EnsureUiAssets()
@@ -52,7 +53,7 @@ namespace AcousticChamber.App.Editor
             var theme = EnsureUiAssets();
             var ui = UiSetup.EnsureGroup(GroupUI);
             UiSetup.EnsureUiRoot(ui, theme);
-            RemoveChild(ui, InputTestPanelName); // the test panels sit at the same spot
+            RemoveTestPanels(ui); // the test panels sit at the same spot
             var canvas = UiSetup.CreateOverlayCanvas(ui, TestPanelName, UiShowcase.Size);
             canvas.AddComponent<UiShowcase>();
             UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
@@ -77,7 +78,7 @@ namespace AcousticChamber.App.Editor
             EnsureGlobalActions();
             var ui = UiSetup.EnsureGroup(GroupUI);
             UiSetup.EnsureUiRoot(ui, theme);
-            RemoveChild(ui, TestPanelName);
+            RemoveTestPanels(ui);
             var canvas = UiSetup.CreateOverlayCanvas(ui, InputTestPanelName, InputTestPanel.Size);
             canvas.AddComponent<StopDialogHost>().canvas = canvas.transform;
             canvas.AddComponent<InputTestPanel>();
@@ -97,6 +98,36 @@ namespace AcousticChamber.App.Editor
             go.transform.SetParent(xr, false);
             Undo.RegisterCreatedObjectUndo(go, "Global Actions");
             return go.AddComponent<GlobalActions>();
+        }
+
+        /// <summary>
+        /// Adds the Debug bench test panel (BenchTestPanel: chamber-menu stand-in + Debug bench with a demo schema); it
+        /// replaces the other test panels. Temporary headset check for PB-19; the template chamber (PB-07) replaces it.
+        /// </summary>
+        [MenuItem("Magic/App/Debug Bench Test Panel (open scene)", priority = 52)]
+        public static void AddBenchTestPanel()
+        {
+            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
+            {
+                Debug.LogError("[GPL] Add the Camera Rig building block first.");
+                return;
+            }
+            var theme = EnsureUiAssets();
+            EnsureGlobalActions();
+            var ui = UiSetup.EnsureGroup(GroupUI);
+            UiSetup.EnsureUiRoot(ui, theme);
+            RemoveTestPanels(ui);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, BenchTestPanelName, BenchTestPanel.Size);
+            canvas.AddComponent<BenchTestPanel>();
+            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
+            EnsureMainHallFirstInBuild();
+            UiSetup.MarkSceneDirty();
+            Debug.Log("[GPL] Debug bench test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+        }
+
+        static void RemoveTestPanels(Transform ui)
+        {
+            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName }) RemoveChild(ui, n);
         }
 
         static void RemoveChild(Transform parent, string childName)

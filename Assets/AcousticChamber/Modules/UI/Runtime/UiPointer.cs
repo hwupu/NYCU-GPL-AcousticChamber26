@@ -9,10 +9,12 @@ namespace GPL.UI
     /// <see cref="Selectable"/>. The hand that last pulled its index trigger owns the ray (right hand by default). The laser
     /// is drawn only while some usable UI exists (white). Hit regions are grown to the theme minimum (UiKit.HitRect);
     /// trigger down presses a <see cref="UiButton"/> (pressed look until the trigger is released) and clicks it.
+    /// Inside a <see cref="ScrollList"/> the click waits for the release, because the press becomes a drag after 12 u;
+    /// the right thumbstick scrolls the list under the ray.
     /// </summary>
     public class UiPointer : MonoBehaviour
     {
-        /// <summary>While set (a modal dialog), only selectables under this transform can be pointed at.</summary>
+        /// <summary>While set (the top <see cref="Sheet"/>), only selectables under this transform can be pointed at.</summary>
         public static Transform Modal;
 
         /// <summary>The selectable under the ray, or null.</summary>
@@ -79,29 +81,86 @@ namespace GPL.UI
             }
 
             var ray = new Ray(origin.position, origin.forward);
-            Selectable hit = Raycast(ray, targets, out Vector3 hitPoint);
+            float dt = Time.unscaledDeltaTime;
+            Vector3 hitPoint = Vector3.zero;
+            Selectable hit = null;
+            if (_scrolling == null || !_scrolling.Model.Dragging) hit = Raycast(ray, targets, out hitPoint); // no hover while dragging
+            if (hit == null) hitPoint = ray.origin + ray.direction * idleLaserLengthM;
             SetHover(hit);
+            var list = _scrolling != null ? _scrolling : ScrollList.Under(ray, maxDistanceM);
 
             _line.enabled = true;
             _line.SetPosition(0, ray.origin);
-            _line.SetPosition(1, hit != null ? hitPoint : ray.origin + ray.direction * idleLaserLengthM);
+            if (hit == null && list != null && list.LocalPoint(ray, out _))
+                hitPoint = PlanePoint(ray, list.Viewport);
+            _line.SetPosition(1, hitPoint);
 
-            if ((leftDown || rightDown) && hit is Button button)
+            // right thumbstick scrolls the list under the ray
+            if (list != null && _scrolling == null)
+                list.Stick(OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch).y, dt);
+
+            var hand = leftDown && !rightDown ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+            if (leftDown || rightDown)
             {
                 ReleasePressed();
-                if (button is UiButton ub)
+                var button = hit as Button;
+                bool inList = list != null && (button == null || button.transform.IsChildOf(list.Content));
+                if (inList && list.LocalPoint(ray, out Vector2 local))
                 {
-                    ub.Press();
-                    _pressed = ub;
-                    _pressedHand = leftDown && !rightDown ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+                    // inside a scroll list the click waits for the release: the press may become a drag
+                    _scrolling = list;
+                    _pressedHand = hand;
+                    list.PointerDown(local.y);
+                    _pendingClick = button;
+                    if (button is UiButton lb) { lb.Press(); _pressed = lb; }
                 }
-                button.onClick.Invoke();
+                else if (button != null)
+                {
+                    if (button is UiButton ub)
+                    {
+                        ub.Press();
+                        _pressed = ub;
+                        _pressedHand = hand;
+                    }
+                    button.onClick.Invoke();
+                }
+            }
+
+            if (_scrolling != null)
+            {
+                if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, _pressedHand))
+                {
+                    if (_scrolling.LocalPoint(ray, out Vector2 local) && _scrolling.PointerMove(local.y, dt) && _pendingClick != null)
+                    {
+                        _pendingClick = null; // became a drag: no click
+                        ReleasePressed();
+                        SetHover(null);
+                    }
+                }
+                else
+                {
+                    bool wasDrag = _scrolling.PointerUp();
+                    var click = _pendingClick;
+                    _pendingClick = null;
+                    _scrolling = null;
+                    ReleasePressed();
+                    if (!wasDrag && click != null && Hovered == click) click.onClick.Invoke();
+                }
+                return;
             }
             if (_pressed != null && !OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, _pressedHand)) ReleasePressed();
         }
 
         UiButton _pressed;
         OVRInput.Controller _pressedHand;
+        ScrollList _scrolling;
+        Button _pendingClick;
+
+        static Vector3 PlanePoint(Ray ray, RectTransform rt)
+        {
+            float t = Vector3.Dot(rt.position - ray.origin, rt.forward) / Vector3.Dot(ray.direction, rt.forward);
+            return ray.origin + ray.direction * t;
+        }
 
         void ReleasePressed()
         {
@@ -110,7 +169,8 @@ namespace GPL.UI
         }
 
         static bool IsUsable(Selectable s) =>
-            s != null && s.isActiveAndEnabled && s.interactable && (Modal == null || s.transform.IsChildOf(Modal));
+            s != null && s.isActiveAndEnabled && s.interactable && (Modal == null || s.transform.IsChildOf(Modal))
+            && !UiLayer.InLeavingLayer(s.transform);
 
         Selectable Raycast(Ray ray, Selectable[] targets, out Vector3 point) => Pick(ray, targets, maxDistanceM, out point);
 
@@ -136,6 +196,7 @@ namespace GPL.UI
                 Vector3 p = ray.origin + ray.direction * t;
                 Vector2 local = rt.InverseTransformPoint(p);
                 if (!UiKit.HitRect(rt).Contains(local)) continue;
+                if (ScrollList.ClipsOut(s.transform, p)) continue; // scrolled out of its list's viewport
                 float score = (rt.rect.Contains(local) ? 0f : 1e6f) + (local - rt.rect.center).sqrMagnitude;
                 bool samePlane = Mathf.Abs(t - bestT) <= 1e-4f;
                 if (best != null && samePlane && score >= bestScore) continue;

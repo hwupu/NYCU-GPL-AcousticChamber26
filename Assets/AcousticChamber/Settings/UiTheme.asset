@@ -65,12 +65,17 @@ MonoBehaviour:
   hitMin: 60
   gap: 20
   inset: 4
+  groupPadding: 8
   panelRadius: 32
   groupRadius: 36
   pressedScale: 0.97
+  sheetScale: 0.94
+  pushScale: 0.94
   hoverIn: 0.15
   hoverOut: 0.35
   release: 0.25
   sheet: 0.45
+  page: 0.45
+  pageScale: 0.98
   push: 0.45
   reduceMotion: 0

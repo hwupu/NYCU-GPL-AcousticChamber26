@@ -91,6 +91,18 @@ namespace GPL.UI
             img.pixelsPerUnitMultiplier = SpriteRadiusPx / radius;
         }
 
+        /// <summary>
+        /// The window of a canvas: a layer filling the canvas with the panel background. Build a screen's content under it;
+        /// <see cref="Sheet"/>s opened on the canvas push it back and dim it.
+        /// </summary>
+        public static RectTransform Window(Transform canvas, string name = "Window")
+        {
+            var rt = Fill(Rect(canvas, name, Vector2.zero, Vector2.zero));
+            Background(rt);
+            UiLayer.Attach(rt, Theme.panelRadius, shown: true);
+            return rt;
+        }
+
         /// <summary>A full-size panel background in the surface color, panel corner radius.</summary>
         public static Image Background(Transform parent, string name = "Background", Color? color = null)
         {
@@ -180,6 +192,159 @@ namespace GPL.UI
             return b;
         }
 
+        // ---- groups and rows (DesignSystem section 4) ------------------------------------------------------------
+
+        /// <summary>Height of a row in a group.</summary>
+        public const float RowHeight = 88f;
+
+        /// <summary>
+        /// A <c>raised</c> group container for <paramref name="rows"/> rows: <c>groupPadding</c> from its edge to the rows,
+        /// rows <c>inset</c> apart, group radius.
+        /// </summary>
+        public static RectTransform Group(Transform parent, string name, Vector2 pos, float width, int rows)
+        {
+            var th = Theme;
+            float h = rows * RowHeight + Mathf.Max(0, rows - 1) * th.inset + 2f * th.groupPadding;
+            return Box(parent, name, pos, new Vector2(width, h), th.raised, th.groupRadius).rectTransform;
+        }
+
+        /// <summary>
+        /// Row <paramref name="index"/> (0 = top) of a <see cref="Group"/>: a borderless button across the group (concentric
+        /// corners: group radius − padding), label at the left, <paramref name="value"/> in <c>text2</c> and a › chevron at
+        /// the right (<paramref name="chevron"/>: the row opens a page).
+        /// </summary>
+        public static UiButton Row(RectTransform group, int index, string label, string value = null, Action onClick = null,
+                                   bool chevron = true, string sub = null)
+        {
+            var th = Theme;
+            RowGeometry(group, index, out Vector2 pos, out Vector2 size);
+            var b = Button(group, "Row " + label, label, UiStyle.Borderless, pos, size, onClick);
+            b.InGroup = true;
+            ((RectTransform)b.transform).sizeDelta = size;
+            Round(b.GetComponent<Image>(), Mathf.Max(0f, th.groupRadius - th.groupPadding));
+            var l = LabelOf(b);
+            l.alignment = TextAlignmentOptions.MidlineLeft;
+            l.fontSize = th.bodySize;
+            LayoutRowText(b.transform, l, sub);
+            string trailing = (value ?? "") + (chevron ? (string.IsNullOrEmpty(value) ? "›" : "  ›") : "");
+            if (trailing.Length > 0) RowValue(b.transform, trailing, RowTextPad);
+            return b;
+        }
+
+        /// <summary>Left / right padding of the text in a row.</summary>
+        public const float RowTextPad = 32f;
+
+        /// <summary>
+        /// A row that is not a button (a parameter with its own controls): label, optional secondary line, and a value text
+        /// (child "Value") ending <paramref name="valueRight"/> units from the row's right edge (room for − / + or a switch).
+        /// </summary>
+        public static RectTransform InfoRow(RectTransform group, int index, string label, string sub = null, string value = null,
+                                            float valueRight = RowTextPad)
+        {
+            var th = Theme;
+            RowGeometry(group, index, out Vector2 pos, out Vector2 size);
+            var row = Rect(group, "Row " + label, pos, size);
+            var l = Text(row, "Label", label, th.bodySize, Vector2.zero, Vector2.zero, align: TextAlignmentOptions.MidlineLeft);
+            l.textWrappingMode = TextWrappingModes.NoWrap;
+            Fill(l.rectTransform);
+            LayoutRowText(row, l, sub);
+            RowValue(row, value ?? "", valueRight);
+            return row;
+        }
+
+        static void RowGeometry(RectTransform group, int index, out Vector2 pos, out Vector2 size)
+        {
+            var th = Theme;
+            var g = group.rect.size;
+            float pad = th.groupPadding;
+            size = new Vector2(g.x - 2f * pad, RowHeight);
+            pos = new Vector2(0f, g.y / 2f - pad - RowHeight / 2f - index * (RowHeight + th.inset));
+        }
+
+        /// <summary>Label alone: centered vertically. With a secondary line: label above, the line (24 u, text2) below it.</summary>
+        static void LayoutRowText(Transform row, TextMeshProUGUI label, string sub)
+        {
+            var th = Theme;
+            var lr = label.rectTransform;
+            if (string.IsNullOrEmpty(sub))
+            {
+                lr.offsetMin = new Vector2(RowTextPad, 0f);
+                lr.offsetMax = new Vector2(-RowTextPad, 0f);
+                return;
+            }
+            lr.offsetMin = new Vector2(RowTextPad, RowHeight * 0.38f);
+            lr.offsetMax = new Vector2(-RowTextPad, -6f);
+            var s = Text(row, "Sub", sub, th.minimumSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.MidlineLeft);
+            s.textWrappingMode = TextWrappingModes.NoWrap;
+            var sr = Fill(s.rectTransform);
+            sr.offsetMin = new Vector2(RowTextPad, 8f);
+            sr.offsetMax = new Vector2(-RowTextPad, -RowHeight * 0.62f);
+        }
+
+        static TextMeshProUGUI RowValue(Transform row, string text, float right)
+        {
+            var th = Theme;
+            var v = Text(row, "Value", text, th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.MidlineRight);
+            v.textWrappingMode = TextWrappingModes.NoWrap;
+            Fill(v.rectTransform);
+            v.rectTransform.offsetMin = new Vector2(RowTextPad, 0f);
+            v.rectTransform.offsetMax = new Vector2(-right, 0f);
+            return v;
+        }
+
+        /// <summary>
+        /// Changes a row's secondary line (made with a non-empty <c>sub</c>); an empty text hides it and centers the label.
+        /// </summary>
+        public static void SetRowSub(Transform row, string sub)
+        {
+            var s = RowText(row, "Sub");
+            var l = RowText(row, "Label");
+            if (s == null || l == null) return;
+            bool show = !string.IsNullOrEmpty(sub);
+            s.text = sub ?? "";
+            s.gameObject.SetActive(show);
+            l.rectTransform.offsetMin = new Vector2(RowTextPad, show ? RowHeight * 0.38f : 0f);
+            l.rectTransform.offsetMax = new Vector2(-RowTextPad, show ? -6f : 0f);
+        }
+
+        /// <summary>The text of a row's child "Value" / "Sub" / "Label" (null if it has none).</summary>
+        public static TextMeshProUGUI RowText(Transform row, string child)
+        {
+            var t = row.Find(child);
+            return t != null ? t.GetComponent<TextMeshProUGUI>() : null;
+        }
+
+        /// <summary>A small square gray button (− / + steppers): <c>smallButtonHeight</c> high, <paramref name="width"/> wide.</summary>
+        public static UiButton SmallButton(Transform parent, string name, string label, Vector2 pos, float width, Action onClick,
+                                           UiStyle style = UiStyle.Gray)
+        {
+            var th = Theme;
+            var b = Button(parent, name, label, style, pos, new Vector2(width, th.smallButtonHeight), onClick);
+            ((RectTransform)b.transform).sizeDelta = new Vector2(width, th.smallButtonHeight);
+            return b;
+        }
+
+        public const string MinusGlyph = "−"; // − U+2212
+
+        /// <summary>A switch (100 x 60 u) at <paramref name="pos"/>; put it in a row whose whole area toggles it.</summary>
+        public static UiSwitch Switch(Transform parent, string name, Vector2 pos, bool on) => UiSwitch.Create(parent, name, pos, on);
+
+        /// <summary>
+        /// A row with a switch at the right; the whole row is the target. <paramref name="changed"/> gets the new state.
+        /// </summary>
+        public static UiSwitch SwitchRow(RectTransform group, int index, string label, string sub, bool on, Action<bool> changed)
+        {
+            UiSwitch sw = null;
+            var row = Row(group, index, label, null, () =>
+            {
+                sw.On = !sw.On;
+                changed?.Invoke(sw.On);
+            }, chevron: false, sub: sub);
+            var size = ((RectTransform)row.transform).sizeDelta;
+            sw = Switch(row.transform, "Switch", new Vector2(size.x / 2f - 24f - UiSwitch.Width / 2f, 0f), on);
+            return sw;
+        }
+
         /// <summary>Gap between a header's ‹ / × and the title (the title is not interactive, so the 20 u control gap does not apply).</summary>
         public const float IconTitleGap = 8f;
 
@@ -223,12 +388,17 @@ namespace GPL.UI
             foreach (Transform child in go.transform) SetLayerRecursive(child.gameObject, layer);
         }
 
-        /// <summary>Destroys all children (run time: Destroy; edit time: DestroyImmediate).</summary>
+        /// <summary>
+        /// Destroys all children built by UI code (run time: Destroy; edit time: DestroyImmediate). Hidden children are
+        /// kept: they belong to other components (OVROverlayCanvas puts its render camera, imposter and overlay under the
+        /// canvas with HideInHierarchy / DontSave; destroying them breaks the overlay).
+        /// </summary>
         public static void Clear(Transform parent)
         {
             for (int i = parent.childCount - 1; i >= 0; i--)
             {
                 var go = parent.GetChild(i).gameObject;
+                if ((go.hideFlags & (HideFlags.HideInHierarchy | HideFlags.DontSave)) != 0) continue;
                 if (Application.isPlaying) UnityEngine.Object.Destroy(go);
                 else UnityEngine.Object.DestroyImmediate(go);
             }

@@ -16,7 +16,8 @@ namespace GPL.UI
     /// <summary>
     /// The Stop dialog (opened by the global Stop action, Y). Freezes the session while open (<see cref="Freeze"/>).
     /// Real session: Keep going / Drop out, and Drop out asks once more ("Drop out S0012?" Cancel / Drop out; Cancel
-    /// returns to the first step). Debug run: Keep going / Back to the chamber menu.
+    /// returns to the first step). The confirmation is a second sheet on top of the first. Debug run: Keep going / Back to
+    /// the chamber menu.
     /// <paramref name="onChoice"/> is called once, after the dialog has closed and the freeze is lifted.
     /// </summary>
     public static class StopDialog
@@ -41,31 +42,38 @@ namespace GPL.UI
             }
 
             // Main action last (right). Red fill only on the final confirmation.
-            void First()
+            ModalDialog first = null;
+            if (debugRun)
             {
-                if (debugRun)
-                {
-                    Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessageDebug),
-                        new DialogButton(Loc.Get(UiStrings.StopBackToMenu), UiStyle.Borderless, () => Finish(StopChoice.BackToMenu)),
-                        new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Prominent, () => Finish(StopChoice.KeepGoing))));
-                    return;
-                }
-                Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessage),
-                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.DestructiveText, Confirm),
+                first = Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessageDebug),
+                    new DialogButton(Loc.Get(UiStrings.StopBackToMenu), UiStyle.Borderless, () => Finish(StopChoice.BackToMenu)),
+                    new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Prominent, () => Finish(StopChoice.KeepGoing))));
+            }
+            else
+            {
+                first = Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessage),
+                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.DestructiveText, Confirm, closes: false),
                     new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Prominent, () => Finish(StopChoice.KeepGoing))));
             }
 
+            // The confirmation is a second sheet on top of the first: Cancel closes it and the first comes forward again.
             void Confirm()
             {
                 Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopConfirmTitle, who), Loc.Get(UiStrings.StopConfirmMessage),
-                    new DialogButton(Loc.Get(UiStrings.Cancel), UiStyle.Borderless, First),
-                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.Destructive, () => Finish(StopChoice.DropOut))));
+                    new DialogButton(Loc.Get(UiStrings.Cancel), UiStyle.Borderless),
+                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.Destructive, () =>
+                    {
+                        first.Close();
+                        Finish(StopChoice.DropOut);
+                    })));
             }
 
             // If the canvas is destroyed (scene change) while the dialog is open, lift the freeze without a choice.
-            void Watch(ModalDialog d) => d.Abandoned += () => Abandon(freeze);
-
-            First();
+            ModalDialog Watch(ModalDialog d)
+            {
+                d.Abandoned += () => Abandon(freeze);
+                return d;
+            }
         }
 
         static void Abandon(bool freeze)

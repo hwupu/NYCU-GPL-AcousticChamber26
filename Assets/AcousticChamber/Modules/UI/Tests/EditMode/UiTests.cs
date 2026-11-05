@@ -84,6 +84,82 @@ namespace GPL.UI.Tests
         }
     }
 
+    public class ScrollModelTests
+    {
+        static ScrollModel Model()
+        {
+            var m = new ScrollModel();
+            m.SetExtent(1100f, 500f); // 600 u to scroll
+            return m;
+        }
+
+        [Test]
+        public void ShortPressStaysAClickLongerMoveBecomesADrag()
+        {
+            var m = Model();
+            m.PointerDown(0f);
+            Assert.IsFalse(m.PointerMove(11f, 0.016f), "under 12 u: still a click");
+            Assert.AreEqual(0f, m.Offset);
+            Assert.IsFalse(m.PointerUp(), "released as a click");
+
+            m.PointerDown(0f);
+            Assert.IsTrue(m.PointerMove(12f, 0.016f), "12 u: a drag");
+            Assert.AreEqual(0f, m.Offset, "no jump when the drag starts");
+            m.PointerMove(112f, 0.016f);
+            Assert.AreEqual(100f, m.Offset, 1e-4f, "pointer up 100 u: content up 100 u");
+            Assert.IsTrue(m.PointerUp(), "released as a drag: no click");
+        }
+
+        [Test]
+        public void ClampsAtBothEndsAndShowsWhereMoreContentWaits()
+        {
+            var m = Model();
+            Assert.IsFalse(m.MoreAbove);
+            Assert.IsTrue(m.MoreBelow);
+            m.ScrollBy(-50f);
+            Assert.AreEqual(0f, m.Offset);
+            m.ScrollBy(10000f);
+            Assert.AreEqual(600f, m.Offset);
+            Assert.IsTrue(m.MoreAbove);
+            Assert.IsFalse(m.MoreBelow);
+            m.SetExtent(400f, 500f);
+            Assert.AreEqual(0f, m.Offset, "content shorter than the viewport: nothing to scroll");
+            Assert.IsFalse(m.CanScroll);
+            m.PointerDown(0f);
+            Assert.IsFalse(m.PointerMove(50f, 0.016f), "no drag when nothing can scroll: the press stays a click");
+        }
+
+        [Test]
+        public void MomentumCarriesOnAndSlowsDown()
+        {
+            var m = Model();
+            m.PointerDown(0f);
+            m.PointerMove(12f, 0.016f);
+            for (int i = 1; i <= 5; i++) m.PointerMove(12f + 16f * i, 0.016f); // 1000 u/s
+            m.PointerUp();
+            float v0 = m.Velocity;
+            Assert.Greater(v0, 500f);
+            float before = m.Offset;
+            Assert.IsTrue(m.Step(0.016f));
+            Assert.Greater(m.Offset, before, "keeps moving after release");
+            Assert.Less(m.Velocity, v0, "and slows down");
+            for (int i = 0; i < 300 && m.Velocity != 0f; i++) m.Step(0.016f);
+            Assert.AreEqual(0f, m.Velocity, "comes to rest");
+            Assert.LessOrEqual(m.Offset, 600f);
+        }
+
+        [Test]
+        public void ThumbstickScrollsWithADeadZone()
+        {
+            var m = Model();
+            Assert.IsFalse(m.Stick(-0.1f, 0.1f), "dead zone");
+            Assert.IsTrue(m.Stick(-1f, 0.1f), "stick down: content above moves up");
+            Assert.AreEqual(m.StickSpeed * 0.1f, m.Offset, 1e-3f);
+            m.Stick(1f, 0.05f);
+            Assert.AreEqual(m.StickSpeed * 0.05f, m.Offset, 1e-3f);
+        }
+    }
+
     public class DigitEntryTests
     {
         [Test]
@@ -149,6 +225,19 @@ namespace GPL.UI.Tests
         }
 
         [Test]
+        public void ClearKeepsHiddenHelperObjects()
+        {
+            // OVROverlayCanvas creates its render camera as a hidden child of the canvas
+            var helper = new GameObject("Overlay Camera") { hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy };
+            helper.transform.SetParent(_canvas.transform, false);
+            UiKit.Window(_canvas.transform);
+            UiKit.Clear(_canvas.transform);
+            Assert.IsTrue(helper != null, "the hidden helper survives");
+            Assert.AreEqual(1, _canvas.transform.childCount, "our own objects are gone");
+            Object.DestroyImmediate(helper);
+        }
+
+        [Test]
         public void NumberPadShowsFormattedStudyId()
         {
             var pad = NumberPadEntry.Create(_canvas.transform, Vector2.zero, StudyId.MaxDigits, StudyId.FromDigits, "S____");
@@ -181,6 +270,130 @@ namespace GPL.UI.Tests
             Assert.IsTrue(clicked);
             Assert.IsNull(UiPointer.Modal);
             Assert.IsNull(ModalDialog.Current);
+        }
+
+        [Test]
+        public void SheetsPushTheLayersBehindBackAndDimThem()
+        {
+            var th = UiKit.Theme;
+            var window = UiKit.Window(_canvas.transform);
+            var button = UiKit.Button(window, "B", "Start", UiStyle.Prominent, Vector2.zero, Vector2.zero);
+            Image Dim(Transform layer) => layer.Find("Push Dim").GetComponent<Image>();
+            Assert.AreEqual(1f, window.localScale.x, 1e-5f);
+            Assert.AreEqual(0f, Dim(window).color.a, 1e-5f);
+
+            var a = Sheet.Open(_canvas.transform, "A", Vector2.zero, new Vector2(820f, 400f));
+            Assert.AreEqual(1f, a.transform.localScale.x, 1e-5f, "the sheet is in front at full size (edit mode: no animation)");
+            Assert.AreEqual(1f, a.GetComponent<CanvasGroup>().alpha, 1e-5f);
+            Assert.AreEqual(th.pushScale, window.localScale.x, 1e-5f, "window pushed back to 94 %");
+            Assert.AreEqual(th.dim.a, Dim(window).color.a, 1e-5f);
+            Assert.AreEqual(window.childCount - 1, Dim(window).transform.GetSiblingIndex(), "dim lies over the window content");
+            Assert.AreEqual(a.transform, UiPointer.Modal);
+
+            var b = Sheet.Open(_canvas.transform, "B", Vector2.zero, new Vector2(820f, 400f));
+            Assert.AreEqual(th.pushScale * th.pushScale, window.localScale.x, 1e-5f, "two levels down: 88 %");
+            Assert.AreEqual(th.pushScale, a.transform.localScale.x, 1e-5f);
+            Assert.AreEqual(th.dim.a, Dim(a.transform).color.a, 1e-5f);
+            Assert.AreEqual(b.transform, UiPointer.Modal);
+            Assert.AreEqual(b, Sheet.Top(_canvas.transform));
+
+            b.Close();
+            Assert.IsTrue(b == null, "destroyed (edit mode: no fade)");
+            Assert.AreEqual(1f, a.transform.localScale.x, 1e-5f, "A comes forward");
+            Assert.AreEqual(0f, Dim(a.transform).color.a, 1e-5f);
+            Assert.AreEqual(th.pushScale, window.localScale.x, 1e-5f);
+            Assert.AreEqual(a.transform, UiPointer.Modal);
+
+            a.Close();
+            Assert.AreEqual(1f, window.localScale.x, 1e-5f);
+            Assert.AreEqual(0f, Dim(window).color.a, 1e-5f);
+            Assert.IsNull(UiPointer.Modal);
+            Assert.IsNotNull(button);
+        }
+
+        [Test]
+        public void PagesChangeInPlaceAndBackReturns()
+        {
+            var window = UiKit.Window(_canvas.transform);
+            var stack = PageStack.On(window);
+            var root = stack.Push("Menu");
+            Assert.IsNull(root.BackButton, "a root page without RootBack has no ‹");
+            bool returned = false;
+            root.Returned += () => returned = true;
+
+            var debug = stack.Push("Debug");
+            Assert.IsNotNull(debug.BackButton);
+            Assert.IsFalse(root.gameObject.activeSelf, "the page below is hidden but kept");
+            Assert.AreEqual(1f, debug.GetComponent<CanvasGroup>().alpha, 1e-5f);
+            Assert.AreEqual(1f, debug.transform.localScale.x, 1e-5f, "in place, full size (edit mode: no animation)");
+
+            var parameters = stack.Push("Parameters");
+            parameters.BackButton.onClick.Invoke();
+            Assert.AreEqual(debug, stack.Top);
+            Assert.IsTrue(parameters == null, "the popped page is destroyed");
+            Assert.IsTrue(debug.gameObject.activeSelf);
+
+            stack.Push("Data files");
+            stack.PopToRoot();
+            Assert.AreEqual(root, stack.Top);
+            Assert.AreEqual(1, stack.Count);
+            Assert.IsTrue(debug == null);
+            Assert.IsTrue(root.gameObject.activeSelf);
+            Assert.IsTrue(returned);
+
+            int rootBack = 0;
+            stack.RootBack = () => rootBack++;
+            stack.Back();
+            Assert.AreEqual(1, rootBack, "‹ on the root page runs RootBack");
+            Assert.AreEqual(1, stack.Count);
+        }
+
+        [Test]
+        public void ScrollListMovesContentFadesEdgesAndClipsHits()
+        {
+            var list = ScrollList.Create(_canvas.transform, "List", Vector2.zero, new Vector2(800f, 500f));
+            var g = UiKit.Group(list.Content, "Group", Vector2.zero, 760f, 12);
+            ScrollList.TopAnchored(g, 0f);
+            var rows = Enumerable.Range(0, 12).Select(i => UiKit.Row(g, i, "Row " + i)).ToArray();
+            list.ContentHeight = g.sizeDelta.y;
+            Assert.AreEqual(g.sizeDelta.y - 500f, list.Model.Max, 1e-3f);
+            Image Part(string n) => list.transform.Find(n).GetComponent<Image>();
+            Assert.AreEqual(0f, Part("Fade Top").color.a, 1e-3f, "at the top: no fade above");
+            Assert.AreEqual(1f, Part("Fade Bottom").color.a, 1e-3f, "more content below");
+
+            list.ScrollTo(list.Model.Max);
+            Assert.AreEqual(list.Model.Max, list.Content.anchoredPosition.y, 1e-3f);
+            Assert.AreEqual(1f, Part("Fade Top").color.a, 1e-3f);
+            Assert.AreEqual(0f, Part("Fade Bottom").color.a, 1e-3f);
+
+            // row 0 is now scrolled out above the viewport: the pointer must not hit it there
+            var row0 = (RectTransform)rows[0].transform;
+            Vector3 p = row0.TransformPoint(Vector3.zero);
+            Assert.IsTrue(ScrollList.ClipsOut(row0, p));
+            var last = (RectTransform)rows[11].transform;
+            Assert.IsFalse(ScrollList.ClipsOut(last, last.TransformPoint(Vector3.zero)), "the last row is visible");
+        }
+
+        [Test]
+        public void GroupRowsUseTheInsetAndConcentricCorners()
+        {
+            var th = UiKit.Theme;
+            var g = UiKit.Group(_canvas.transform, "G", Vector2.zero, 760f, 3);
+            float pad = th.groupPadding;
+            Assert.AreEqual(3 * UiKit.RowHeight + 2 * th.inset + 2 * pad, g.sizeDelta.y, 1e-4f);
+            var first = UiKit.Row(g, 0, "Parameters", "Default");
+            var second = UiKit.Row(g, 1, "Presets");
+            var last = UiKit.Row(g, 2, "Data files");
+            var rt = (RectTransform)first.transform;
+            Assert.AreEqual(760f - 2f * pad, rt.sizeDelta.x, 1e-4f);
+            Assert.AreEqual(g.sizeDelta.y / 2f - pad, rt.anchoredPosition.y + UiKit.RowHeight / 2f, 1e-4f, "padding from the group's top");
+            Assert.AreEqual(-g.sizeDelta.y / 2f + pad, ((RectTransform)last.transform).anchoredPosition.y - UiKit.RowHeight / 2f, 1e-4f);
+            Assert.AreEqual(UiKit.RowHeight + th.inset, rt.anchoredPosition.y - ((RectTransform)second.transform).anchoredPosition.y, 1e-4f,
+                            "rows 4 u apart");
+            Assert.AreEqual(64f / (th.groupRadius - pad), first.GetComponent<Image>().pixelsPerUnitMultiplier, 1e-4f, "concentric: 36 - 8");
+            Assert.IsTrue(first.InGroup);
+            Assert.AreEqual("Default  ›", first.transform.Find("Value").GetComponent<TextMeshProUGUI>().text);
+            Assert.AreEqual("›", last.transform.Find("Value").GetComponent<TextMeshProUGUI>().text);
         }
 
         [Test]
@@ -304,8 +517,9 @@ namespace GPL.UI.Tests
             CollectionAssert.AreEqual(new[] { "Drop out", "Keep going" }, DialogLabels(), "main action on the right");
 
             Click("Drop out");
-            Assert.AreEqual("Drop out S0012?", ModalDialog.Current.transform.Find("Box/Title").GetComponent<TextMeshProUGUI>().text);
+            Assert.AreEqual("Drop out S0012?", ModalDialog.Current.transform.Find("Title").GetComponent<TextMeshProUGUI>().text);
             CollectionAssert.AreEqual(new[] { "Cancel", "Drop out" }, DialogLabels());
+            Assert.AreEqual(2, Sheet.Stack(_canvas.transform).Count, "the confirmation lies on top of the first step");
             Click("Cancel");
             CollectionAssert.AreEqual(new[] { "Drop out", "Keep going" }, DialogLabels(), "Cancel goes back to the first step");
             Assert.IsEmpty(choices);
@@ -316,6 +530,7 @@ namespace GPL.UI.Tests
             CollectionAssert.AreEqual(new[] { StopChoice.DropOut }, choices);
             Assert.IsFalse(StopDialog.IsOpen);
             Assert.IsNull(ModalDialog.Current);
+            Assert.IsEmpty(Sheet.Stack(_canvas.transform), "Drop out closes both sheets");
             Assert.AreEqual(1f, Time.timeScale);
             Assert.IsFalse(AudioListener.pause);
         }

@@ -60,20 +60,21 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - Pressed: instant, 97 % scale.
 
 ### Spacing and containers
-- **4 u inset:** a container's padding to the shapes inside it, and the gap between those shapes (number-pad keys, segments, rows in a group, Hall cards side by side).
-- **Concentric corners:** inner radius = container radius − 4.
+- **4 u inset:** a container's padding to the shapes inside it, and the gap between those shapes (number-pad keys, segments, Hall cards side by side). Exception: groups pad their rows by **8 u** (`groupPadding`, PO 2026-11-05); rows inside stay 4 u apart.
+- **Concentric corners:** inner radius = container radius − padding (4, or 8 in groups).
 - 20 u gap between separate controls. Main Hall cards: 4 u apart side by side, **8 u apart vertically**.
 
 ### Number pad (Study ID)
 - 3 x 4 borderless keys (`1-9`, `Clear`, `0`, `←`) inside a container (4 u inset); display field (`raised`, capsule) shows the formatted ID live: `1` → `S0001`; placeholder `S____` in `text3`.
 
 ### Switches and segmented controls
-- Switch 100 x 60 u: off = gray track, `text2` knob; on = prominent track, dark knob. The whole row is the target.
+- Switch 100 x 60 u: off = gray track, `text2` knob; on = prominent track, dark knob. The whole row is the target. While the row is hovered or pressed, the off track darkens to `raised` (the hovered row's fill is the track's own gray).
 - Segmented control: `surface` track inside a group, 4 u inset, selected segment `select`.
 
 ### Groups and rows (Debug, settings)
-- Group = `raised` container (radius 36, 4 u inset); rows 88 u high (radius 32): label (+ secondary line), value in `text2` (edited values in `text`), trailing control or `›`.
+- Group = `raised` container (radius 36, 8 u padding to the rows, rows 4 u apart), as wide as the page content (aligned with the header edges, 48 u from the window edge); rows 88 u high (radius 28): label (+ secondary line), value in `text2` (edited values in `text`), trailing control or `›`.
 - Group labels: 24 u, `text2`, above the group.
+- Buttons side by side in a group (Run experiment trials · Practice trial; Save to · Save as…): 8 u apart; the main action prominent, the others borderless (fill on hover only).
 
 ## 5. Motion
 | Token | ms | |
@@ -89,7 +90,9 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - All UI motion runs on **unscaled time** (the Stop dialog freezes `Time.timeScale`).
 - **Reduce motion** (setting) makes every transition instant.
 - **No UI motion while a stimulus plays.**
-- The blur is a transition effect only. On Quest it is attempted in PB-18; if it costs frame rate, sheets use scale and fade only.
+- The blur is a transition effect only. PB-18 ships sheets with scale and fade only (no blur: the overlay canvas would need an extra render pass per frame on Quest); a blur can be tried later if the PO misses it.
+- Pages: `pageScale` 0.98, `page` 450 ms; no blur.
+- Tokens: `sheetScale` 0.94 (a sheet appears from / leaves to), `pushScale` 0.94 per level behind, `dim` 45 % black.
 
 ## 6. Navigation, sheets and scrolling
 ### Back and close
@@ -108,7 +111,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 
 ### Borderless scrolling
 - No frame and no scrollbar. The edges fade (solid `surface` gradient, 56 u) only where more content waits; a thin indicator (8 u, `text3`) shows while scrolling and fades 0.6 s after.
-- Input: **right thumbstick** scrolls the list under the ray; **trigger held and dragged** scrolls (a click becomes a drag after 12 u of ray movement, so short clicks still select); a little momentum after release.
+- Input: **right thumbstick** scrolls the list under the ray; **trigger held and dragged** scrolls (a click becomes a drag after 12 u of ray movement, so short clicks still select); a little momentum after release (exponential slow-down, 0.35 s time constant; it stops at the ends, no rubber band). Inside a list a click happens on release; elsewhere on trigger down. Thumbstick: up to 1200 u/s, dead zone 0.2.
 
 ## 7. Screens
 ### Main Hall

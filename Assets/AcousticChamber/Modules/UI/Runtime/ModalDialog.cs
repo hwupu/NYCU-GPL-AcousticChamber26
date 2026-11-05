@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GPL.UI
@@ -9,7 +10,7 @@ namespace GPL.UI
         public readonly string Label;
         public readonly UiStyle Style;
         public readonly Action OnClick;
-        /// <summary>If false, the dialog stays open after the click (e.g. "Sure?" steps that change the dialog).</summary>
+        /// <summary>If false, the dialog stays open after the click (e.g. a step that opens a confirmation sheet on top).</summary>
         public readonly bool Closes;
 
         public DialogButton(string label, UiStyle style, Action onClick = null, bool closes = true)
@@ -22,21 +23,23 @@ namespace GPL.UI
     }
 
     /// <summary>
-    /// Modal dialog on top of a canvas (design system v2): dims the panel, shows a surface box with a title, a message and a row of
-    /// buttons. While open, the pointer can only reach this dialog (<see cref="UiPointer.Modal"/>). Used by the Stop dialog
-    /// and the data manager's delete confirmations.
+    /// A decision sheet (design system v2): a <see cref="Sheet"/> with a title, a message and a row of buttons. It appears
+    /// in place and pushes the window (and any sheet) behind it back; while open, the pointer can only reach this dialog.
+    /// Dialogs stack: a confirmation opened from a dialog lies on top of it, and closing it returns to the one below.
+    /// Used by the Stop dialog and the data manager's delete confirmations.
     /// </summary>
-    [ExecuteAlways] // OnDestroy (Abandoned) also in edit mode / EditMode tests
+    [ExecuteAlways] // OnDestroy also in edit mode / EditMode tests
+    [RequireComponent(typeof(Sheet))]
     public class ModalDialog : MonoBehaviour
     {
         public static readonly Vector2 DefaultSize = new Vector2(820f, 400f);
 
-        Transform _previousModal;
+        static readonly List<ModalDialog> Open = new List<ModalDialog>();
 
-        /// <summary>The dialog currently open on any canvas, or null.</summary>
-        public static ModalDialog Current { get; private set; }
+        /// <summary>The top open dialog on any canvas, or null.</summary>
+        public static ModalDialog Current => Open.Count > 0 ? Open[Open.Count - 1] : null;
 
-        bool _closed;
+        public Sheet Sheet { get; private set; }
 
         public event Action Closed;
 
@@ -47,7 +50,7 @@ namespace GPL.UI
             Show(canvas, title, message, Vector2.zero, DefaultSize, buttons);
 
         /// <summary>
-        /// Opens a dialog box at <paramref name="pos"/>: title and message left-aligned, buttons right-aligned in the given
+        /// Opens a dialog sheet at <paramref name="pos"/>: title and message left-aligned, buttons right-aligned in the given
         /// order (put the main action last: it ends up on the right). Each button is as wide as its label needs, at least
         /// the minimum button width.
         /// </summary>
@@ -56,11 +59,13 @@ namespace GPL.UI
         {
             var th = UiKit.Theme;
             const float pad = 48f;
-            var root = UiKit.Fill(UiKit.Rect(canvas, "Dialog", Vector2.zero, Vector2.zero));
-            var dialog = root.gameObject.AddComponent<ModalDialog>();
-            UiKit.Background(root, "Dim", th.dim);
+            var sheet = Sheet.Open(canvas, "Dialog", pos, size);
+            var dialog = sheet.gameObject.AddComponent<ModalDialog>();
+            dialog.Sheet = sheet;
+            sheet.Closed += () => { Open.Remove(dialog); dialog.Closed?.Invoke(); };
+            sheet.Abandoned += () => { Open.Remove(dialog); dialog.Abandoned?.Invoke(); };
+            var box = sheet.Rect;
 
-            var box = UiKit.Box(root, "Box", pos, size, th.surface).rectTransform;
             float top = size.y / 2f - pad;
             float innerW = size.x - 2 * pad;
             UiKit.Text(box, "Title", title, th.headingSize, new Vector2(0f, top - th.headingSize * 0.7f), new Vector2(innerW, th.headingSize * 1.4f),
@@ -89,32 +94,15 @@ namespace GPL.UI
                 });
             }
 
-            dialog._previousModal = UiPointer.Modal;
-            UiPointer.Modal = box;
-            Current = dialog;
+            Open.Add(dialog);
             return dialog;
         }
 
         public void Close()
         {
-            if (this == null || _closed) return;
-            _closed = true;
-            if (Current == this) Current = null;
-            UiPointer.Modal = _previousModal;
-            Closed?.Invoke();
-            if (Application.isPlaying) Destroy(gameObject);
-            else DestroyImmediate(gameObject);
+            if (this != null && Sheet != null) Sheet.Close();
         }
 
-        void OnDestroy()
-        {
-            if (_closed) return;
-            if (Current == this)
-            {
-                Current = null;
-                UiPointer.Modal = _previousModal;
-            }
-            Abandoned?.Invoke();
-        }
+        void OnDestroy() => Open.Remove(this);
     }
 }
