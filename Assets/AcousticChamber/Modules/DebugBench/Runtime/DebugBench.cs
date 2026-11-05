@@ -14,14 +14,16 @@ namespace GPL.DebugBench
     /// <item><b>Debug</b>: Run (Run experiment trials with the working copy, Practice trial), Parameters (working copy ›,
     /// Presets ›), the chamber's own sections (<see cref="ChamberSections"/>: test playback, display switches, room ...),
     /// Data files ›, and a status line.</item>
-    /// <item><b>Parameters</b>: the working copy, one row per parameter (− / +, switches for Bool), Revert in the header,
-    /// Save to &lt;preset&gt; (confirm) and Save as… (a sheet; the name is the next free "Preset-N").</item>
+    /// <item><b>Parameters</b>: the working copy of the active preset, one row per parameter (− / +, switches for Bool),
+    /// Revert in the header (back to the active preset), Save as Custom (creates Custom, or overwrites it after a
+    /// confirmation; Custom becomes active).</item>
+    /// <item><b>Presets</b> (DebugBench.Presets.cs): ✓ active; tap → sheet: Make active (loads it), Delete (Custom).</item>
     /// </list>
     /// No DEBUG tag on these pages. The bench never runs anything itself: it raises <see cref="RunRequested"/> /
     /// <see cref="PracticeRequested"/>; the chamber runs with <see cref="Work"/>.<c>Values</c> and logs
     /// <see cref="WorkingCopy.ParamChanged"/> as <c>param_change</c>.
     /// </summary>
-    public sealed class DebugBench
+    public sealed partial class DebugBench
     {
         public const float StatusHeight = 56f;
 
@@ -34,9 +36,6 @@ namespace GPL.DebugBench
         /// <summary>Run experiment trials (real protocol, working copy, <c>_DEBUG</c> log).</summary>
         public event Action RunRequested;
         public event Action PracticeRequested;
-
-        /// <summary>Presets › (built in PB-19b; until then the bench shows a status line).</summary>
-        public event Action PresetsRequested;
 
         /// <summary>Data files › (PB-19c).</summary>
         public event Action DataRequested;
@@ -78,11 +77,7 @@ namespace GPL.DebugBench
             var g = col.Group("Parameters", 2);
             var work = UiKit.Row(g, 0, "Working copy", Work.Label, () => OpenParametersPage(), sub: "used by Debug runs");
             _workValue = UiKit.RowText(work.transform, "Value");
-            var presets = UiKit.Row(g, 1, "Presets", "Active: " + Work.Store.ActiveName, () =>
-            {
-                if (PresetsRequested != null) PresetsRequested();
-                else SetStatus("Presets page: next step (PB-19b)");
-            }, sub: "real sessions use the active one");
+            var presets = UiKit.Row(g, 1, "Presets", "Active: " + Work.Store.ActiveName, () => OpenPresetsPage(), sub: "real sessions use the active one");
             _presetsValue = UiKit.RowText(presets.transform, "Value");
 
             ChamberSections?.Invoke(col);
@@ -151,10 +146,8 @@ namespace GPL.DebugBench
                 for (int i = 0; i < defs.Count; i++) rows.Add(BuildParamRow(g, i, defs[i]));
             }
 
-            var buttons = col.Buttons("Save",
-                (SaveLabel(), UiStyle.Borderless, () => ConfirmSave()),
-                ("Save as…", UiStyle.Borderless, () => OpenSaveAsSheet()));
-            var readOnly = col.Label("\"Default\" is read-only (Config/default.params); use Save as.");
+            var save = col.Buttons("Save", (SaveAsLabel, UiStyle.Borderless, () => SaveAsCustom()))[0];
+            var note = col.Label(SaveNote());
             col.Finish();
 
             void Refresh()
@@ -162,9 +155,8 @@ namespace GPL.DebugBench
                 if (page == null) return;
                 intro.text = IntroText();
                 revert.interactable = Work.IsEdited;
-                UiKit.LabelOf(buttons[0]).text = SaveLabel();
-                buttons[0].interactable = Work.CanSave;
-                readOnly.gameObject.SetActive(Work.SourceIsReadOnly);
+                save.interactable = Work.IsEdited;
+                note.text = SaveNote();
                 foreach (var r in rows)
                 {
                     string raw = Work.Values.GetText(r.Def.Key);
@@ -211,58 +203,48 @@ namespace GPL.DebugBench
                     break;
                 default:
                     float plusX = right - 24f - stepW / 2f;
-                    r.Plus = UiKit.SmallButton(row, "Plus", "+", new Vector2(plusX, 0f), stepW, () => Work.Step(d.Key, +1));
+                    // borderless in-group steppers: fill on hover only (DesignSystem section 4)
+                    r.Plus = UiKit.SmallButton(row, "Plus", "+", new Vector2(plusX, 0f), stepW, () => Work.Step(d.Key, +1), UiStyle.Borderless);
                     r.Minus = UiKit.SmallButton(row, "Minus", UiKit.MinusGlyph, new Vector2(plusX - stepW - th.inset, 0f), stepW,
-                                                () => Work.Step(d.Key, -1));
+                                                () => Work.Step(d.Key, -1), UiStyle.Borderless);
+                    r.Plus.InGroup = r.Minus.InGroup = true;
                     break;
             }
             return r;
         }
 
         string IntroText() =>
-            "Working copy of \"" + Work.Source + "\"" + (Work.IsEdited ? " · " + Work.EditedKeys.Count + " edited" : "") +
-            ". Debug runs use it; real sessions use the active preset (" + Work.Store.ActiveName + ").";
+            "Working copy of the active preset, " + Work.Source + (Work.IsEdited ? " · " + Work.EditedKeys.Count + " edited" : "") +
+            ". Debug runs use it; real sessions use " + Work.Source + " as saved. Revert goes back to it.";
 
-        string SaveLabel() => "Save to " + Work.Source;
+        public static readonly string SaveAsLabel = "Save as " + WorkingCopy.CustomName;
 
-        void ConfirmSave()
+        string SaveNote() =>
+            Work.SourceIsReadOnly
+                ? "Default is read-only (Config/default.params). " + SaveAsLabel + (Work.CustomExists ? " overwrites Custom" : " creates Custom") +
+                  " and makes it active."
+                : SaveAsLabel + " overwrites Custom; new real sessions use it.";
+
+        /// <summary>Writes Custom (creates it, or overwrites it after a confirmation) and makes it active.</summary>
+        void SaveAsCustom()
         {
-            bool active = Work.Source == Work.Store.ActiveName;
-            ModalDialog.Show(_canvas, "Overwrite " + Work.Source + "?",
-                active ? Work.Source + " is active: new real sessions will use the new values. Running and unfinished sessions keep their own snapshot."
-                       : "The preset " + Work.Source + " gets the working copy's values.",
+            void Save()
+            {
+                string name = Work.SaveAs();
+                SetStatus("Saved " + name + "; it is active (new real sessions use it)");
+            }
+            if (!Work.CustomExists)
+            {
+                Save();
+                return;
+            }
+            ModalDialog.Show(_canvas, "Overwrite Custom?",
+                "Custom gets the working copy's values and " + (Work.Source == WorkingCopy.CustomName ? "stays" : "becomes") +
+                " active: new real sessions use them. Unfinished sessions keep their own snapshot.",
                 new DialogButton("Cancel", UiStyle.Borderless),
-                new DialogButton("Overwrite", UiStyle.Prominent, () =>
-                {
-                    Work.Save();
-                    SetStatus("Saved " + Work.Source);
-                }));
+                new DialogButton("Overwrite", UiStyle.Prominent, Save));
         }
 
-        void OpenSaveAsSheet()
-        {
-            var th = UiKit.Theme;
-            var size = new Vector2(820f, 400f);
-            string name = Work.NextName;
-            var sheet = Sheet.Open(_canvas, "Save As", Vector2.zero, size);
-            sheet.AddCloseButton();
-            float y = size.y / 2f - Page.TopPad - th.iconButtonSize / 2f;
-            float left = -size.x / 2f + Page.EdgePad + th.iconButtonSize + UiKit.IconTitleGap;
-            float w = size.x / 2f - Page.EdgePad - left;
-            UiKit.Text(sheet.Rect, "Title", "Save as a new preset", th.headingSize, new Vector2(left + w / 2f, y), new Vector2(w, th.iconButtonSize),
-                       bold: true, align: TextAlignmentOptions.MidlineLeft);
-            UiKit.Text(sheet.Rect, "Message", "Name: " + name + ". It is not active until you make it active in Presets.", 32,
-                       new Vector2(0f, y - th.iconButtonSize / 2f - 70f), new Vector2(size.x - 2f * Page.EdgePad, 100f), color: th.text2,
-                       align: TextAlignmentOptions.TopLeft);
-            float bw = th.buttonMinWidth;
-            UiKit.Button(sheet.Rect, "Save", "Save", UiStyle.Prominent,
-                         new Vector2(size.x / 2f - Page.EdgePad - bw / 2f, -size.y / 2f + Page.EdgePad + th.buttonHeight / 2f), new Vector2(bw, 0f), () =>
-                         {
-                             sheet.Close();
-                             string saved = Work.SaveAs(name);
-                             SetStatus("Saved " + saved + " (not active)");
-                         });
-        }
     }
 
     /// <summary>Raises <see cref="Destroyed"/> when its GameObject is destroyed (unhooks page listeners).</summary>

@@ -73,28 +73,38 @@ namespace GPL.DebugBench.Tests
             var changes = new List<string>();
             w.ParamChanged += (k, o, n) => changes.Add(k + ":" + o + "->" + n);
             Assert.AreEqual("Default", w.Source);
-            Assert.IsFalse(w.CanSave, "nothing edited");
+            Assert.IsFalse(w.CustomExists);
             w.Step("trials", +1);
             Assert.AreEqual("Default · 1 edited", w.Label);
             CollectionAssert.AreEqual(new[] { "trials:6->7" }, changes);
-            Assert.IsFalse(w.CanSave, "Default is read-only");
             w.Revert();
-            Assert.IsFalse(w.IsEdited);
+            Assert.IsFalse(w.IsEdited, "Default active: Revert goes back to Default");
 
+            // no Custom yet: Save as creates it and makes it active
             w.Step("trials", +1);
-            string name = w.SaveAs();
-            Assert.AreEqual("Preset-1", name);
-            Assert.AreEqual("Preset-1", w.Source);
+            Assert.AreEqual("Custom", w.SaveAs());
+            Assert.AreEqual("Custom", w.Source);
+            Assert.AreEqual("Custom", _store.ActiveName);
             Assert.IsFalse(w.IsEdited);
-            Assert.AreEqual("Default", _store.ActiveName, "Save as does not make it active");
-            Assert.AreEqual(7, _store.Load("Preset-1").GetInt("trials"));
+            Assert.AreEqual(7, _store.Load("Custom").GetInt("trials"));
 
+            // Custom active: Revert goes back to Custom; Save as overwrites it
             w.Step("trials", +1);
-            Assert.IsTrue(w.CanSave);
-            Assert.AreEqual("Preset-1: 7", "Preset-1: " + w.SourceValue("trials"));
-            w.Save();
-            Assert.AreEqual(8, _store.Load("Preset-1").GetInt("trials"));
-            Assert.IsFalse(w.IsEdited);
+            w.Revert();
+            Assert.AreEqual(7, w.Values.GetInt("trials"));
+            w.Step("trials", +1);
+            w.SaveAs();
+            Assert.AreEqual(8, _store.Load("Custom").GetInt("trials"));
+            CollectionAssert.AreEqual(new[] { "Default", "Custom" }, _store.List());
+
+            // Default active again: loads Default; Save as overwrites Custom and makes it active
+            w.Activate("Default");
+            Assert.AreEqual("Default", _store.ActiveName);
+            Assert.AreEqual(6, w.Values.GetInt("trials"));
+            w.Step("trials", -1);
+            w.SaveAs();
+            Assert.AreEqual(5, _store.Load("Custom").GetInt("trials"));
+            Assert.AreEqual("Custom", _store.ActiveName);
         }
 
         [Test]
@@ -140,11 +150,14 @@ namespace GPL.DebugBench.Tests
                 var row = parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials");
                 var value = UiKit.RowText(row, "Value");
                 Assert.AreEqual("6", value.text);
-                row.Find("Plus").GetComponent<Button>().onClick.Invoke();
+                var plus = row.Find("Plus").GetComponent<UiButton>();
+                Assert.AreEqual(UiStyle.Borderless, plus.Style, "steppers: fill on hover only");
+                Assert.IsTrue(plus.InGroup);
+                plus.onClick.Invoke();
                 Assert.AreEqual("7", value.text, "the row follows the working copy");
                 Assert.AreEqual("Default: 6", UiKit.RowText(row, "Sub").text);
                 Assert.IsTrue(Find(parameters, "Revert").interactable);
-                Assert.IsFalse(Find(parameters, "Save to Default").interactable, "Default is read-only");
+                Assert.IsTrue(Find(parameters, "Save as Custom").interactable);
 
                 Find(parameters, "Revert").onClick.Invoke();
                 Assert.AreEqual("6", value.text);
@@ -160,6 +173,99 @@ namespace GPL.DebugBench.Tests
 
                 parameters.BackButton.onClick.Invoke();
                 Assert.AreEqual(debug, pages.Top);
+            }
+            finally { Object.DestroyImmediate(canvas); }
+        }
+
+        [Test]
+        public void DeletingTheActiveCustomLoadsDefault()
+        {
+            var w = new WorkingCopy(_store);
+            w.Step("trials", +1);
+            w.SaveAs();
+            w.Step("trials", +1);
+            Assert.IsFalse(w.DeletePreset(PresetStore.DefaultName));
+            Assert.IsTrue(w.DeletePreset("Custom"));
+            Assert.AreEqual("Default", _store.ActiveName, "deleting the active preset makes Default active");
+            Assert.AreEqual("Default", w.Source);
+            Assert.IsFalse(w.IsEdited);
+            Assert.AreEqual(6, w.Values.GetInt("trials"));
+        }
+
+        [Test]
+        public void PresetsPageSwitchesTheActivePresetAndSaveAsOverwritesCustom()
+        {
+            var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
+                var pages = PageStack.On(UiKit.Window(canvas.transform));
+                pages.Push("Menu");
+                var w = new WorkingCopy(_store);
+                var bench = new DebugBench(pages, canvas.transform, w);
+                UiButton Named(Component root, string name) => root.GetComponentsInChildren<UiButton>(true).Single(b => b.name == name);
+                UiButton Labeled(Component root, string label) => root.GetComponentsInChildren<UiButton>(true).Single(b => UiKit.LabelOf(b).text == label);
+
+                // Parameters: no Custom yet, Save as Custom creates it without asking and makes it active
+                var parameters = bench.OpenParametersPage();
+                var save = Labeled(parameters, DebugBench.SaveAsLabel);
+                Assert.IsFalse(save.interactable, "nothing edited");
+                parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials").Find("Plus").GetComponent<UiButton>().onClick.Invoke();
+                Assert.IsTrue(save.interactable);
+                save.onClick.Invoke();
+                Assert.IsNull(ModalDialog.Current, "creating Custom needs no confirmation");
+                Assert.AreEqual("Custom", _store.ActiveName);
+                Assert.AreEqual("Custom", w.Source);
+
+                // Custom exists: Save as Custom asks before overwriting
+                w.Step("trials", +1);
+                save.onClick.Invoke();
+                Assert.IsNotNull(ModalDialog.Current);
+                Labeled(ModalDialog.Current, "Overwrite").onClick.Invoke();
+                Assert.AreEqual(8, _store.Load("Custom").GetInt("trials"));
+                parameters.BackButton.onClick.Invoke();
+
+                // Presets: ✓ on Custom; Default's sheet has only Make active
+                var presets = bench.OpenPresetsPage();
+                UiButton RowOf(string name) => Named(pages.Top, "Row " + name);
+                Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowText(RowOf("Custom").transform, "Value").text);
+                Assert.IsNull(UiKit.RowText(RowOf("Default").transform, "Value"), "not active: no mark");
+                StringAssert.Contains("working copy", UiKit.RowText(RowOf("Custom").transform, "Sub").text);
+                RowOf("Default").onClick.Invoke();
+                var sheet = Sheet.Top(canvas.transform);
+                var actions = sheet.GetComponentsInChildren<UiButton>(true).Where(b => b.name.StartsWith("Row ")).Select(b => b.name).ToArray();
+                CollectionAssert.AreEqual(new[] { "Row Make active" }, actions);
+
+                // Make Default active with unsaved edits: confirm, then the working copy loads Default
+                Assert.IsTrue(w.Step("trials", -1));
+                sheet.Close();
+                RowOf("Default").onClick.Invoke();
+                Named(Sheet.Top(canvas.transform), "Row Make active").onClick.Invoke();
+                Assert.IsNotNull(ModalDialog.Current, "unsaved edits: confirm first");
+                Labeled(ModalDialog.Current, "Discard and switch").onClick.Invoke();
+                Assert.AreEqual("Default", _store.ActiveName);
+                Assert.AreEqual("Default", w.Source);
+                Assert.AreEqual(6, w.Values.GetInt("trials"));
+                Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowText(RowOf("Default").transform, "Value").text, "the page is rebuilt");
+                Assert.AreEqual(0, Sheet.Stack(canvas.transform).Count, "the sheets are closed");
+
+                // Make Custom active without edits: no confirmation
+                RowOf("Custom").onClick.Invoke();
+                Named(Sheet.Top(canvas.transform), "Row Make active").onClick.Invoke();
+                Assert.AreEqual("Custom", w.Source);
+                Assert.AreEqual(8, w.Values.GetInt("trials"));
+
+                // Delete Custom (active): confirm; Default becomes active
+                RowOf("Custom").onClick.Invoke();
+                var del = Named(Sheet.Top(canvas.transform), "Row Delete");
+                Assert.AreEqual(UiStyle.DestructiveText, del.Style);
+                del.onClick.Invoke();
+                Labeled(ModalDialog.Current, "Delete").onClick.Invoke();
+                Assert.IsFalse(_store.Exists("Custom"));
+                Assert.AreEqual("Default", _store.ActiveName);
+                Assert.AreEqual(presets, pages.Top);
+                Assert.IsFalse(pages.Top.GetComponentsInChildren<UiButton>(true).Any(b => b.name == "Row Custom"));
+                Assert.AreEqual(0, Sheet.Stack(canvas.transform).Count);
             }
             finally { Object.DestroyImmediate(canvas); }
         }

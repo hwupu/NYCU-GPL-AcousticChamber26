@@ -68,6 +68,7 @@ namespace GPL.UI
         /// <summary>Trigger down on this button: instant pressed look (the pointer invokes onClick).</summary>
         public void Press()
         {
+            if (!IsInteractable()) return;
             _pressed = true;
             Go(Visual.Pressed, 0f);
         }
@@ -77,7 +78,9 @@ namespace GPL.UI
         {
             if (!_pressed) return;
             _pressed = false;
-            Go(UiPointer.Hovered == this ? Visual.Hover : Visual.Normal, Theme.Duration(Theme.release));
+            // the click may have disabled the button (Revert, Save): then it stays disabled
+            if (!IsInteractable()) Go(Visual.Disabled, 0f);
+            else Go(UiPointer.Hovered == this ? Visual.Hover : Visual.Normal, Theme.Duration(Theme.release));
         }
 
         protected override void DoStateTransition(SelectionState state, bool instant)
@@ -107,7 +110,7 @@ namespace GPL.UI
                 if (font != null) _label.font = font;
                 _label.fontStyle = FontStyles.Normal;
             }
-            Go(!interactable ? Visual.Disabled : _pressed ? Visual.Pressed : UiPointer.Hovered == this ? Visual.Hover : Visual.Normal, 0f);
+            Go(!IsInteractable() ? Visual.Disabled : _pressed ? Visual.Pressed : UiPointer.Hovered == this ? Visual.Hover : Visual.Normal, 0f);
         }
 
         void Go(Visual v, float duration)
@@ -145,7 +148,9 @@ namespace GPL.UI
                 case Visual.Disabled:
                     fill = c.normal;
                     fill.a *= Theme.disabledAlpha;
-                    label.a *= Theme.disabledAlpha;
+                    // no fill: a faded white label reads like a plain text label, so use the dim text color instead
+                    if (style == UiStyle.Borderless || style == UiStyle.DestructiveText) label = Theme.text3;
+                    else label.a *= Theme.disabledAlpha;
                     break;
                 default: fill = c.normal; break;
             }

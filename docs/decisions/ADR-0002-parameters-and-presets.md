@@ -14,3 +14,5 @@ Status: **accepted** (Q17 answered 2026-11-05).
 - Debug-only display switches (markers, error feedback) are not parameters.
 
 **Consequences.** Parameters must be read from the `ParameterSet` at run time, not from Inspector fields. Presets on the headset must be copied off along with the data.
+
+**Amendment (2026-11-05, PO).** Two presets in practice: **Default** (read-only, `Config/default.params`) and **Custom**. The working copy is always the active preset: making a preset active also loads it (confirm if unsaved edits are lost); Revert goes back to the active preset; **Save as Custom** creates Custom or overwrites it (confirm) and makes it active. Debug runs use the working copy, real sessions the active preset as saved. The store stays general (more presets possible later).

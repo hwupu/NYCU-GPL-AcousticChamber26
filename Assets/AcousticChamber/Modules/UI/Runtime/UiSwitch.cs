@@ -5,7 +5,7 @@ namespace GPL.UI
 {
     /// <summary>
     /// A switch (DesignSystem section 4): 100 x 60 u track, 52 u knob. Off = gray track, <c>text2</c> knob; on = prominent
-    /// track, dark knob. The knob settles over the hover-in duration (unscaled time). It has no hit region of its own: put
+    /// track, knob in the group color (<c>raised</c>). The knob settles over the hover-in duration (unscaled time). It has no hit region of its own: put
     /// it in a row that toggles it (<see cref="UiKit.SwitchRow"/>). While that row is hovered or pressed, the off track
     /// darkens to the group color (<c>raised</c>): the hovered row's fill is the track's own gray.
     /// </summary>
@@ -87,7 +87,7 @@ namespace GPL.UI
             _knob.rectTransform.anchoredPosition = new Vector2(Mathf.Lerp(-travel, travel, t), 0f);
             var offTrack = Color.Lerp(th.gray.normal, th.raised, HotNow(Time.unscaledTime));
             _track.color = Color.Lerp(offTrack, th.prominent.normal, t);
-            _knob.color = Color.Lerp(th.text2, th.prominent.label, t);
+            _knob.color = Color.Lerp(th.text2, th.raised, t);
         }
     }
 }

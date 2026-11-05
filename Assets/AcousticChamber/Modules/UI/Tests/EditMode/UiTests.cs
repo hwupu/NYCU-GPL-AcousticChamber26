@@ -446,6 +446,22 @@ namespace GPL.UI.Tests
             Assert.AreEqual(1f, b.transform.localScale.x, 1e-5f);
             b.interactable = false;
             Assert.AreEqual(th.prominent.normal.a * th.disabledAlpha, b.CurrentFill.a, 1e-5f);
+
+            var revert = UiKit.Button(_canvas.transform, "R", "Revert", UiStyle.Borderless, Vector2.zero, Vector2.zero);
+            revert.interactable = false;
+            Assert.AreEqual(th.text3, UiKit.LabelOf(revert).color, "disabled borderless: dim text, not faded white");
+            revert.interactable = true;
+            revert.FinishTransition();
+            Assert.AreEqual(th.borderless.label, UiKit.LabelOf(revert).color);
+
+            // the click disables the button (Revert after reverting): the release must not bring back the normal look
+            revert.onClick.AddListener(() => revert.interactable = false);
+            revert.Press();
+            revert.onClick.Invoke();
+            revert.Release();
+            revert.FinishTransition();
+            Assert.AreEqual(th.text3, UiKit.LabelOf(revert).color, "stays disabled after the release");
+            Assert.AreEqual(1f, revert.transform.localScale.x, 1e-5f, "pressed scale is undone");
         }
 
         [Test]

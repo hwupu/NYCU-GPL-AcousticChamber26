@@ -6,13 +6,18 @@ using GPL.Params;
 namespace GPL.DebugBench
 {
     /// <summary>
-    /// The Debug bench's working copy of a preset (ADR-0002): Debug runs use it; real sessions never do. It remembers the
-    /// preset it came from (<see cref="Source"/>), so it can show what was edited, revert, save back (not to Default) or
-    /// save as a new preset. Stepping stays inside each parameter's range (no out-of-range values ever reach the set).
+    /// The Debug bench's working copy of the active preset (ADR-0002): Debug runs use it; real sessions use the active
+    /// preset as saved. Two presets in practice: <b>Default</b> (read-only, <c>Config/default.params</c>) and
+    /// <b>Custom</b>. <see cref="Activate"/> makes a preset active and loads it; <see cref="Revert"/> goes back to it;
+    /// <see cref="SaveAs"/> writes Custom (creates or overwrites) and makes it active. The store stays general (any number
+    /// of presets). Stepping stays inside each parameter's range (no out-of-range values ever reach the set).
     /// Unity-free; the UI is <c>GPL.DebugBench.DebugBench</c>.
     /// </summary>
     public sealed class WorkingCopy
     {
+        /// <summary>The one editable preset.</summary>
+        public const string CustomName = "Custom";
+
         ParameterSet _source;
 
         public PresetStore Store { get; }
@@ -59,8 +64,6 @@ namespace GPL.DebugBench
 
         /// <summary>Default is read-only (it is <c>Config/default.params</c> in the project): use Save as.</summary>
         public bool SourceIsReadOnly => Source == PresetStore.DefaultName;
-
-        public bool CanSave => !SourceIsReadOnly && IsEdited;
 
         /// <summary>"Default", or "Pilot-A · 2 edited".</summary>
         public string Label
@@ -131,34 +134,51 @@ namespace GPL.DebugBench
 
         // ---- presets -------------------------------------------------------------------------------------------
 
-        /// <summary>Back to the source preset's values.</summary>
+        /// <summary>Back to the source (active) preset's values.</summary>
         public void Revert()
         {
             Values = _source.Clone();
             Changed?.Invoke();
         }
 
-        /// <summary>Overwrites the source preset with the working copy (not Default).</summary>
-        public void Save()
+        /// <summary>True if the preset <see cref="CustomName"/> exists (Save as then overwrites it).</summary>
+        public bool CustomExists => Store.Exists(CustomName);
+
+        /// <summary>
+        /// Makes <paramref name="name"/> the active preset and loads it into the working copy (unsaved edits are lost; the
+        /// caller confirms first).
+        /// </summary>
+        public void Activate(string name)
         {
-            if (SourceIsReadOnly) throw new InvalidOperationException("Default is read-only; use Save as.");
-            Store.Save(Source, Values);
-            _source = Values.Clone();
-            Changed?.Invoke();
+            Store.SetActive(name);
+            Load(name);
         }
 
-        /// <summary>The name <see cref="SaveAs"/> would use.</summary>
-        public string NextName => Store.NextFreeName();
-
-        /// <summary>Saves the working copy as a new preset (it is not made active) and continues editing that one. Returns its name.</summary>
-        public string SaveAs(string name = null)
+        /// <summary>
+        /// Saves the working copy as <paramref name="name"/> (default <see cref="CustomName"/>; created or overwritten), makes
+        /// it active and continues editing it. Returns its name.
+        /// </summary>
+        public string SaveAs(string name = CustomName)
         {
-            name = name ?? Store.NextFreeName();
             Store.Save(name, Values);
+            Store.SetActive(name);
             _source = Values.Clone();
             Source = name;
             Changed?.Invoke();
             return name;
+        }
+
+        /// <summary>
+        /// Deletes a saved preset (not Default). If it was active, Default becomes active (<see cref="PresetStore.Delete"/>).
+        /// If the working copy is based on it, the working copy loads the active preset (its edits are lost). Returns false
+        /// for Default or a missing preset.
+        /// </summary>
+        public bool DeletePreset(string name)
+        {
+            if (!Store.Delete(name)) return false;
+            if (Source == name) Load(Store.ActiveName);
+            else Changed?.Invoke();
+            return true;
         }
 
         // ---- display -------------------------------------------------------------------------------------------

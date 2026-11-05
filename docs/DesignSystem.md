@@ -42,7 +42,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 
 - Red keeps hue 3° and saturation 71 %; only its brightness (HSV value) rises: 75 / 85 / 95 %.
 - Red text (destructive actions that are not the final step): `#FF6B63`.
-- Disabled: 40 % opacity, no hover.
+- Disabled: 40 % opacity, no hover. Borderless buttons (no fill) use `text3` for the label instead: faded white reads like a plain label.
 - No chamber accent colors and no other hues; chambers are recognized by their cover image and title.
 
 ## 4. Controls
@@ -50,7 +50,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 | Style | When |
 |---|---|
 | **prominent** | the one main action of a screen (Start, Keep going, Resume, Make active, Run experiment trials) |
-| **gray** | a secondary action that needs a visible target (Debug, Practice trial, Edit, Save as…) |
+| **gray** | a secondary action that needs a visible target (Debug, Practice trial) |
 | **borderless** | everything else: back, cancel, number-pad keys, list actions, header actions (Revert, Delete all) |
 | **destructive** | red fill only on the final confirmation (Drop out, Delete); elsewhere red text |
 
@@ -68,13 +68,14 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - 3 x 4 borderless keys (`1-9`, `Clear`, `0`, `←`) inside a container (4 u inset); display field (`raised`, capsule) shows the formatted ID live: `1` → `S0001`; placeholder `S____` in `text3`.
 
 ### Switches and segmented controls
-- Switch 100 x 60 u: off = gray track, `text2` knob; on = prominent track, dark knob. The whole row is the target. While the row is hovered or pressed, the off track darkens to `raised` (the hovered row's fill is the track's own gray).
+- Switch 100 x 60 u: off = gray track, `text2` knob; on = prominent track, knob in the group color (`raised`, softer than black). The whole row is the target. While the row is hovered or pressed, the off track darkens to `raised` (the hovered row's fill is the track's own gray).
+- − / + steppers in a parameter row: borderless (in-group colors), fill on hover only, like every other control inside a group.
 - Segmented control: `surface` track inside a group, 4 u inset, selected segment `select`.
 
 ### Groups and rows (Debug, settings)
 - Group = `raised` container (radius 36, 8 u padding to the rows, rows 4 u apart), as wide as the page content (aligned with the header edges, 48 u from the window edge); rows 88 u high (radius 28): label (+ secondary line), value in `text2` (edited values in `text`), trailing control or `›`.
 - Group labels: 24 u, `text2`, above the group.
-- Buttons side by side in a group (Run experiment trials · Practice trial; Save to · Save as…): 8 u apart; the main action prominent, the others borderless (fill on hover only).
+- Buttons side by side in a group (Run experiment trials · Practice trial): 8 u apart; the main action prominent, the others borderless (fill on hover only).
 
 ## 5. Motion
 | Token | ms | |
@@ -97,7 +98,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 ## 6. Navigation, sheets and scrolling
 ### Back and close
 - **‹ Back** at the top left of every pushed page (chamber menu → Hall, Debug → menu, Parameters → Debug, ...).
-- **× Close** at the same spot on sheets that may be left without a choice (unfinished session, preset actions, Save as). Back and close never appear together.
+- **× Close** at the same spot on sheets that may be left without a choice (unfinished session, preset actions). Back and close never appear together.
 - Sheets that need a decision (Stop dialog, delete confirmations, overwrite) have **Cancel**, not ×.
 - Participant screens have no back button (the participant only moves forward; Y stops).
 
@@ -124,7 +125,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - Real session: **Drop out** (red text) · **Keep going** (prominent); Drop out asks once more: "Drop out S0012?" Cancel · Drop out (destructive). Debug run: Back to the chamber menu (borderless) · Keep going (prominent). The session is frozen while it is open.
 
 ### Debug bench
-- Pages: **Debug** (Run · Parameters · Presets · chamber groups · Data) → **Parameters** (working copy: − / +, Revert, Save to <preset>, Save as…) → **Presets** (✓ active; tap → sheet: Make active, Edit, Delete) → **Data files** (Delete → confirm; Delete all confirms twice and names the count).
+- Pages: **Debug** (Run · Parameters · Presets · chamber groups · Data) → **Parameters** (working copy of the active preset: − / +, Revert to the active preset, Save as Custom: creates or overwrites Custom and makes it active) → **Presets** (Default and Custom; ✓ active; tap → sheet: Make active, which also loads it into the working copy; Delete for Custom) → **Data files** (Delete → confirm; Delete all confirms twice and names the count).
 - No DEBUG tag on the Debug pages. Playback tests (play stimulus, play background) and Debug-only display switches are **not saved** in presets (ADR-0002).
 
 ### Mode indicator
