@@ -3,6 +3,7 @@ using GPL.Core;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UI;
 
 namespace GPL.UI.Tests
@@ -109,6 +110,7 @@ namespace GPL.UI.Tests
         public void TearDown()
         {
             Object.DestroyImmediate(_canvas);
+            StopDialog.ResetForTests();
             UiPointer.Modal = null;
             Loc.ResetForTests();
         }
@@ -173,6 +175,67 @@ namespace GPL.UI.Tests
             Assert.IsNotNull(b.GetComponent<HoverHighlight>().outline);
             Assert.IsFalse(b.GetComponent<HoverHighlight>().outline.activeSelf);
         }
+
+        [Test]
+        public void StopDialogRealSessionDropOutAsksTwiceAndFreezes()
+        {
+            StopDialog.ResetForTests();
+            var choices = new System.Collections.Generic.List<StopChoice>();
+            StopDialog.Show(_canvas.transform, false, "S0012", choices.Add);
+            Assert.IsTrue(StopDialog.IsOpen);
+            Assert.IsTrue(Freeze.Active);
+            Assert.AreEqual(0f, Time.timeScale);
+            Assert.IsTrue(AudioListener.pause);
+            CollectionAssert.AreEqual(new[] { "Keep going", "Drop out" }, DialogLabels());
+
+            Click("Drop out");
+            Assert.AreEqual("Drop out S0012?", ModalDialog.Current.transform.Find("Box/Title").GetComponent<TextMeshProUGUI>().text);
+            CollectionAssert.AreEqual(new[] { "Cancel", "Drop out" }, DialogLabels());
+            Click("Cancel");
+            CollectionAssert.AreEqual(new[] { "Keep going", "Drop out" }, DialogLabels(), "Cancel goes back to the first step");
+            Assert.IsEmpty(choices);
+            Assert.IsTrue(Freeze.Active, "still frozen between the steps");
+
+            Click("Drop out");
+            Click("Drop out");
+            CollectionAssert.AreEqual(new[] { StopChoice.DropOut }, choices);
+            Assert.IsFalse(StopDialog.IsOpen);
+            Assert.IsNull(ModalDialog.Current);
+            Assert.AreEqual(1f, Time.timeScale);
+            Assert.IsFalse(AudioListener.pause);
+        }
+
+        [Test]
+        public void StopDialogDebugRunAndChinese()
+        {
+            StopDialog.ResetForTests();
+            Loc.Set(UiLanguage.Chinese);
+            StopChoice? got = null;
+            StopDialog.Show(_canvas.transform, true, "", c => got = c);
+            CollectionAssert.AreEqual(new[] { "繼續", "回到選單" }, DialogLabels());
+            Click("回到選單");
+            Assert.AreEqual(StopChoice.BackToMenu, got);
+            Assert.IsFalse(Freeze.Active);
+        }
+
+        [Test]
+        public void StopDialogAbandonedLiftsFreeze()
+        {
+            StopDialog.ResetForTests();
+            StopDialog.Show(_canvas.transform, false, "S0001", null);
+            Assert.IsTrue(Freeze.Active);
+            LogAssert.Expect(LogType.Warning, "[GPL] Stop dialog destroyed without a choice (scene change?).");
+            Object.DestroyImmediate(ModalDialog.Current.gameObject);
+            Assert.IsFalse(StopDialog.IsOpen);
+            Assert.IsFalse(Freeze.Active);
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        static string[] DialogLabels() =>
+            ModalDialog.Current.GetComponentsInChildren<Button>().Select(b => UiKit.LabelOf(b).text).ToArray();
+
+        static void Click(string label) =>
+            ModalDialog.Current.GetComponentsInChildren<Button>().Single(b => UiKit.LabelOf(b).text == label).onClick.Invoke();
 
         static void Press(NumberPadEntry pad, string key) => pad.transform.Find(key).GetComponent<Button>().onClick.Invoke();
     }

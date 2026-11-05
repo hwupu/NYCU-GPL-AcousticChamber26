@@ -19,7 +19,8 @@ OVROverlayCanvas, OVRControllerHelper), uGUI + TextMeshPro (`com.unity.ugui` 2.x
 | `Runtime/OverlayPanel` | places a canvas 2 m ahead, 8° below eye level, facing the eye; scale follows distance; waits for valid head height; re-places 2 frames after a system recenter; hides layers 30/31 from the eye cameras |
 | `Runtime/UiPointer` | ray from the controller (trigger = click, last trigger owns the ray), white laser, accent on a target, hover outline; `UiPointer.Modal` limits it to a dialog |
 | `Runtime/ITextEntry`, `NumberPadEntry` | swappable text entry; the number pad (3 x 4, Clear, ←) shows the formatted value live (`StudyId.FromDigits`: `1` -> `S0001`) |
-| `Runtime/ModalDialog` | dim + box with a colored top bar, title, message, buttons; modal for the pointer |
+| `Runtime/ModalDialog` | dim + box with a colored top bar, title, message, buttons; modal for the pointer; `Abandoned` if destroyed without `Close` |
+| `Runtime/StopDialog` | the Stop dialog: real session Keep going / Drop out (asks once more, "Drop out S0012?"); Debug run Keep going / Back to the chamber menu; returns a `StopChoice`. `Freeze` (time scale 0 + audio pause, nested, restores the old values) while open |
 | `Runtime/UiShowcase` | headset test panel of the module (no study logic) |
 | `Editor/UiSetup` | `EnsureFontAsset` (dynamic SDF from a .ttf/.otf), `EnsureTheme`, `EnsureUnlitMaterial`, `CreateOverlayCanvas`, `EnsurePointer`, `EnsureUiRoot`, `EnsureGroup`, `EnsureLayerName` |
 

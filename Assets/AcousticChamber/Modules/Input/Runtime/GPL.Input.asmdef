@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Input",
+    "rootNamespace": "GPL.Input",
+    "references": ["GPL.Core", "GPL.Input.Core", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

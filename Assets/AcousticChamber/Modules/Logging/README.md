@@ -26,4 +26,4 @@ log.Write(LogEvents.Trial, new LogValues().Set("visual_az_deg", 7.5f).Set("audio
 ```
 `EventLog.Open` appends to an existing file (resume) without a second header, and refuses if the file's header differs from the schema.
 
-Common event names: `LogEvents` (session_start, session_resume, session_paused, participant_dropout, block_begin, block_restart, trial, homing, recenter, ...).
+Common event names: `LogEvents` (session_start, session_resume, participant_dropout, block_begin, block_restart, trial, homing, recenter, ...).

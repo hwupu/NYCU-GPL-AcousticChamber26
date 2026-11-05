@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Input.Tests",
+    "rootNamespace": "GPL.Input.Tests",
+    "references": ["GPL.Core", "GPL.Input.Core", "GPL.Input", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

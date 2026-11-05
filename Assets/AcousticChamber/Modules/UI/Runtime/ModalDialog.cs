@@ -26,6 +26,7 @@ namespace GPL.UI
     /// buttons. While open, the pointer can only reach this dialog (<see cref="UiPointer.Modal"/>). Used by the Stop dialog
     /// and the data manager's delete confirmations.
     /// </summary>
+    [ExecuteAlways] // OnDestroy (Abandoned) also in edit mode / EditMode tests
     public class ModalDialog : MonoBehaviour
     {
         public static readonly Vector2 DefaultSize = new Vector2(900f, 380f);
@@ -35,7 +36,12 @@ namespace GPL.UI
         /// <summary>The dialog currently open on any canvas, or null.</summary>
         public static ModalDialog Current { get; private set; }
 
+        bool _closed;
+
         public event Action Closed;
+
+        /// <summary>Raised when the dialog is destroyed without <see cref="Close"/> (e.g. its canvas or scene unloaded).</summary>
+        public event Action Abandoned;
 
         public static ModalDialog Show(Transform canvas, string title, string message, Color barColor, params DialogButton[] buttons) =>
             Show(canvas, title, message, barColor, new Vector2(0f, 100f), DefaultSize, buttons);
@@ -86,7 +92,8 @@ namespace GPL.UI
 
         public void Close()
         {
-            if (this == null) return;
+            if (this == null || _closed) return;
+            _closed = true;
             if (Current == this) Current = null;
             UiPointer.Modal = _previousModal;
             Closed?.Invoke();
@@ -96,11 +103,13 @@ namespace GPL.UI
 
         void OnDestroy()
         {
+            if (_closed) return;
             if (Current == this)
             {
                 Current = null;
                 UiPointer.Modal = _previousModal;
             }
+            Abandoned?.Invoke();
         }
     }
 }

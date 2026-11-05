@@ -14,7 +14,7 @@
 | PB-04 Pure modules (Core, Params, Logging, Session) | Done | 49 EditMode tests pass headless (`Tools/Verify-Headless.ps1`) |
 | PB-04 commit | Done | `066d9d3` |
 | PB-05a GPL.UI | Done | 61 EditMode tests pass headless; test panel in MainHall (PO renamed and saved the scene, GUID kept); ADR-0004 |
-| PB-05b GPL.Input + Stop dialog | In progress | |
+| PB-05b GPL.Input + Stop dialog | Headset test | 72 EditMode tests pass headless; `Magic > App > Input Test Panel` replaces the UI test panel in MainHall; Stop dialog without Pause (PO, ADR-0003 amended) |
 | PB-05c GPL.Homing | Open | |
 | PB-06 Hall + catalog + routing | Open | |
 | PB-07 `_Template` chamber | Open | first headset test after PB-05..07 |

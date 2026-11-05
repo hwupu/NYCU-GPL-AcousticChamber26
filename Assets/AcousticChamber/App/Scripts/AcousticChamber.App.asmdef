@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.App",
+    "rootNamespace": "AcousticChamber.App",
+    "references": ["GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.Input.Core", "GPL.Input", "Unity.TextMeshPro", "UnityEngine.UI"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

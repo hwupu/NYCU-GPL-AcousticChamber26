@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using AcousticChamber.App;
+using GPL.Input;
 using GPL.UI;
 using GPL.UI.Editor;
 using UnityEditor;
@@ -19,7 +21,9 @@ namespace AcousticChamber.App.Editor
         const string ThemePath = "Assets/AcousticChamber/Settings/UiTheme.asset";
         const string LaserPath = "Assets/AcousticChamber/Settings/Materials/Laser.mat";
         const string GroupUI = "UI";
+        const string GroupXR = "XR";
         const string TestPanelName = "UI Test Panel";
+        const string InputTestPanelName = "Input Test Panel";
 
         [MenuItem("Magic/App/Step 1 - UI theme and fonts", priority = 1)]
         public static UiTheme EnsureUiAssets()
@@ -48,12 +52,57 @@ namespace AcousticChamber.App.Editor
             var theme = EnsureUiAssets();
             var ui = UiSetup.EnsureGroup(GroupUI);
             UiSetup.EnsureUiRoot(ui, theme);
+            RemoveChild(ui, InputTestPanelName); // the test panels sit at the same spot
             var canvas = UiSetup.CreateOverlayCanvas(ui, TestPanelName, UiShowcase.Size);
             canvas.AddComponent<UiShowcase>();
             UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
             EnsureMainHallFirstInBuild();
             UiSetup.MarkSceneDirty();
             Debug.Log("[GPL] UI test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+        }
+
+        /// <summary>
+        /// Adds the GPL.Input test panel (InputTestPanel + StopDialogHost) and a GlobalActions object to the open scene; it
+        /// replaces the UI test panel. Temporary headset check for PB-05b; the Hall menu (PB-06) replaces it.
+        /// </summary>
+        [MenuItem("Magic/App/Input Test Panel (open scene)", priority = 51)]
+        public static void AddInputTestPanel()
+        {
+            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
+            {
+                Debug.LogError("[GPL] Add the Camera Rig building block first.");
+                return;
+            }
+            var theme = EnsureUiAssets();
+            EnsureGlobalActions();
+            var ui = UiSetup.EnsureGroup(GroupUI);
+            UiSetup.EnsureUiRoot(ui, theme);
+            RemoveChild(ui, TestPanelName);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, InputTestPanelName, InputTestPanel.Size);
+            canvas.AddComponent<StopDialogHost>().canvas = canvas.transform;
+            canvas.AddComponent<InputTestPanel>();
+            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
+            EnsureMainHallFirstInBuild();
+            UiSetup.MarkSceneDirty();
+            Debug.Log("[GPL] Input test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+        }
+
+        /// <summary>One GlobalActions object (group XR) in the open scene.</summary>
+        public static GlobalActions EnsureGlobalActions()
+        {
+            var existing = Object.FindAnyObjectByType<GlobalActions>(FindObjectsInactive.Include);
+            if (existing != null) return existing;
+            var xr = UiSetup.EnsureGroup(GroupXR);
+            var go = new GameObject("Global Actions");
+            go.transform.SetParent(xr, false);
+            Undo.RegisterCreatedObjectUndo(go, "Global Actions");
+            return go.AddComponent<GlobalActions>();
+        }
+
+        static void RemoveChild(Transform parent, string childName)
+        {
+            var t = parent.Find(childName);
+            if (t != null) Undo.DestroyObjectImmediate(t.gameObject);
         }
 
         /// <summary>MainHall first in the build scene list; entries whose scene file no longer exists are removed.</summary>
@@ -69,6 +118,15 @@ namespace AcousticChamber.App.Editor
         {
             EditorSceneManager.OpenScene(MainHallScene, OpenSceneMode.Single);
             AddUiTestPanel();
+            EditorSceneManager.SaveOpenScenes();
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Headless (mirror project): open MainHall, add the input test panel, save.</summary>
+        public static void BatchInputTestPanelInMainHall()
+        {
+            EditorSceneManager.OpenScene(MainHallScene, OpenSceneMode.Single);
+            AddInputTestPanel();
             EditorSceneManager.SaveOpenScenes();
             AssetDatabase.SaveAssets();
         }

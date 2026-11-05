@@ -7,7 +7,6 @@ namespace GPL.Logging
     {
         public const string SessionStart = "session_start";
         public const string SessionResume = "session_resume";
-        public const string SessionPaused = "session_paused";
         public const string SessionSuperseded = "session_superseded";
         public const string SessionEnd = "session_end";
         public const string ParticipantDropout = "participant_dropout";

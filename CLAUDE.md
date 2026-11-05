@@ -31,7 +31,7 @@ Reference implementation: `../115A-535655-HumPer-HW2` (the earlier ventriloquist
 5. **Data first:** before coding a chamber, write its `Design.md`, `DataFormat.md` and `AnalysisPlan.md` (RM-ANOVA factors, levels, dependent variables, aggregation, exclusion rules) and get PO approval.
 6. **Never delete data rows.** Restarts, pauses and dropouts are logged events; the `attempt` column separates repeated blocks.
 7. **Parameters come from presets** (`GPL.Params`, ADR-0002), never from Inspector fields at run time. Debug edits a working copy; real runs use the active preset; a session stores its own snapshot and resumes with it.
-8. **Input through `GPL.Input` bindings** (ADR-0003), no direct `OVRInput` in chamber code. Global action Y (left controller) = Stop dialog (Keep going / Pause and back to menu / Drop out).
+8. **Input through `GPL.Input` bindings** (ADR-0003), no direct `OVRInput` in chamber code. Global action Y (left controller) = Stop dialog (Keep going / Drop out; Debug: Keep going / Back to the chamber menu).
 9. **Text entry through `ITextEntry`** (number pad, keypad, native keyboard are swappable).
 10. Terms: **Study ID** (not participant ID): number pad, up to 4 digits, shown as `S0001`. Languages: English and 中文 (label it exactly "中文", nothing longer).
 

@@ -85,7 +85,7 @@ Every chamber starts at its **chamber menu** (generic, from `GPL.UI` + `GPL.Sess
 
 ### 6.1 Session record
 One key=value text file per session, `<base>.session`, **next to its CSV** `<base>.csv` in `persistentDataPath/<ChamberId>/` (atomic write; the base name `yyyyMMdd_HHmmss_<ChamberId>_<StudyId>` is the session ID). Real sessions only; Debug runs have a CSV and no session file. Implemented in `GPL.Session` (PB-04):
-`session_id, chamber, chamber_version, study_id, status (InProgress | Completed | DroppedOut | Superseded), seed, language, preset, params_hash, plan_hash, app_version, created, updated, cursor.{stage, block, trials_done, attempt}, resume_from, attempt.<stage>.<block>, param.<key> (full snapshot), custom.<key>`. A Stop-dialog pause keeps the status `InProgress` (logged as `session_paused`).
+`session_id, chamber, chamber_version, study_id, status (InProgress | Completed | DroppedOut | Superseded), seed, language, preset, params_hash, plan_hash, app_version, created, updated, cursor.{stage, block, trials_done, attempt}, resume_from, attempt.<stage>.<block>, param.<key> (full snapshot), custom.<key>`. The Stop dialog has no pause: a session stays `InProgress` until it completes, drops out or is superseded; quitting the app or taking the headset off leaves it resumable.
 
 **A resumed session uses its own parameter snapshot**, not the currently active preset (the menu warns if they differ).
 
@@ -127,10 +127,10 @@ Fixes the HW2 problem that Debug changes did not carry over to real trials.
 ## 9. Input bindings and text entry
 - **Global actions** are the same in every chamber where possible. Reserved: **Y (left controller) = Stop dialog**. The Meta button belongs to the system. A chamber may remap a global action only by declaring it in its `ChamberDefinition` (bindings table); its menu then shows the binding.
 - **Chamber actions** (confirm, adjust left/right, grab, ...) are declared per chamber in the same table and read through `GPL.Input`, never with direct `OVRInput` calls in chamber code.
-- **Stop dialog (Y)**, modal, the session is frozen while open:
+- **Standard chamber actions** (defaults; a chamber declares only those it uses): `confirm` = A, `back` = B, `trigger_left/right`, `grip_left/right`, `stick_left/right`; X is free. Y works only while a session (real or Debug run) is running; in the Hall and the menus it does nothing.
+- **Stop dialog (Y)**, modal, the session is frozen while open (time scale 0, audio paused):
   - **Keep going**
-  - **Pause and back to the chamber menu** (session stays resumable; logged `session_paused`)
-  - **Drop out** (participant withdraws; logged `participant_dropout`; not resumable)
+  - **Drop out** (participant withdraws; logged `participant_dropout`; not resumable; asks once more: "Drop out S0012?")
   - In Debug: Keep going / Back to the chamber menu.
 - **Text entry is swappable** (`ITextEntry`): `NumberPadEntry` (on-canvas, reliable, HW2), `KeypadEntry` (letters + digits), `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`, the Quest system keyboard). Selected per chamber or globally; the native keyboard problem from HW2 is investigated in its own ticket. (Meta's in-app Virtual Keyboard is not part of the installed Core SDK 207.)
 
@@ -139,7 +139,7 @@ Long format, one row per event. Common columns (every chamber):
 `event, timestamp_local, elapsed_s, session_id, chamber, chamber_version, study_id, mode, preset, params_hash, stage, block, condition, trial, attempt, note`
 then the chamber's columns, then `note` (always the last column) (declared in its `LogSchema`; writing an undeclared column fails a unit test). RM-ANOVA factors are **explicit columns** (e.g. `hl_side`, `hl_level`, `rt60_target_s`), never parsed from notes.
 
-Common events: `session_start` (app version, device, headset volume step entered by the experimenter), `session_resume`, `stage_begin/end`, `block_begin/end`, `block_restart`, `trial`, `homing`, `recenter`, `handover`, `app_paused/app_resumed`, `session_paused`, `participant_dropout`, `session_superseded`, `session_end`, `debug_*`, `param_change` (Debug).
+Common events: `session_start` (app version, device, headset volume step entered by the experimenter), `session_resume`, `stage_begin/end`, `block_begin/end`, `block_restart`, `trial`, `homing`, `recenter`, `handover`, `app_paused/app_resumed`, `participant_dropout`, `session_superseded`, `session_end`, `debug_*`, `param_change` (Debug).
 
 Files: `persistentDataPath/<ChamberId>/yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` (resume appends) and the `.session` file (the parameter snapshot lives there). Each chamber's `AnalysisPlan.md`: within factors, levels, DV, per-cell aggregation, exclusions (Debug, dropout, superseded, lower attempts). Each chamber also has `DataFormat.md` written for an analyst (human or AI): files, columns, units, events, how to rebuild the trial table and the per-cell means. No analysis scripts in the repo.
 

@@ -71,7 +71,7 @@ Units: GUI sizes are canvas units. HW2 scale: 1 unit = 0.002 m, panel 2 m away, 
 
 ## 5. Dialogs
 ### Stop dialog (Y)
-- `surface` box with a `danger` top bar, in the upper part of the panel; three buttons: **Keep going** (`primary`, the default under the pointer), **Pause and back to menu** (`neutral`), **Drop out** (`danger`, asks "Sure?" once more).
+- `surface` box with a `danger` top bar, in the upper part of the panel; two buttons: **Keep going** (`primary`) and **Drop out** (`danger`, asks once more: "Drop out S0012?" Cancel / Drop out). Debug run: `warning` top bar, **Keep going** / **Back to the chamber menu**. The session is frozen while it is open.
 
 ### Delete in the data manager
 - `danger` buttons; "Delete" confirms once; "Delete all" names the count and confirms twice.

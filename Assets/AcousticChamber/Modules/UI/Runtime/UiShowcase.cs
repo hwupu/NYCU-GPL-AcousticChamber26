@@ -14,6 +14,7 @@ namespace GPL.UI
         public static readonly Vector2 Size = new Vector2(1000f, 700f);
 
         TextMeshProUGUI _status;
+        NumberPadEntry _pad;
 
         void Start() => Build();
 
@@ -37,7 +38,7 @@ namespace GPL.UI
             const float leftX = -250f;
             UiKit.Text(root, "Study ID Label", "Study ID", th.smallSize, new Vector2(leftX, 210f), new Vector2(400f, 40f),
                        color: th.textSecondary, align: TextAlignmentOptions.Left);
-            var pad = NumberPadEntry.Create(root, new Vector2(leftX, -50f), StudyId.MaxDigits, StudyId.FromDigits, "S____");
+            var pad = _pad = NumberPadEntry.Create(root, new Vector2(leftX, -50f), StudyId.MaxDigits, StudyId.FromDigits, "S____");
             pad.GetComponent<RectTransform>().localScale = Vector3.one * 0.95f;
             pad.Changed += v => SetStatus(v.Length == 0 ? "Study ID cleared" : "Study ID " + StudyId.FromDigits(v) + " (typed " + v + ")");
             UiKit.Text(root, "Preset Line", "Preset: Default", th.smallSize, new Vector2(leftX, -310f), new Vector2(400f, 40f),
@@ -70,18 +71,8 @@ namespace GPL.UI
 
         void OpenStopDialog()
         {
-            var th = UiKit.Theme;
-            ModalDialog.Show(transform, "Stop the session?", "Pause keeps the session resumable. Drop out ends it.", th.danger,
-                new DialogButton("Keep going", UiStyle.Primary, () => SetStatus("Keep going")),
-                new DialogButton("Pause", UiStyle.Neutral, () => SetStatus("Pause and back to menu")),
-                new DialogButton("Drop out", UiStyle.Danger, ConfirmDropOut));
-        }
-
-        void ConfirmDropOut()
-        {
-            ModalDialog.Show(transform, "Sure?", "The participant withdraws. This session cannot be resumed.", UiKit.Theme.danger,
-                new DialogButton("Back", UiStyle.Neutral, () => SetStatus("Drop out cancelled")),
-                new DialogButton("Drop out", UiStyle.Danger, () => SetStatus("Dropped out")));
+            string id = _pad != null && _pad.Value.Length > 0 ? StudyId.FromDigits(_pad.Value) : "";
+            StopDialog.Show(transform, false, id, c => SetStatus("Stop dialog: " + c), freeze: false);
         }
 
         void SetStatus(string s)
