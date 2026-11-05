@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Homing",
+    "rootNamespace": "GPL.Homing",
+    "references": ["GPL.Core", "GPL.Homing.Core", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

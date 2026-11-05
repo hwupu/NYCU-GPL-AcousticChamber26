@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AcousticChamber.App;
+using GPL.Homing;
 using GPL.Input;
 using GPL.UI;
 using GPL.UI.Editor;
@@ -25,6 +26,10 @@ namespace AcousticChamber.App.Editor
         const string TestPanelName = "UI Test Panel";
         const string InputTestPanelName = "Input Test Panel";
         const string BenchTestPanelName = "Debug Bench Test Panel";
+        const string HomingTestPanelName = "Homing Test Panel";
+        const string GroupExperiment = "Experiment";
+        const string HomingName = "Homing";
+        const string FixationMatPath = "Assets/AcousticChamber/Settings/Materials/Fixation.mat";
 
         [MenuItem("Magic/App/Step 1 - UI theme and fonts", priority = 1)]
         public static UiTheme EnsureUiAssets()
@@ -125,9 +130,60 @@ namespace AcousticChamber.App.Editor
             Debug.Log("[GPL] Debug bench test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
         }
 
+        /// <summary>
+        /// Adds the GPL.Homing test panel (HomingTestPanel) and one Homing object (group Experiment: FixationCue with the
+        /// fixation material, RecenterListener); it replaces the other test panels. Temporary headset check for PB-05c.
+        /// </summary>
+        [MenuItem("Magic/App/Homing Test Panel (open scene)", priority = 53)]
+        public static void AddHomingTestPanel()
+        {
+            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
+            {
+                Debug.LogError("[GPL] Add the Camera Rig building block first.");
+                return;
+            }
+            var theme = EnsureUiAssets();
+            EnsureGlobalActions();
+            var (cue, listener) = EnsureHoming();
+            var ui = UiSetup.EnsureGroup(GroupUI);
+            UiSetup.EnsureUiRoot(ui, theme);
+            RemoveTestPanels(ui);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, HomingTestPanelName, HomingTestPanel.Size);
+            var panel = canvas.AddComponent<HomingTestPanel>();
+            panel.cue = cue;
+            panel.listener = listener;
+            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
+            EnsureMainHallFirstInBuild();
+            UiSetup.MarkSceneDirty();
+            Debug.Log("[GPL] Homing test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+        }
+
+        /// <summary>One Homing object (group Experiment) with a FixationCue (URP Unlit #262626 material) and a RecenterListener.</summary>
+        public static (FixationCue, RecenterListener) EnsureHoming()
+        {
+            var mat = UiSetup.EnsureUnlitMaterial(FixationMatPath, new Color32(0x26, 0x26, 0x26, 0xFF));
+            var cue = Object.FindAnyObjectByType<FixationCue>(FindObjectsInactive.Include);
+            var listener = Object.FindAnyObjectByType<RecenterListener>(FindObjectsInactive.Include);
+            GameObject go = cue != null ? cue.gameObject : listener != null ? listener.gameObject : null;
+            if (go == null)
+            {
+                go = new GameObject(HomingName);
+                go.transform.SetParent(UiSetup.EnsureGroup(GroupExperiment), false);
+                Undo.RegisterCreatedObjectUndo(go, HomingName);
+            }
+            if (cue == null) cue = Undo.AddComponent<FixationCue>(go);
+            if (listener == null) listener = Undo.AddComponent<RecenterListener>(go);
+            if (cue.material == null)
+            {
+                Undo.RecordObject(cue, "Fixation material");
+                cue.material = mat;
+            }
+            return (cue, listener);
+        }
+
         static void RemoveTestPanels(Transform ui)
         {
-            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName }) RemoveChild(ui, n);
+            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName }) RemoveChild(ui, n);
         }
 
         static void RemoveChild(Transform parent, string childName)
@@ -149,6 +205,15 @@ namespace AcousticChamber.App.Editor
         {
             EditorSceneManager.OpenScene(MainHallScene, OpenSceneMode.Single);
             AddUiTestPanel();
+            EditorSceneManager.SaveOpenScenes();
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Headless (mirror project): open MainHall, add the homing test panel, save.</summary>
+        public static void BatchHomingTestPanelInMainHall()
+        {
+            EditorSceneManager.OpenScene(MainHallScene, OpenSceneMode.Single);
+            AddHomingTestPanel();
             EditorSceneManager.SaveOpenScenes();
             AssetDatabase.SaveAssets();
         }

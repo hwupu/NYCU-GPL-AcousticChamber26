@@ -11,7 +11,7 @@ Status: **accepted** (PO answers round 1, [../Questions.md](../Questions.md)).
 4. HW2 is refactored: generic parts into modules, HW2-specific parts into a `HumPerHW2` chamber that rebuilds the study.
 5. One scene per chamber with its own Meta rig, plus a Hall scene; chambers registered by `ChamberDefinition` assets in a `ChamberCatalog`.
 6. Logs: common columns + chamber-declared columns, explicit factor columns, `attempt` column, never delete rows, a session file (key=value) with the parameter snapshot, next to its CSV.
-7. Homing methods are interchangeable (`IHomingMethod`); posture (seated, standing, room-scale) is per chamber with a handover stage.
+7. Homing methods are interchangeable (`IHomingMethod`); posture (seated, standing, room-scale) is per chamber with a handover stage. *Amended 2026-11-06 (PB-05c):* recentering uses the Meta system recenter, never a rig rotation; the rig stays at identity so raw tracking poses and logged angles share one frame (0° = the participant's forward).
 8. Hearing loss on the final stereo output, per ear.
 
 **Consequences.** More structure up front; each chamber needs Design/DataFormat/AnalysisPlan before code. Chamber scenes duplicate the rig (accepted for independence).

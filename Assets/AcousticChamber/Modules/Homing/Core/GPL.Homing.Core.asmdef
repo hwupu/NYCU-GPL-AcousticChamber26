@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Homing.Core",
+    "rootNamespace": "GPL.Homing",
+    "references": ["GPL.Core", "GPL.Params.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

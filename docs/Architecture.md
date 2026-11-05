@@ -117,9 +117,9 @@ Fixes the HW2 problem that Debug changes did not carry over to real trials.
 
 | Method | What happens |
 |---|---|
-| `HeadGate` | fixation cue ahead, head within yaw/pitch tolerance for a hold time (HW2, before every trial) |
+| `HeadGate` | fixation cue ahead, head within yaw/pitch tolerance for a hold time (HW2, before every trial); defaults yaw ±10°, pitch ±15°, hold 0.5 s, hint after 4 s, tunable in presets (PO 2026-11-06) |
 | `SystemRecenterListener` | reacts to the Meta long-press recenter; re-places GUI and head-relative stimuli (always on) |
-| `SoftwareRecenter` | current head yaw/position becomes forward/origin without a system call (handover, experimenter button) |
+| `SystemRecenter` | handover, experimenter button: the Meta system recenter makes the current head yaw/position forward/origin; head yaw measured before (the correction) and after (the residual). Replaces the planned `SoftwareRecenter` (PO 2026-11-06): the rig stays at identity, so raw tracking poses and logged values share one frame |
 | `AlignToTarget` | participant turns to a visible target; the room stays fixed |
 | `AudioHoming` | a sound straight ahead; face it and confirm (designs without visuals) |
 | `RoomAnchor` | room-scale: no re-centering of position; the virtual room is aligned once to the physical room (setup-time) |
@@ -147,7 +147,7 @@ Files: `persistentDataPath/<ChamberId>/yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_
 MQDH does not list the per-app folder, so files are managed in the headset.
 - Shared component (`GPL.Session` `DataManagerPanel`), placed in every chamber's Debug menu; it only sees **that chamber's folder** (`persistentDataPath/<ChamberId>/`).
 - One entry per session = the **pair** CSV + session file (Debug runs: CSV only). Shows date/time, Study ID, mode (real / DEBUG), status (in progress, completed, paused, dropped out, superseded), size, number of trial rows.
-- **Delete** one entry (both files together) or **Delete all**; each asks for confirmation in a modal dialog ("Delete all" names the count and needs a second confirm). Deleting an unfinished session removes it from the resume list.
+- **Delete** one entry (both files together) or **Delete all**; each asks for confirmation in a modal dialog ("Delete all" names the count; one confirmation, PO 2026-11-06). Deleting an unfinished session removes it from the resume list.
 - Presets are not touched by the data manager.
 - Deletions are not logged in any data file (the file is gone); the console mirror prints them.
 - Still valid for copying files off the headset: Windows Explorer (`Quest 3 > Internal shared storage > Android > data > com.nycu.AcousticChamber26 > files`) or `adb pull` on macOS (HW2 README).

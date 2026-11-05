@@ -12,9 +12,10 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 | [Session](Session/README.md) | `GPL.Session.Core` | session record, cursor, attempts, resume policies, session store, data manager (list/delete file pairs) | Core |
 | [UI](UI/README.md) | `GPL.UI.Core` + `GPL.UI` | overlay canvas placement, ray pointer, themed buttons/text (TextMeshPro, English + 中文), number pad (`ITextEntry`), sheets and dialogs, pages, scroll lists, groups and rows, switches, localization | Core, Meta XR Core, uGUI/TMP |
 | [Input](Input/README.md) | `GPL.Input.Core` + `GPL.Input` | binding table (action -> controller button), action reader over OVRInput, global Stop action (Y) | Core, Meta XR Core |
-| [DebugBench](DebugBench/README.md) | `GPL.DebugBench.Core` + `GPL.DebugBench` | a chamber's Debug pages: working copy of a preset (step, revert, save, save as), Debug page (Run, Parameters, Presets, chamber sections, Data), Parameters page | Core, Params, UI |
+| [DebugBench](DebugBench/README.md) | `GPL.DebugBench.Core` + `GPL.DebugBench` | a chamber's Debug pages: working copy of a preset (step, revert, save, save as), Debug page (Run, Parameters, Presets, chamber sections, Data), Parameters page | Core, Params, Session, UI |
+| [Homing](Homing/README.md) | `GPL.Homing.Core` + `GPL.Homing` | head gate with a fixation dot, system recenter at handover, recenter listener; results as `homing` / `recenter` notes; gate as preset parameters | Core, Params, Meta XR Core |
 
-Planned (Architecture section 4): Protocol, Homing, Acoustics, HearingLoss, SpatialSources, Responses.
+Planned (Architecture section 4): Protocol, Acoustics, HearingLoss, SpatialSources, Responses.
 
 Conventions
 - Folder layout: `Core/` (pure, `noEngineReferences: true`), `Runtime/` (Unity), `Editor/`, `Tests/EditMode/`, `README.md`.
