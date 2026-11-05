@@ -13,7 +13,15 @@ namespace GPL.UI
 
         void Awake()
         {
-            if (theme != null) UiKit.Theme = theme;
+            if (theme != null && theme.version < UiTheme.CurrentVersion)
+            {
+                Debug.LogWarning("[GPL] UiRoot: the UiTheme asset has old tokens (v" + theme.version + "); using the current defaults. Run the UI setup step (Magic > App > Step 1) to update the asset.");
+                var copy = Instantiate(theme);
+                copy.hideFlags = HideFlags.DontSave;
+                copy.ResetTokens();
+                UiKit.Theme = copy;
+            }
+            else if (theme != null) UiKit.Theme = theme;
             else Debug.LogWarning("[GPL] UiRoot: no UiTheme assigned; using default colors and TextMeshPro's default font (no 中文).");
             UiStrings.EnsureRegistered();
         }

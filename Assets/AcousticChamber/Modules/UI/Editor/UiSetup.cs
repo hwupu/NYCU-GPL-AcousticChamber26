@@ -57,8 +57,14 @@ namespace GPL.UI.Editor
             if (theme == null)
             {
                 theme = ScriptableObject.CreateInstance<UiTheme>();
+                theme.version = UiTheme.CurrentVersion;
                 EnsureFolder(Path.GetDirectoryName(assetPath));
                 AssetDatabase.CreateAsset(theme, assetPath);
+            }
+            else if (theme.version < UiTheme.CurrentVersion)
+            {
+                Debug.Log("[GPL] UiTheme " + assetPath + ": tokens v" + theme.version + " -> v" + UiTheme.CurrentVersion + " (reset to the design-system defaults, fonts kept).");
+                theme.ResetTokens();
             }
             if (theme.regular == null) theme.regular = regular;
             if (theme.bold == null) theme.bold = bold;

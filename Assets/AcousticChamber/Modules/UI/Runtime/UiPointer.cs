@@ -7,7 +7,8 @@ namespace GPL.UI
     /// Controller laser for world-space uGUI (from HW2's UiPointer). Meta's OVRInputModule relies on the legacy Input API,
     /// which is disabled (Input System only), so this does its own ray/rect hit test against every active, interactable
     /// <see cref="Selectable"/>. The hand that last pulled its index trigger owns the ray (right hand by default). The laser
-    /// is drawn only while some usable UI exists; it is white and turns accent while it hits a button.
+    /// is drawn only while some usable UI exists (white). Hit regions are grown to the theme minimum (UiKit.HitRect);
+    /// trigger down presses a <see cref="UiButton"/> (pressed look until the trigger is released) and clicks it.
     /// </summary>
     public class UiPointer : MonoBehaviour
     {
@@ -28,7 +29,6 @@ namespace GPL.UI
         LineRenderer _line;
         Material _lineMat;
         bool _useLeft;
-        bool _lastHit;
         Transform _leftRay, _rightRay;
         float _nextSearchTime;
         OVRCameraRig _rig;
@@ -44,7 +44,7 @@ namespace GPL.UI
             _line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _line.receiveShadows = false;
             _line.enabled = false;
-            SetLaserColor(false);
+            SetLaserColor();
         }
 
         void OnDestroy()
@@ -85,18 +85,43 @@ namespace GPL.UI
             _line.enabled = true;
             _line.SetPosition(0, ray.origin);
             _line.SetPosition(1, hit != null ? hitPoint : ray.origin + ray.direction * idleLaserLengthM);
-            if (_lastHit != (hit != null)) SetLaserColor(hit != null);
 
-            if ((leftDown || rightDown) && hit is Button button) button.onClick.Invoke();
+            if ((leftDown || rightDown) && hit is Button button)
+            {
+                ReleasePressed();
+                if (button is UiButton ub)
+                {
+                    ub.Press();
+                    _pressed = ub;
+                    _pressedHand = leftDown && !rightDown ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+                }
+                button.onClick.Invoke();
+            }
+            if (_pressed != null && !OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, _pressedHand)) ReleasePressed();
+        }
+
+        UiButton _pressed;
+        OVRInput.Controller _pressedHand;
+
+        void ReleasePressed()
+        {
+            if (_pressed != null) _pressed.Release();
+            _pressed = null;
         }
 
         static bool IsUsable(Selectable s) =>
             s != null && s.isActiveAndEnabled && s.interactable && (Modal == null || s.transform.IsChildOf(Modal));
 
-        Selectable Raycast(Ray ray, Selectable[] targets, out Vector3 point)
+        Selectable Raycast(Ray ray, Selectable[] targets, out Vector3 point) => Pick(ray, targets, maxDistanceM, out point);
+
+        /// <summary>
+        /// The usable selectable hit by <paramref name="ray"/>: nearest plane first; on the same plane, a hit inside the
+        /// element's own rect beats a hit only in its grown hit region (<see cref="UiKit.HitRect"/>), then the nearer center.
+        /// </summary>
+        public static Selectable Pick(Ray ray, Selectable[] targets, float maxDistance, out Vector3 point)
         {
             Selectable best = null;
-            float bestT = maxDistanceM;
+            float bestT = maxDistance, bestScore = float.MaxValue;
             point = Vector3.zero;
             foreach (var s in targets)
             {
@@ -107,9 +132,14 @@ namespace GPL.UI
                 float denom = Vector3.Dot(ray.direction, n);
                 if (Mathf.Abs(denom) < 1e-5f) continue;
                 float t = Vector3.Dot(rt.position - ray.origin, n) / denom;
-                if (t <= 0f || t >= bestT) continue;
+                if (t <= 0f || t > bestT + 1e-4f) continue;
                 Vector3 p = ray.origin + ray.direction * t;
-                if (rt.rect.Contains(rt.InverseTransformPoint(p))) { best = s; bestT = t; point = p; }
+                Vector2 local = rt.InverseTransformPoint(p);
+                if (!UiKit.HitRect(rt).Contains(local)) continue;
+                float score = (rt.rect.Contains(local) ? 0f : 1e6f) + (local - rt.rect.center).sqrMagnitude;
+                bool samePlane = Mathf.Abs(t - bestT) <= 1e-4f;
+                if (best != null && samePlane && score >= bestScore) continue;
+                best = s; bestT = t; bestScore = score; point = p;
             }
             return best;
         }
@@ -117,26 +147,15 @@ namespace GPL.UI
         static void SetHover(Selectable s)
         {
             if (Hovered == s) return;
-            if (Hovered != null)
-            {
-                Hovered.OnPointerExit(null);
-                var h = Hovered.GetComponent<HoverHighlight>();
-                if (h != null) h.SetHover(false);
-            }
+            var old = Hovered;
             Hovered = s;
-            if (Hovered != null)
-            {
-                Hovered.OnPointerEnter(null);
-                var h = Hovered.GetComponent<HoverHighlight>();
-                if (h != null) h.SetHover(true);
-            }
+            if (old != null) old.OnPointerExit(null);
+            if (Hovered != null) Hovered.OnPointerEnter(null);
         }
 
-        void SetLaserColor(bool onTarget)
+        void SetLaserColor()
         {
-            _lastHit = onTarget;
-            if (_lineMat != null && _lineMat.HasProperty(BaseColorId))
-                _lineMat.SetColor(BaseColorId, onTarget ? UiKit.Theme.accent : Color.white);
+            if (_lineMat != null && _lineMat.HasProperty(BaseColorId)) _lineMat.SetColor(BaseColorId, Color.white);
         }
 
         /// <summary>

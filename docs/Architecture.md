@@ -73,7 +73,7 @@ Modules stay plain folders (copy the folder plus `GPL.Core`). Turning a stable m
 - **`ChamberCatalog`**: list shown in the Hall. `Magic > App > Sync Chambers` collects every `ChamberDefinition`, updates the catalog and the build profile scene list. Removing a chamber = delete its folder + Sync. `Validate Setup` flags orphans.
 - **Main Hall** (`MainHall.unity`): own rig and GUI; panel listing the chambers (title, number of unfinished sessions). No Study ID here.
 - **`SessionRouter`**: on launch, if the last used chamber has unfinished sessions it opens **that chamber's menu** (not the trials). Otherwise the Hall.
-- **Scenes:** one scene per chamber, each with its own Building Blocks rig, loaded singly behind a fade. A small persistent object hands over only the mode and language.
+- **Scenes:** one scene per chamber, each with its own Building Blocks rig, loaded singly behind a fade. A small persistent object hands over only the mode (real / Debug). The participant language is chosen inside the chamber session (Language stage, stored in the session record); system screens are English only.
 
 ## 6. Chamber menu and session flow
 Every chamber starts at its **chamber menu** (generic, from `GPL.UI` + `GPL.Session`, HW2 style):

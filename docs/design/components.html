@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AcousticChamber26 — component preview (proposal for PB-17 / PB-18)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Tokens (scheme B: mono + white) ==============================================================================
+   1 canvas unit (u) = 1 pt in this document. At 2 m, 1 u = 2 mm ≈ 0.057°.  --u = screen pixels per unit (zoom).
+   State colors get brighter from normal → hover → pressed (pressed is the brightest). Red keeps its hue and saturation;
+   only its brightness (HSV value) rises. */
+:root {
+  --u: 0.7px;
+  --surface:#1C1C1F; --raised:#2A2A2E; --cover:#4A4A50;
+  --text:#FFFFFF; --text2:#A1A1A8; --text3:#5E5E66; --debug:#E0A93B;
+  /* button fills: normal / hover / pressed */
+  --prom:#D6D6DB;  --prom-h:#E9E9ED;  --prom-p:#FFFFFF;  --on-prom:#141416;
+  --gray:#3A3A3F;  --gray-h:#48484E;  --gray-p:#5A5A61;
+  --bl-h:#2E2E33;  --bl-p:#3F3F45;                       /* borderless on surface */
+  --in-h:#3A3A3F;  --in-p:#4A4A50;                       /* borderless inside a raised container */
+  --red:#BF3D37;   --red-h:#D9453F;   --red-p:#F24D46;   /* HSV hue 3°, sat 71 %, value 75 / 85 / 95 % */
+  --red-text:#FF6B63;
+  --select:#4A4A50;
+  /* geometry */
+  --hit: 60; --inset: 4; --r-panel: 32; --gap: 20;
+  /* motion (ms): slow, settling — 0 with "Reduce motion" */
+  --hover-in: 150ms; --hover-out: 350ms; --release: 250ms; --sheet: 450ms; --push: 450ms; --dim: 0.45;
+  --settle: cubic-bezier(.16, 1, .3, 1);
+}
+body.reduce { --hover-in:0ms; --hover-out:0ms; --release:0ms; --sheet:0ms; --push:0ms; }
+
+* { box-sizing: border-box; }
+body { margin:0; padding:20px 24px 60px; background:#e4e4e4; color:#222; font:14px/1.45 system-ui, sans-serif; }
+h1 { font-size:20px; margin:0 0 4px; }
+h2 { font-size:16px; margin:28px 0 6px; }
+p.note { margin:0 0 10px; color:#555; max-width:1100px; }
+.toolbar { position:sticky; top:0; z-index:50; display:flex; gap:18px; flex-wrap:wrap; align-items:center; padding:8px 12px;
+           background:#fff; border:1px solid #ccc; border-radius:8px; margin:10px 0 4px; }
+.toolbar label { display:flex; gap:6px; align-items:center; cursor:pointer; }
+.row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+.room { padding:calc(var(--u)*40); background:#f2f2f0; border:1px solid #c8c8c8; border-radius:6px; transition:background .2s; }
+body.darkroom .room { background:#3a3d42; }
+.cap { font-size:12px; color:#666; margin-top:6px; max-width:620px; }
+table.tok { border-collapse:collapse; font-size:12px; background:#fff; }
+table.tok td, table.tok th { border:1px solid #ddd; padding:3px 8px; text-align:left; vertical-align:top; }
+table.tok input { width:60px; }
+.chip { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; border:1px solid #0003; }
+
+/* ===== Panel ===== */
+.ui { font-family:"Noto Sans TC", system-ui, sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; }
+.panel { position:relative; background:var(--surface); border-radius:calc(var(--u)*var(--r-panel)); overflow:hidden; }
+.t-title { font-size:calc(var(--u)*56); font-weight:700; }
+.t-head  { font-size:calc(var(--u)*44); font-weight:700; }
+.t-small { font-size:calc(var(--u)*28); color:var(--text2); }
+.debugtag { color:var(--debug); font-weight:700; font-size:calc(var(--u)*24); letter-spacing:calc(var(--u)*3); }
+body.nodebug .debugtag { display:none; }
+
+/* ===== Buttons: --n normal, --h hover, --p pressed; pressed is the brightest ===== */
+.btn { --n:var(--gray); --h:var(--gray-h); --p:var(--gray-p); position:relative; display:inline-flex; align-items:center; justify-content:center;
+       min-width:calc(var(--u)*220); height:calc(var(--u)*80); padding:0 calc(var(--u)*32);
+       border-radius:calc(var(--u)*40); background:var(--n); color:var(--text);
+       font:inherit; font-size:calc(var(--u)*36); border:0; cursor:pointer; user-select:none; white-space:nowrap;
+       transition:background-color var(--hover-out) var(--settle), transform var(--release) var(--settle); }
+.btn.prominent { --n:var(--prom); --h:var(--prom-h); --p:var(--prom-p); color:var(--on-prom); font-weight:700; }
+.btn.destructive { --n:var(--red); --h:var(--red-h); --p:var(--red-p); font-weight:700; }
+.btn.borderless { --n:transparent; --h:var(--bl-h); --p:var(--bl-p); }
+.inbox .btn.borderless, .btn.borderless.inbox { --h:var(--in-h); --p:var(--in-p); }
+.btn.red { color:var(--red-text); }
+.btn:hover, .btn.s-hover { background:var(--h); transition:background-color var(--hover-in) var(--settle), transform var(--release) var(--settle); }
+.btn:active, .btn.s-press { background:var(--p); transform:scale(.97); transition:none; }
+.btn[disabled] { opacity:.4; pointer-events:none; }
+.btn.small { min-width:0; height:calc(var(--u)*60); font-size:calc(var(--u)*28); padding:0 calc(var(--u)*20); border-radius:calc(var(--u)*30); }
+.btn.iconbtn { --n:transparent; --h:var(--bl-h); --p:var(--bl-p); min-width:0; width:calc(var(--u)*80); padding:0; border-radius:50%; font-size:calc(var(--u)*72); line-height:1; flex:none; }
+
+/* hit-area overlay (bounds, grown to at least 60 x 60 u) and inset overlay */
+body.showhit .btn::after, body.showhit .hit::after {
+  content:""; position:absolute; pointer-events:none; border:1px dashed #FFD54A;
+  left:50%; top:50%; width:max(100%, calc(var(--u)*var(--hit))); height:max(100%, calc(var(--u)*var(--hit)));
+  transform:translate(-50%,-50%); border-radius:inherit; }
+body.showinset .container, body.showinset .group, body.showinset .card { outline:1px solid #FF6BD5; outline-offset:-1px; }
+body.showinset .container > *, body.showinset .group > *, body.showinset .card > * { outline:1px dotted #FF6BD5; }
+
+/* ===== Containers (4 u inset, concentric corners: inner radius = outer radius - 4) ===== */
+.container { padding:calc(var(--u)*var(--inset)); border-radius:calc(var(--u)*var(--r)); --r:44; }
+.display { height:calc(var(--u)*80); display:flex; align-items:center; justify-content:center; font-weight:700;
+           font-size:calc(var(--u)*44); letter-spacing:calc(var(--u)*2); background:var(--raised); border-radius:calc(var(--u)*40); }
+.display.empty { color:var(--text3); }
+.pad { display:grid; grid-template-columns:repeat(3, 1fr); gap:calc(var(--u)*var(--inset)); }
+.pad .btn { min-width:0; width:100%; padding:0; font-size:calc(var(--u)*44); border-radius:calc(var(--u)*(var(--r) - var(--inset))); }
+.pad .k-small { font-size:calc(var(--u)*28); color:var(--text2); }
+
+/* ===== State strip ===== */
+.states { display:grid; grid-template-columns:auto repeat(4, auto); gap:calc(var(--u)*24); align-items:center; padding:calc(var(--u)*40); }
+.states .h { font-size:calc(var(--u)*24); color:var(--text2); text-align:center; }
+
+/* ===== Header: back ‹ / close × top left (never both), title, trailing items ===== */
+.hdr { display:flex; align-items:center; gap:calc(var(--u)*20); padding:calc(var(--u)*40) calc(var(--u)*48) calc(var(--u)*20); }
+.hdr .iconbtn + .t-title { margin-left:calc(var(--u)*-12); }   /* 8 u: the title is not interactive */
+.hdr .t-title { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.shdr { display:flex; align-items:center; gap:calc(var(--u)*20); }
+.shdr .t-head { flex:1; }
+
+/* ===== Sheets: appear in place (scale 0.94 → 1, blur → sharp, fade); settle. No slide. ===== */
+.stage { position:relative; width:calc(var(--u)*1000); height:calc(var(--u)*700); }
+.stage .layer { position:absolute; inset:0; transition:transform var(--push) var(--settle); transform-origin:50% 50%; }
+.stage .dimmer { position:absolute; inset:0; background:#000; opacity:0; pointer-events:none; border-radius:inherit;
+                 transition:opacity var(--push) var(--settle); }
+.stage .layer.pushed { transform:scale(.94); pointer-events:none; }
+.stage .layer.pushed .dimmer { opacity:var(--dim); }
+.stage .layer.pushed2 { transform:scale(.88); }
+.sheet { position:absolute; left:50%; top:50%; width:calc(var(--u)*820); transform:translate(-50%,-50%) scale(1);
+         border-radius:calc(var(--u)*var(--r-panel)); padding:calc(var(--u)*48) calc(var(--u)*48) calc(var(--u)*40);
+         background:var(--surface); box-shadow:0 0 0 1px #ffffff10; filter:blur(0);
+         transition:transform var(--sheet) var(--settle), opacity var(--sheet) var(--settle), filter var(--sheet) var(--settle); }
+.sheet.enter { transform:translate(-50%,-50%) scale(.94); opacity:0; filter:blur(calc(var(--u)*14)); }
+.sheet .msg { margin:calc(var(--u)*16) 0 calc(var(--u)*40); color:var(--text2); font-size:calc(var(--u)*32); }
+.sheet .actions { display:flex; gap:calc(var(--u)*var(--gap)); justify-content:flex-end; }
+.scene { position:absolute; inset:0; border-radius:calc(var(--u)*8); background:linear-gradient(#d9d9d6, #c9c9c5);
+         display:flex; align-items:center; justify-content:center; }
+.scene .dot { width:calc(var(--u)*26); height:calc(var(--u)*26); border-radius:50%; background:#262626; }
+
+/* ===== Borderless scrolling ===== */
+.scroll-wrap { position:relative; }
+.scroll { overflow-y:auto; scrollbar-width:none; overscroll-behavior:contain; touch-action:none; cursor:grab; }
+.scroll::-webkit-scrollbar { display:none; }
+.scroll.dragging { cursor:grabbing; }
+.fade { position:absolute; left:0; right:0; height:calc(var(--u)*56); pointer-events:none; transition:opacity .3s; }
+.fade.top { top:0; background:linear-gradient(var(--surface), transparent); }
+.fade.bottom { bottom:0; background:linear-gradient(transparent, var(--surface)); }
+.indicator { position:absolute; right:calc(var(--u)*-24); width:calc(var(--u)*8); border-radius:calc(var(--u)*4);
+             background:var(--text3); opacity:0; transition:opacity .5s; pointer-events:none; }
+.indicator.on { opacity:1; transition:opacity .15s; }
+
+/* ===== Hall grid: 2 columns, 4 u gap; card = container (radius 40, 4 u padding) holding the cover (radius 36) ===== */
+.grid { display:grid; grid-template-columns:repeat(2, 1fr); column-gap:calc(var(--u)*var(--inset)); row-gap:calc(var(--u)*8); }
+.card { position:relative; padding:calc(var(--u)*var(--inset)); border-radius:calc(var(--u)*40); cursor:pointer;
+        transition:background-color var(--hover-out) var(--settle), transform var(--release) var(--settle); }
+.card:hover { background:var(--bl-h); transition:background-color var(--hover-in) var(--settle); }
+.card:active { background:var(--bl-p); transform:scale(.98); transition:none; }
+.card .cover { position:relative; aspect-ratio:16/9; border-radius:calc(var(--u)*36); background:var(--cover); }
+.card .cid { position:absolute; left:calc(var(--u)*24); top:calc(var(--u)*20); font-size:calc(var(--u)*28); font-weight:700; color:#ffffffb0; }
+.card .pill { position:absolute; right:calc(var(--u)*20); top:calc(var(--u)*18); background:var(--surface); color:var(--text);
+              font-size:calc(var(--u)*24); font-weight:700; border-radius:calc(var(--u)*22); padding:calc(var(--u)*4) calc(var(--u)*16); }
+.card .name { font-size:calc(var(--u)*36); font-weight:700; padding:calc(var(--u)*16) calc(var(--u)*20) calc(var(--u)*20); }
+
+/* ===== Lists and groups ===== */
+.list { display:flex; flex-direction:column; gap:calc(var(--u)*var(--inset)); }
+.rowitem { position:relative; display:flex; align-items:center; gap:calc(var(--u)*24); padding:0 calc(var(--u)*12) 0 calc(var(--u)*28);
+           min-height:calc(var(--u)*90); border-radius:calc(var(--u)*28); }
+.rowitem .main { flex:1; min-width:0; }
+.rowitem .name { font-size:calc(var(--u)*30); font-family:ui-monospace, Consolas, monospace; }
+.rowitem .desc { font-size:calc(var(--u)*26); color:var(--text2); }
+.glabel { font-size:calc(var(--u)*24); color:var(--text2); margin:calc(var(--u)*28) calc(var(--u)*28) calc(var(--u)*10); }
+.glabel:first-child { margin-top:0; }
+.group { background:var(--raised); border-radius:calc(var(--u)*36); padding:calc(var(--u)*var(--inset)); display:flex; flex-direction:column; gap:calc(var(--u)*var(--inset)); }
+.grow { position:relative; display:flex; align-items:center; gap:calc(var(--u)*20); min-height:calc(var(--u)*88); padding:0 calc(var(--u)*24) 0 calc(var(--u)*28);
+        border-radius:calc(var(--u)*32); font-size:calc(var(--u)*32);
+        transition:background-color var(--hover-out) var(--settle), transform var(--release) var(--settle); }
+.grow .lbl { flex:1; min-width:0; }
+.grow .sub { display:block; font-size:calc(var(--u)*24); color:var(--text2); }
+.grow .val { color:var(--text2); font-size:calc(var(--u)*30); white-space:nowrap; }
+.grow .val.edited { color:var(--text); }
+.grow .chev { color:var(--text3); font-size:calc(var(--u)*44); line-height:1; }
+.grow .check { color:var(--text); font-size:calc(var(--u)*36); width:calc(var(--u)*36); text-align:center; }
+.grow.tap { cursor:pointer; }
+.grow.tap:hover { background:var(--in-h); transition:background-color var(--hover-in) var(--settle); }
+.grow.tap:active { background:var(--in-p); transform:scale(.99); transition:none; }
+.grow.buttons { padding:calc(var(--u)*12); gap:calc(var(--u)*12); }
+.grow.buttons .btn { flex:1; }
+.switch { position:relative; width:calc(var(--u)*100); height:calc(var(--u)*60); border-radius:calc(var(--u)*30); background:var(--gray); flex:none;
+          transition:background-color var(--sheet) var(--settle); }
+.switch::after { content:""; position:absolute; top:calc(var(--u)*4); left:calc(var(--u)*4); width:calc(var(--u)*52); height:calc(var(--u)*52);
+                 border-radius:50%; background:var(--text2); transition:left var(--sheet) var(--settle), background-color var(--sheet) var(--settle); }
+.switch.on { background:var(--prom); }
+.switch.on::after { left:calc(var(--u)*44); background:var(--on-prom); }
+.seg4 { display:flex; gap:calc(var(--u)*var(--inset)); background:var(--surface); border-radius:calc(var(--u)*32); padding:calc(var(--u)*var(--inset)); flex:1; }
+.seg4 .btn { flex:1; min-width:0; height:calc(var(--u)*72); font-size:calc(var(--u)*28); padding:0 calc(var(--u)*8); border-radius:calc(var(--u)*28); }
+.seg4 .btn.on, .seg4 .btn.on:hover { background:var(--select); }
+.step { display:flex; gap:calc(var(--u)*8); }
+.step .btn { min-width:0; width:calc(var(--u)*72); height:calc(var(--u)*72); padding:0; border-radius:50%; font-size:calc(var(--u)*40); }
+.pages { position:absolute; inset:0; }
+.page { position:absolute; inset:0; display:flex; flex-direction:column;
+        transition:opacity var(--sheet) var(--settle), transform var(--sheet) var(--settle), filter var(--sheet) var(--settle); }
+.page.hidden { opacity:0; transform:scale(.98); filter:blur(calc(var(--u)*6)); pointer-events:none; }
+.page .scroll-wrap { flex:1; margin:0 calc(var(--u)*44) calc(var(--u)*24); min-height:0; }
+.page .scroll { height:100%; }
+.statusline { font-size:calc(var(--u)*24); color:var(--text2); padding:0 calc(var(--u)*48) calc(var(--u)*24); }
+.flowmap { font-size:12px; color:#444; background:#fff; border:1px solid #ddd; border-radius:6px; padding:8px 12px; max-width:460px; }
+.flowmap code { background:#f2f2f2; padding:0 3px; border-radius:3px; }
+#toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:6px 14px; border-radius:6px;
+         font-size:13px; opacity:0; transition:opacity .2s; z-index:99; }
+#toast.on { opacity:1; }
+</style>
+</head>
+<body>
+<h1>Component preview — buttons, sheets, Main Hall, Debug + presets (round 4)</h1>
+<p class="note">Proposal for PB-17 (components + motion) and PB-18 (sheets, scrolling, Debug bench, presets). Scheme B (mono + white).
+Units are canvas units (1 u = 1 pt; at 2 m 1 u = 2 mm ≈ 0.057°). The mouse stands in for the controller ray: hover = ray on
+the element, click = trigger. Our screens are English; participant screens (Stop dialog, onboarding) follow the participant's
+language. The participant Language screen is designed later with the onboarding ticket.</p>
+
+<div class="toolbar">
+  <label>Zoom <select id="zoom"><option value="0.5">0.5 px/u</option><option value="0.7" selected>0.7 px/u</option><option value="1">1 px/u</option></select></label>
+  <label title="Participant screens only (Stop dialog). Our screens stay English."><input type="checkbox" id="zh"> Participant language 中文</label>
+  <label><input type="checkbox" id="debugmode" checked> Debug mode</label>
+  <label><input type="checkbox" id="reduce"> Reduce motion</label>
+  <label><input type="checkbox" id="showhit"> 60 u hit areas</label>
+  <label><input type="checkbox" id="showinset"> 4 u insets</label>
+  <label><input type="checkbox" id="darkroom"> Dark room</label>
+</div>
+
+<!-- ============================================================================================================ -->
+<h2>1. Buttons and states</h2>
+<p class="note">Hierarchy by fill. <b>Prominent</b>: the one main action of a screen. <b>Gray</b>: a secondary action that needs a
+visible target. <b>Borderless</b>: everything else (back, cancel, keys, list actions). <b>Destructive</b>: red fill only on a final
+confirmation; elsewhere red text. Every state gets <b>brighter</b>: normal → hover → pressed (pressed is the brightest). Red rises in
+brightness only (same hue and saturation).</p>
+<div class="row">
+  <div class="room"><div class="panel ui states" id="states"></div></div>
+  <div>
+    <table class="tok">
+      <tr><th>Motion</th><th>ms</th><th>meaning</th></tr>
+      <tr><td>hover in</td><td><input data-var="--hover-in" value="150"></td><td>fill settles in when the ray arrives</td></tr>
+      <tr><td>hover out</td><td><input data-var="--hover-out" value="350"></td><td>slower fade when the ray leaves</td></tr>
+      <tr><td>press</td><td>0</td><td>instant on trigger down</td></tr>
+      <tr><td>release</td><td><input data-var="--release" value="250"></td><td>scale and fill settle back</td></tr>
+      <tr><td>sheet / page in, out</td><td><input data-var="--sheet" value="450"></td><td>scale 0.94 → 1, blur → sharp, fade</td></tr>
+      <tr><td>push back</td><td><input data-var="--push" value="450"></td><td>window behind to 94 %, dims</td></tr>
+      <tr><td colspan="3">curve: settle = cubic-bezier(.16, 1, .3, 1), fast start, long soft landing, no overshoot</td></tr>
+    </table>
+    <table class="tok" style="margin-top:10px" id="palette"></table>
+  </div>
+</div>
+
+<!-- ============================================================================================================ -->
+<h2>2. Chamber menu</h2>
+<p class="note">Our screen (English). Number-pad keys are borderless; the pad is a container with a 4 u inset, inner radius =
+outer − 4. One prominent button (Start); Debug is gray. Back to the Hall is the ‹ at the top left (the place of every back /
+close button). The DEBUG tag shows only while the app is in Debug mode.</p>
+<div class="row">
+  <div class="room"><div class="panel ui" style="width:calc(var(--u)*1000);height:calc(var(--u)*700)">
+    <div class="hdr" style="padding-bottom:0"><button class="btn iconbtn" title="Back to Hall" onclick="toast('Back to Hall')">‹</button>
+      <div class="t-title">C04 · HumPerHW2</div><div class="debugtag">DEBUG</div></div>
+    <div style="display:flex;gap:calc(var(--u)*60);padding:calc(var(--u)*24) calc(var(--u)*48)">
+      <div style="width:calc(var(--u)*380)">
+        <div class="t-small" style="margin-bottom:calc(var(--u)*8)">Study ID</div>
+        <div class="display empty" id="disp">S____</div>
+        <div class="container pad" style="margin-top:calc(var(--u)*12)" id="pad"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:calc(var(--u)*20)">
+        <div class="t-small" id="menuPreset">Preset: Pilot-A</div>
+        <button class="btn prominent">Start</button>
+        <button class="btn">Debug</button>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ============================================================================================================ -->
+<h2>3. Sheets: appear in place, push back and dim</h2>
+<p class="note">The sheet grows from 94 % to full size while it sharpens and fades in, and settles; the window behind scales to
+94 % and dims; a second sheet pushes both back. During a trial the sheet appears alone over the dimmed scene. Press Y
+(keyboard <b>Y</b> works too, <b>Esc</b> closes). The Stop dialog is a participant screen: it follows the participant's language.</p>
+<div class="row">
+  <div>
+    <div class="room"><div class="stage ui" id="stageA"></div></div>
+    <div style="margin-top:6px;display:flex;gap:8px">
+      <button onclick="openStop('A', false)">Y (real session)</button><button onclick="openStop('A', true)">Y (Debug run)</button>
+    </div>
+  </div>
+  <div>
+    <div class="room"><div class="stage ui" id="stageB"></div></div>
+    <div style="margin-top:6px"><button onclick="openStop('B', false)">Y (during a trial)</button></div>
+  </div>
+</div>
+
+<!-- ============================================================================================================ -->
+<h2>4. Main Hall: 2-column grid, borderless scrolling</h2>
+<p class="note">Large covers (16:9, solid gray placeholders), the C-ID and an "unfinished" pill on the cover, the title below; no
+description. Cards sit 4 u apart side by side and 8 u apart vertically; each card is a container with 4 u padding, so the hover fill shows 4 u around the cover
+(concentric corners 40 / 36). No frame, no scrollbar: edges fade only where more content waits; a thin indicator shows while
+scrolling. Headset: <b>right thumbstick</b> scrolls, or <b>hold the trigger and drag</b> (a click turns into a drag after 12 u).</p>
+<div class="row">
+  <div class="room"><div class="panel ui" style="width:calc(var(--u)*1000);height:calc(var(--u)*700)">
+    <div class="hdr"><div class="t-title">Main Hall</div><div class="debugtag">DEBUG</div></div>
+    <div class="scroll-wrap" style="margin:0 calc(var(--u)*44)">
+      <div class="scroll" style="height:calc(var(--u)*560)"><div class="grid" id="hall"></div></div>
+      <div class="fade top"></div><div class="fade bottom"></div><div class="indicator"></div>
+    </div>
+  </div><div class="cap">C05–C08 are placeholders to fill the grid.</div></div>
+</div>
+
+<!-- ============================================================================================================ -->
+<h2>5. Debug flow with the preset manager</h2>
+<p class="note">One panel, a stack of pages that change in place (fade + slight scale, no slide). <b>‹ Back</b> at the top left of
+every pushed page; <b>× Close</b> at the same spot on sheets you may leave without a choice; decision sheets have Cancel instead.
+No DEBUG tag on the Debug pages (you know where you are).<br>
+Presets follow ADR-0002: Debug edits a <b>working copy</b>; <b>Save</b> overwrites the preset it came from, <b>Save as</b> makes a new
+one, <b>Make active</b> chooses the preset real sessions use (shown on the chamber menu). "Default" comes from the chamber's
+<code>Config/default.params</code> and is read-only. <b>Not saved in presets</b>: playback tests (play stimulus, play background)
+and Debug-only display switches (show audio sphere).</p>
+<div class="row">
+  <div class="room"><div class="stage ui" id="dbg"></div></div>
+  <div class="flowmap">
+    <b>Flow</b><br>
+    Chamber menu <code>‹ Hall</code> · Start → (unfinished) sheet <code>×</code>: Start new / Resume<br>
+    └ Debug → <b>Debug</b> <code>‹ Menu</code><br>
+    &nbsp;&nbsp;&nbsp;├ Run: Run experiment trials (working copy, _DEBUG) · Practice trial<br>
+    &nbsp;&nbsp;&nbsp;├ Parameters: working copy of a preset → <b>Parameters</b> <code>‹</code><br>
+    &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;− / + · Revert · Save · Save as…<br>
+    &nbsp;&nbsp;&nbsp;├ Presets → <b>Presets</b> <code>‹</code>: list, ✓ = active<br>
+    &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;tap → sheet <code>×</code>: Make active · Edit (load into working copy) · Delete<br>
+    &nbsp;&nbsp;&nbsp;├ Test playback (not saved): stimulus, background<br>
+    &nbsp;&nbsp;&nbsp;├ Display (not saved): show audio sphere<br>
+    &nbsp;&nbsp;&nbsp;├ Room: Quiet / Noisy / Reverb / Meta · Measure RT60<br>
+    &nbsp;&nbsp;&nbsp;└ Data files → <b>Data files</b> <code>‹</code> → Delete → confirm sheet<br><br>
+    <b>Generic (GPL.DebugBench)</b>: page stack, Run, Parameters (from the schema), Presets, Data files, status line.<br>
+    <b>Per chamber</b>: its own groups (here Test playback, Display and Room are HumPerHW2's).<br><br>
+    <span id="dbgstate"></span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const S = {
+  en: { stopTitle:"Stop the session?", stopMsg:"Everything is paused. Keep going continues where you left off. Drop out ends the session for good.",
+        stopMsgDbg:"Debug run, paused. Back to the chamber menu ends this run.", keep:"Keep going", drop:"Drop out", backMenu:"Back to the chamber menu",
+        confTitle:"Drop out S0012?", confMsg:"This session cannot be resumed.", cancel:"Cancel" },
+  zh: { stopTitle:"要停止嗎？", stopMsg:"目前已暫停。「繼續」會從剛才的地方接著進行；「退出實驗」會結束本次實驗，之後無法再繼續。",
+        stopMsgDbg:"Debug run, paused. Back to the chamber menu ends this run.", keep:"繼續", drop:"退出實驗", backMenu:"Back to the chamber menu",
+        confTitle:"確定要讓 S0012 退出實驗嗎？", confMsg:"本次實驗結束後無法再繼續。", cancel:"取消" }
+};
+let lang = "en";
+const t = k => S[lang][k];
+const $ = (s, r=document) => r.querySelector(s);
+function toast(m) { const e=$("#toast"); e.textContent=m; e.classList.add("on"); clearTimeout(toast.h); toast.h=setTimeout(()=>e.classList.remove("on"),1600); }
+
+/* --- toolbar --- */
+const setU = () => document.documentElement.style.setProperty("--u", $("#zoom").value + "px");
+$("#zoom").onchange = setU; setU();
+$("#zh").onchange = e => { lang = e.target.checked ? "zh" : "en"; };
+$("#debugmode").onchange = e => document.body.classList.toggle("nodebug", !e.target.checked);
+["reduce","showhit","showinset","darkroom"].forEach(id => $("#"+id).onchange = e => document.body.classList.toggle(id, e.target.checked));
+document.querySelectorAll("input[data-var]").forEach(i => i.oninput = () => document.documentElement.style.setProperty(i.dataset.var, (+i.value||0)+"ms"));
+
+(function palette() {
+  const cs = getComputedStyle(document.documentElement), names = [["--surface","surface (panels, sheets)"],["--raised","raised (fields, groups)"],
+    ["--prom","prominent"],["--prom-h","prominent hover"],["--prom-p","prominent pressed"],
+    ["--gray","gray"],["--gray-h","gray hover"],["--gray-p","gray pressed"],
+    ["--bl-h","borderless hover"],["--bl-p","borderless pressed"],
+    ["--red","destructive (final confirm only)"],["--red-h","destructive hover"],["--red-p","destructive pressed"],["--red-text","red text"],
+    ["--cover","cover placeholder"],["--text2","secondary text"],["--text3","disabled text"],["--debug","Debug tag"]];
+  $("#palette").innerHTML = "<tr><th>Color</th><th>value</th></tr>" + names.map(([v,n]) => { const c = cs.getPropertyValue(v).trim();
+    return `<tr><td>${n}</td><td><span class="chip" style="background:${c}"></span> ${c}</td></tr>`; }).join("");
+})();
+
+/* --- 1. state strip --- */
+(function states(){
+  const rows = [["Prominent","prominent","Start"],["Gray","","Debug"],["Borderless","borderless","Back"],["Destructive","destructive","Drop out"]];
+  let h = '<div></div>' + ["normal","hover","pressed","disabled"].map(s=>`<div class="h">${s}</div>`).join("");
+  for (const [n,c,l] of rows) h += `<div class="h" style="text-align:right">${n}</div>`
+     + `<button class="btn ${c}">${l}</button><button class="btn ${c} s-hover">${l}</button><button class="btn ${c} s-press">${l}</button><button class="btn ${c}" disabled>${l}</button>`;
+  h += '<div class="h" style="text-align:right">live</div>' + rows.map(([n,c,l])=>`<button class="btn ${c}" onclick="toast('${l}')">${l}</button>`).join("");
+  $("#states").innerHTML = h;
+})();
+
+/* --- 2. number pad (borderless keys) --- */
+let digits = "";
+(function buildPad() {
+  const keys = ["1","2","3","4","5","6","7","8","9","C","0","←"];
+  $("#pad").innerHTML = keys.map(k => `<button class="btn borderless ${k==="C"?"k-small":""}" data-k="${k}">${k==="C"?"Clear":k}</button>`).join("");
+  $("#pad").querySelectorAll("button").forEach(b => b.onclick = () => { const k=b.dataset.k;
+    if (k==="C") digits=""; else if (k==="←") digits=digits.slice(0,-1); else if (digits.length<4) digits+=k; showId(); });
+  showId();
+})();
+function showId() { const v = digits.replace(/^0+/,""), d=$("#disp");
+  d.textContent = v ? "S" + v.padStart(4,"0") : "S____"; d.classList.toggle("empty", !v); }
+
+/* --- sheets (shared) --- */
+const liveLayers = stage => [...stage.children].filter(l => !l.classList.contains("closing"));
+function relayout(stage) {
+  const live = liveLayers(stage);
+  live.forEach((l, i) => { const above = live.length - 1 - i; l.classList.toggle("pushed", above >= 1); l.classList.toggle("pushed2", above >= 2); });
+}
+function pushSheet(stage, {title, msg, buttons, close}) {
+  const layer = document.createElement("div"); layer.className = "layer";
+  const head = close ? `<div class="shdr"><button class="btn iconbtn x">×</button><div class="t-head">${title}</div></div>` : `<div class="t-head">${title}</div>`;
+  layer.innerHTML = `<div class="sheet enter">${head}<div class="msg">${msg}</div><div class="actions"></div><div class="dimmer"></div></div>`;
+  if (close) layer.querySelector(".x").onclick = () => popSheet(stage);
+  const act = layer.querySelector(".actions");
+  for (const b of buttons) { const e=document.createElement("button"); e.className="btn "+b.cls; e.textContent=b.label; e.onclick=b.do; act.appendChild(e); }
+  stage.appendChild(layer);
+  relayout(stage);
+  requestAnimationFrame(() => requestAnimationFrame(() => layer.querySelector(".sheet").classList.remove("enter")));
+}
+function popSheet(stage, all) {
+  const ms = document.body.classList.contains("reduce") ? 0 : 450;
+  const live = liveLayers(stage);
+  let n = all ? live.length - 1 : Math.min(1, live.length - 1);
+  while (n-- > 0) { const top = live.pop(); top.classList.add("closing"); top.style.pointerEvents = "none";
+    top.querySelector(".sheet").classList.add("enter"); setTimeout(() => top.remove(), ms); }
+  relayout(stage);
+}
+
+/* --- 3. Stop dialog --- */
+function resetStages() {
+  $("#stageA").innerHTML = `<div class="layer panel">
+    <div class="hdr"><button class="btn iconbtn">‹</button><div class="t-title">C04 · HumPerHW2</div></div>
+    <div style="padding:calc(var(--u)*20) calc(var(--u)*48);display:flex;flex-direction:column;gap:calc(var(--u)*20);width:calc(var(--u)*640)">
+      <div class="t-small" style="white-space:nowrap">Study ID S0012 · Preset: Pilot-A</div>
+      <button class="btn prominent">Start</button><button class="btn">Debug</button></div><div class="dimmer"></div></div>`;
+  $("#stageB").innerHTML = `<div class="layer" style="border-radius:calc(var(--u)*8)"><div class="scene"><div class="dot"></div></div><div class="dimmer"></div></div>`;
+}
+function openStop(which, debugRun) {
+  const stage = $("#stage" + which); if (liveLayers(stage).length > 1) return;
+  const done = m => { popSheet(stage, true); toast(m); };
+  if (debugRun) return pushSheet(stage, { title:t("stopTitle"), msg:t("stopMsgDbg"), buttons:[
+      { label:t("backMenu"), cls:"borderless", do:()=>done("BackToMenu") }, { label:t("keep"), cls:"prominent", do:()=>done("KeepGoing") } ]});
+  pushSheet(stage, { title:t("stopTitle"), msg:t("stopMsg"), buttons:[
+    { label:t("drop"), cls:"borderless red", do:()=> pushSheet(stage, { title:t("confTitle"), msg:t("confMsg"), buttons:[
+        { label:t("cancel"), cls:"borderless", do:()=>popSheet(stage) }, { label:t("drop"), cls:"destructive", do:()=>done("DropOut") } ]}) },
+    { label:t("keep"), cls:"prominent", do:()=>done("KeepGoing") } ]});
+}
+document.addEventListener("keydown", e => { if (e.key === "y" || e.key === "Y") openStop("A", false);
+  if (e.key === "Escape") { popSheet($("#stageA"), true); popSheet($("#stageB"), true); popSheet($("#dbg"), true); } });
+
+/* --- 4. Hall grid --- */
+const chambers = [["C01","MovingSource",0],["C02","HiddenSource",2],["C03","HearingLoss",0],["C04","HumPerHW2",1],
+                  ["C05","WhiteRoom",0],["C06","Courtyard",0],["C07","Corridor",0],["C08","Concert",0]];
+$("#hall").innerHTML = chambers.map(([id,n,u]) => `<div class="card"><div class="cover"><div class="cid">${id}</div>
+  ${u?`<span class="pill">${u} unfinished</span>`:""}</div><div class="name">${n}</div></div>`).join("");
+$("#hall").querySelectorAll(".card").forEach(c => c.onclick = () => toast("Open " + c.querySelector(".name").textContent));
+
+/* --- borderless scrolling --- */
+function initScroll(wrap) {
+  const sc = wrap.querySelector(".scroll"), top = wrap.querySelector(".fade.top"), bot = wrap.querySelector(".fade.bottom"), ind = wrap.querySelector(".indicator");
+  let hide;
+  const update = (show) => { const max = sc.scrollHeight - sc.clientHeight;
+    top.style.opacity = sc.scrollTop > 2 ? 1 : 0; bot.style.opacity = sc.scrollTop < max - 2 ? 1 : 0;
+    const h = Math.max(24, sc.clientHeight * sc.clientHeight / Math.max(1, sc.scrollHeight));
+    ind.style.height = h + "px"; ind.style.top = (max > 0 ? (sc.clientHeight - h) * sc.scrollTop / max : 0) + "px";
+    if (show && max > 0) { ind.classList.add("on"); clearTimeout(hide); hide = setTimeout(() => ind.classList.remove("on"), 600); } };
+  sc.addEventListener("scroll", () => update(true)); setTimeout(() => update(false), 50);
+  let down = null, dragging = false, last = 0, lastT = 0, v = 0, raf;
+  const unit = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--u"));
+  sc.addEventListener("pointerdown", e => { cancelAnimationFrame(raf); down = { y:e.clientY, top:sc.scrollTop }; dragging = false; last = e.clientY; lastT = performance.now(); v = 0; });
+  window.addEventListener("pointermove", e => { if (!down) return;
+    if (!dragging && Math.abs(e.clientY - down.y) > 12 * unit()) { dragging = true; sc.classList.add("dragging"); }
+    if (dragging) { sc.scrollTop = down.top - (e.clientY - down.y); const now = performance.now(); v = (last - e.clientY) / Math.max(1, now - lastT); last = e.clientY; lastT = now; } });
+  window.addEventListener("pointerup", () => { if (!down) return; const was = dragging; down = null; dragging = false; sc.classList.remove("dragging");
+    if (was) { sc.addEventListener("click", ev => ev.stopPropagation(), { capture:true, once:true });
+      if (!document.body.classList.contains("reduce")) { let vel = v * 16; const step = () => { sc.scrollTop += vel; vel *= 0.94; if (Math.abs(vel) > 0.3) raf = requestAnimationFrame(step); }; step(); } } });
+}
+document.querySelectorAll(".scroll-wrap").forEach(initScroll);
+
+/* --- 5. Debug flow + presets --- */
+const SCHEMA = [ { k:"trials", n:"Trials per block", unit:"", step:1, min:1, max:20, dec:0 },
+                 { k:"rt60", n:"RT60 target", unit:" s", step:0.1, min:0.2, max:3, dec:1 },
+                 { k:"isi", n:"Pause between trials", unit:" s", step:0.5, min:0, max:5, dec:1 },
+                 { k:"radius", n:"Source distance", unit:" m", step:0.5, min:0.5, max:5, dec:1 } ];
+const D = {
+  stack:["menu"], status:"Ready.", stim:false, bg:false, sphere:false, room:-1, rt:"–", files:14,
+  presets: [ { name:"Default", builtin:true, v:{ trials:8, rt60:0.7, isi:1.0, radius:2.0 } },
+             { name:"Pilot-A", v:{ trials:6, rt60:0.7, isi:1.0, radius:2.0 } },
+             { name:"Pilot-B", v:{ trials:6, rt60:1.2, isi:1.5, radius:2.0 } } ],
+  active:"Pilot-A", source:"Pilot-A", work:null,
+};
+D.work = { ...D.presets[1].v };
+const P = name => D.presets.find(p => p.name === name);
+const editedKeys = () => SCHEMA.filter(s => D.work[s.k] !== P(D.source).v[s.k]).map(s => s.k);
+const fmtV = (s, v) => v.toFixed(s.dec) + s.unit;
+const dbgStage = () => $("#dbg");
+const hdr = (back, title, trailing = "", tag = false) =>
+  `<div class="hdr">${back ? `<button class="btn iconbtn" data-act="${back}" title="Back">‹</button>` : ""}<div class="t-title">${title}</div>${trailing}${tag ? '<div class="debugtag">DEBUG</div>' : ""}</div>`;
+const swRow = (key, name, sub) => `<div class="grow tap" data-act="sw:${key}"><span class="lbl">${name}<span class="sub">${sub}</span></span><span class="switch ${D[key] ? "on" : ""}"></span></div>`;
+const scrollBody = inner => `<div class="scroll-wrap"><div class="scroll">${inner}</div><div class="fade top"></div><div class="fade bottom"></div><div class="indicator"></div></div>`;
+const ROOMS = ["Quiet 0.3 s", "Noisy 0.7 s", "Reverb 2.2 s", "Meta"];
+const workLabel = () => D.source + (editedKeys().length ? ` · ${editedKeys().length} edited` : "");
+
+const PAGES = {
+  menu: () => hdr("hall", "C04 · HumPerHW2", "", true) +
+    `<div style="padding:calc(var(--u)*20) calc(var(--u)*48);display:flex;flex-direction:column;gap:calc(var(--u)*20);width:calc(var(--u)*640)">
+      <div class="t-small" style="white-space:nowrap">Study ID S0012 · Preset: ${D.active}</div>
+      <div class="t-small" style="white-space:nowrap">Unfinished: S0012 (block 2 of 4)</div>
+      <button class="btn prominent" data-act="start">Start</button>
+      <button class="btn" data-act="push:debug">Debug</button></div>`,
+  debug: () => hdr("back", "Debug") + scrollBody(`
+      <div class="glabel">Run</div>
+      <div class="group"><div class="grow buttons"><button class="btn prominent" data-act="run">Run experiment trials</button><button class="btn" data-act="practice">Practice trial</button></div></div>
+      <div class="glabel">Parameters</div>
+      <div class="group">
+        <div class="grow tap" data-act="push:params"><span class="lbl">Working copy<span class="sub">used by Debug runs</span></span><span class="val ${editedKeys().length ? "edited" : ""}">${workLabel()}</span><span class="chev">›</span></div>
+        <div class="grow tap" data-act="push:presets"><span class="lbl">Presets<span class="sub">real sessions use the active one</span></span><span class="val">Active: ${D.active}</span><span class="chev">›</span></div></div>
+      <div class="glabel">Test playback (not saved)</div>
+      <div class="group">${swRow("stim", "Play stimulus", "2 s on, 1 s off, at the current position")}${swRow("bg", "Play background", "loops while on")}</div>
+      <div class="glabel">Display (Debug only, not saved)</div>
+      <div class="group">${swRow("sphere", "Show audio sphere", "always, not only after the answer")}</div>
+      <div class="glabel">Room</div>
+      <div class="group"><div class="grow buttons"><div class="seg4">${ROOMS.map((r, i) => `<button class="btn borderless ${D.room === i ? "on" : ""}" data-act="room:${i}">${r}</button>`).join("")}</div></div>
+        <div class="grow"><span class="lbl">RT60 measured<span class="sub">impulse in the room, 500 Hz – 2 kHz</span></span><span class="val">${D.rt}</span><button class="btn small" data-act="measure">Measure</button></div></div>
+      <div class="glabel">Data</div>
+      <div class="group"><div class="grow tap" data-act="push:data"><span class="lbl">Data files</span><span class="val">${D.files} files</span><span class="chev">›</span></div></div>`)
+      + `<div class="statusline">${D.status}</div>`,
+  params: () => hdr("back", "Parameters", `<button class="btn borderless small" data-act="revert" ${editedKeys().length ? "" : "disabled"}>Revert</button>`) + scrollBody(`
+      <div class="glabel">Working copy of "${D.source}"${editedKeys().length ? ` · ${editedKeys().length} edited` : ""}. Debug runs use it; real sessions use the active preset (${D.active}).</div>
+      <div class="group">${SCHEMA.map((s, i) => { const v = D.work[s.k], pv = P(D.source).v[s.k], ed = v !== pv;
+        return `<div class="grow"><span class="lbl">${s.n}${ed ? `<span class="sub">${D.source}: ${fmtV(s, pv)}</span>` : ""}</span>
+          <span class="val ${ed ? "edited" : ""}">${fmtV(s, v)}</span>
+          <span class="step"><button class="btn" data-act="dec:${i}">−</button><button class="btn" data-act="inc:${i}">+</button></span></div>`; }).join("")}</div>
+      <div class="group" style="margin-top:calc(var(--u)*24)"><div class="grow buttons">
+        <button class="btn" data-act="save" ${!editedKeys().length || P(D.source).builtin ? "disabled" : ""}>Save to ${D.source}</button>
+        <button class="btn" data-act="saveas">Save as…</button></div></div>
+      ${P(D.source).builtin ? `<div class="glabel">"Default" is read-only (Config/default.params); use Save as.</div>` : ""}`),
+  presets: () => hdr("back", "Presets") + scrollBody(`
+      <div class="glabel">✓ = active: real sessions use it, and the chamber menu shows it. Tap a preset for its actions.</div>
+      <div class="group">${D.presets.map((p, i) => `<div class="grow tap" data-act="preset:${i}"><span class="check">${p.name === D.active ? "✓" : ""}</span>
+        <span class="lbl">${p.name}<span class="sub">${p.builtin ? "Config/default.params · read-only" : "on this headset"}${p.name === D.source ? " · in the working copy" : ""}</span></span>
+        <span class="val">${SCHEMA.map(s => fmtV(s, p.v[s.k])).slice(0, 2).join(" · ")}</span><span class="chev">›</span></div>`).join("")}</div>`),
+  data: () => hdr("back", "Data files", `<button class="btn borderless red small" data-act="delall" ${D.files ? "" : "disabled"}>Delete all</button>`) + scrollBody(`
+      <div class="list">${Array.from({ length:D.files }, (_, i) => { const id = String(1 + (i * 7) % 23).padStart(4,"0"), dbg = i % 5 === 3;
+        return `<div class="rowitem"><div class="main"><div class="name">20261105_${String(9 + (i >> 1)).padStart(2,"0")}${String((i*13)%60).padStart(2,"0")}00_HumPerHW2${dbg ? "_DEBUG" : "_S" + id}</div>
+          <div class="desc">${dbg ? "Debug run" : (i % 3 ? "Completed" : "In progress")} · ${12 + i * 3} KB</div></div>
+          <button class="btn borderless red small" data-act="del:${i}">Delete</button></div>`; }).join("")}</div>`),
+};
+
+function dbgRender(direction) {
+  const host = dbgStage().querySelector(".pages"), olds = [...host.children], old = olds[olds.length - 1];
+  const pg = document.createElement("div"); pg.className = "page hidden"; pg.innerHTML = PAGES[D.stack[D.stack.length - 1]]();
+  host.appendChild(pg);
+  pg.querySelectorAll(".scroll-wrap").forEach(initScroll);
+  if (direction === "same") {
+    if (old) { const st = old.querySelector(".scroll"), sn = pg.querySelector(".scroll"); if (st && sn) sn.scrollTop = st.scrollTop; }
+    olds.forEach(o => o.remove()); pg.classList.remove("hidden");
+  } else {
+    requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.remove("hidden")));
+    olds.forEach(o => { o.classList.add("hidden"); o.style.pointerEvents = "none"; setTimeout(() => o.remove(), document.body.classList.contains("reduce") ? 0 : 450); });
+  }
+  $("#dbgstate").textContent = "Stack: " + D.stack.join(" › ") + " · active: " + D.active + " · working copy: " + workLabel();
+  $("#menuPreset").textContent = "Preset: " + D.active;
+}
+function dbgInit() {
+  dbgStage().innerHTML = `<div class="layer panel"><div class="pages"></div><div class="dimmer"></div></div>`;
+  dbgStage().addEventListener("click", dbgClick);
+  dbgRender();
+}
+function loadPreset(name) { D.source = name; D.work = { ...P(name).v }; }
+function dbgClick(e) {
+  const el = e.target.closest("[data-act]"); if (!el || !dbgStage().contains(el) || el.closest(".sheet")) return;
+  const [act, arg] = el.dataset.act.split(":"), stage = dbgStage();
+  switch (act) {
+    case "hall": toast("Back to Hall"); break;
+    case "back": D.stack.pop(); dbgRender(); break;
+    case "push": D.stack.push(arg); dbgRender(); break;
+    case "start": pushSheet(stage, { close:true, title:"Unfinished session S0012", msg:"Block 2 of 4, 3 of 8 trials done (preset Pilot-A). Resume continues silently after the handover; Start new closes the old session (kept, not deleted).",
+        buttons:[ { label:"Start new", cls:"borderless", do:()=>{ popSheet(stage); toast("session_superseded → new session with " + D.active); } },
+                  { label:"Resume", cls:"prominent", do:()=>{ popSheet(stage); toast("Resume with its own snapshot → hand the headset over"); } } ] }); break;
+    case "sw": D[arg] = !D[arg]; D.status = arg === "stim" ? (D.stim ? "Stimulus playing (2 s on, 1 s off)." : "Stimulus stopped.")
+                 : arg === "bg" ? (D.bg ? "Background playing." : "Background stopped.") : (D.sphere ? "Audio sphere always visible." : "Audio sphere only after the answer.");
+               el.querySelector(".switch").classList.toggle("on", D[arg]); stage.querySelector(".statusline").textContent = D.status; break;
+    case "room": D.room = +arg; D.rt = "–"; D.status = "Room: " + ROOMS[+arg] + "."; dbgRender("same"); break;
+    case "measure": D.rt = D.room < 0 ? "0.41 s" : ["0.31 s","0.68 s","2.17 s","0.93 s"][D.room]; D.status = "Measured RT60 " + D.rt + "."; dbgRender("same"); break;
+    case "run": toast("Run experiment trials with the working copy (" + workLabel() + "), logged _DEBUG"); break;
+    case "practice": toast("One practice trial"); break;
+    case "inc": case "dec": { const s = SCHEMA[+arg]; D.work[s.k] = Math.min(s.max, Math.max(s.min, +(D.work[s.k] + (act === "inc" ? s.step : -s.step)).toFixed(3))); dbgRender("same"); break; }
+    case "revert": loadPreset(D.source); dbgRender("same"); break;
+    case "save": pushSheet(stage, { title:`Overwrite ${D.source}?`, msg: D.source === D.active ? `${D.source} is active: new real sessions will use the new values. Running and unfinished sessions keep their own snapshot.` : `The preset ${D.source} gets the working copy's values.`,
+        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Overwrite", cls:"prominent", do:()=>{ popSheet(stage); P(D.source).v = { ...D.work }; dbgRender("same"); toast("Saved " + D.source); } } ] }); break;
+    case "saveas": { const name = "Pilot-" + String.fromCharCode(65 + D.presets.length - 1);
+      pushSheet(stage, { close:true, title:"Save as a new preset", msg:`Name: ${name} (entered with the keypad). It is not active until you make it active in Presets.`,
+        buttons:[ { label:"Save", cls:"prominent", do:()=>{ popSheet(stage); D.presets.push({ name, v:{ ...D.work } }); D.source = name; dbgRender("same"); toast("Saved " + name); } } ] }); break; }
+    case "preset": { const p = D.presets[+arg], isActive = p.name === D.active, dirty = editedKeys().length > 0 && D.source !== p.name;
+      const btns = [];
+      if (!p.builtin) btns.push({ label:"Delete", cls:"borderless red", do:()=> pushSheet(stage, { title:`Delete ${p.name}?`, msg: isActive ? "It is active; Default becomes active." : "The preset file is removed from the headset.",
+          buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete", cls:"destructive", do:()=>{ popSheet(stage, true);
+            D.presets = D.presets.filter(x => x !== p); if (isActive) D.active = "Default"; if (D.source === p.name) loadPreset(D.active); dbgRender("same"); toast("Deleted " + p.name); } } ] }) });
+      btns.push({ label:"Edit", cls:"", do:()=>{ const go = () => { popSheet(stage, true); loadPreset(p.name); D.stack.push("params"); dbgRender(); };
+          if (dirty) pushSheet(stage, { title:"Discard the edits?", msg:`The working copy has unsaved edits to ${D.source}.`, buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Discard", cls:"destructive", do:go } ] });
+          else go(); } });
+      if (!isActive) btns.push({ label:"Make active", cls:"prominent", do:()=>{ popSheet(stage); D.active = p.name; dbgRender("same"); toast(p.name + " is active: new real sessions use it"); } });
+      pushSheet(stage, { close:true, title:p.name + (isActive ? " (active)" : ""), msg: SCHEMA.map(s => `${s.n} ${fmtV(s, p.v[s.k])}`).join(" · "), buttons:btns }); break; }
+    case "del": pushSheet(stage, { title:"Delete this file pair?", msg:"The CSV and its session file are removed from the headset. This cannot be undone.",
+        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete", cls:"destructive", do:()=>{ popSheet(stage); D.files--; dbgRender("same"); } } ] }); break;
+    case "delall": pushSheet(stage, { title:`Delete all ${D.files} files?`, msg:"Every CSV and session file of HumPerHW2 on this headset.",
+        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete all", cls:"destructive", do:()=>
+          pushSheet(stage, { title:"Really delete all?", msg:`${D.files} files, including unfinished sessions. Copy them to a computer first.`,
+            buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage, true) }, { label:`Delete ${D.files} files`, cls:"destructive", do:()=>{ popSheet(stage, true); D.files = 0; dbgRender("same"); } } ] }) } ] }); break;
+  }
+}
+
+resetStages(); dbgInit();
+// Screenshot hooks: #demo (stacked Stop sheets), #debug, #debug-params, #debug-presets, #debug-preset (sheet), #debug-data
+if (location.hash === "#demo") { document.body.classList.add("reduce"); openStop("A", false); $("#stageA .sheet .btn.red").click(); openStop("B", false); }
+if (location.hash.startsWith("#debug")) { document.body.classList.add("reduce"); D.stim = true; D.room = 1; D.rt = "0.68 s"; D.work.trials = 5;
+  const sub = location.hash.split("-")[1];
+  D.stack = sub === "preset" ? ["menu","debug","presets"] : sub ? ["menu","debug",sub] : ["menu","debug"]; dbgRender("same");
+  if (sub === "preset") dbgStage().querySelector('[data-act="preset:2"]').click(); }
+</script>
+</body>
+</html>

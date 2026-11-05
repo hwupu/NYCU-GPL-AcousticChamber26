@@ -40,27 +40,26 @@ namespace GPL.UI
                 onChoice?.Invoke(choice);
             }
 
+            // Main action last (right). Red fill only on the final confirmation.
             void First()
             {
-                var th = UiKit.Theme;
                 if (debugRun)
                 {
-                    Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessageDebug), th.warning,
-                        new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Primary, () => Finish(StopChoice.KeepGoing)),
-                        new DialogButton(Loc.Get(UiStrings.StopBackToMenu), UiStyle.Warning, () => Finish(StopChoice.BackToMenu))));
+                    Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessageDebug),
+                        new DialogButton(Loc.Get(UiStrings.StopBackToMenu), UiStyle.Borderless, () => Finish(StopChoice.BackToMenu)),
+                        new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Prominent, () => Finish(StopChoice.KeepGoing))));
                     return;
                 }
-                Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessage), th.danger,
-                    new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Primary, () => Finish(StopChoice.KeepGoing)),
-                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.Danger, Confirm)));
+                Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopTitle), Loc.Get(UiStrings.StopMessage),
+                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.DestructiveText, Confirm),
+                    new DialogButton(Loc.Get(UiStrings.StopKeepGoing), UiStyle.Prominent, () => Finish(StopChoice.KeepGoing))));
             }
 
             void Confirm()
             {
-                var th = UiKit.Theme;
-                Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopConfirmTitle, who), Loc.Get(UiStrings.StopConfirmMessage), th.danger,
-                    new DialogButton(Loc.Get(UiStrings.Cancel), UiStyle.Neutral, First),
-                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.Danger, () => Finish(StopChoice.DropOut))));
+                Watch(ModalDialog.Show(canvas, Loc.Get(UiStrings.StopConfirmTitle, who), Loc.Get(UiStrings.StopConfirmMessage),
+                    new DialogButton(Loc.Get(UiStrings.Cancel), UiStyle.Borderless, First),
+                    new DialogButton(Loc.Get(UiStrings.StopDropOut), UiStyle.Destructive, () => Finish(StopChoice.DropOut))));
             }
 
             // If the canvas is destroyed (scene change) while the dialog is open, lift the freeze without a choice.

@@ -19,7 +19,7 @@ namespace AcousticChamber.App
 
         StopDialogHost _host;
         GlobalActions _actions;
-        Button _sessionButton, _modeButton;
+        UiButton _sessionButton, _modeButton;
         TextMeshProUGUI _clock, _live, _status;
         bool _running, _debug;
         float _sessionTime;
@@ -48,27 +48,24 @@ namespace AcousticChamber.App
             UiKit.Clear(root);
             root.sizeDelta = Size;
             UiKit.Background(root);
-            var bar = UiKit.Box(root, "Title Bar", new Vector2(0f, Size.y / 2f - 8f), new Vector2(Size.x, 16f), th.accent);
-            bar.sprite = null;
-            UiKit.Text(root, "Title", "GPL.Input test panel", th.titleSize, new Vector2(-Size.x / 2f + 40f + 300f, Size.y / 2f - 70f),
+            UiKit.Text(root, "Title", "GPL.Input test panel", th.titleSize, new Vector2(-Size.x / 2f + 48f + 300f, Size.y / 2f - 80f),
                        new Vector2(600f, 80f), bold: true, align: TextAlignmentOptions.Left);
-            UiKit.Badge(root, "DEBUG Badge", "DEBUG", th.warning, new Vector2(150f, 50f)).rectTransform.anchoredPosition =
-                new Vector2(-th.gap, -36f);
+            UiKit.DebugTag(root);
 
             // left column: controls
             const float leftX = -250f, w = 420f;
             float y = 190f;
-            _sessionButton = UiKit.Button(root, "Session", "", UiStyle.Primary, new Vector2(leftX, y), new Vector2(w, 80f), ToggleSession, bold: true);
+            _sessionButton = UiKit.Button(root, "Session", "", UiStyle.Prominent, new Vector2(leftX, y), new Vector2(w, 0f), ToggleSession);
             y -= 100f;
-            _modeButton = UiKit.Button(root, "Mode", "", UiStyle.Neutral, new Vector2(leftX, y), new Vector2(w, 80f), ToggleMode);
+            _modeButton = UiKit.Button(root, "Mode", "", UiStyle.Gray, new Vector2(leftX, y), new Vector2(w, 0f), ToggleMode);
             y -= 100f;
-            UiKit.Button(root, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Neutral, new Vector2(leftX - 110f, y), new Vector2(200f, 80f),
+            UiKit.Button(root, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Gray, new Vector2(leftX - 110f, y), new Vector2(200f, 0f),
                          () => Loc.Set(UiLanguage.English));
-            UiKit.Button(root, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Neutral, new Vector2(leftX + 110f, y), new Vector2(200f, 80f),
+            UiKit.Button(root, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Gray, new Vector2(leftX + 110f, y), new Vector2(200f, 0f),
                          () => Loc.Set(UiLanguage.Chinese));
-            foreach (var n in new[] { "English", "Chinese" }) ((RectTransform)root.Find(n)).sizeDelta = new Vector2(200f, 80f);
+            foreach (var n in new[] { "English", "Chinese" }) ((RectTransform)root.Find(n)).sizeDelta = new Vector2(200f, th.buttonHeight);
             y -= 100f;
-            UiKit.Button(root, "Open Stop Dialog", "Open Stop dialog", UiStyle.Neutral, new Vector2(leftX, y), new Vector2(w, 80f), () => _host.Open());
+            UiKit.Button(root, "Open Stop Dialog", "Open Stop dialog", UiStyle.Borderless, new Vector2(leftX, y), new Vector2(w, 0f), () => _host.Open());
 
             // right column: live readout
             const float rightX = 240f;
@@ -76,11 +73,11 @@ namespace AcousticChamber.App
                                 align: TextAlignmentOptions.Left);
             var bindings = _actions != null ? string.Join("\n", _actions.Bindings.Describe()) : "No GlobalActions in the scene.";
             UiKit.Text(root, "Bindings", bindings, th.smallSize, new Vector2(rightX, 40f), new Vector2(440f, 260f),
-                       color: th.textSecondary, align: TextAlignmentOptions.TopLeft);
+                       color: th.text2, align: TextAlignmentOptions.TopLeft);
             _live = UiKit.Text(root, "Live", "", th.smallSize, new Vector2(rightX, -200f), new Vector2(440f, 160f), align: TextAlignmentOptions.TopLeft);
 
             _status = UiKit.Text(root, "Status", "Start the session, then press Y.", th.smallSize, new Vector2(0f, -Size.y / 2f + 30f),
-                                 new Vector2(Size.x - 80f, 40f), color: th.textSecondary);
+                                 new Vector2(Size.x - 80f, 40f), color: th.text2);
             Refresh();
         }
 
@@ -133,7 +130,7 @@ namespace AcousticChamber.App
             if (_actions != null) _actions.StopEnabled = _running;
             _host.DebugRun = _debug;
             UiKit.LabelOf(_sessionButton).text = _running ? "Session: running (stop)" : "Session: off (start)";
-            UiKit.Paint(_sessionButton, _running ? UiKit.Theme.danger : UiKit.Theme.primary);
+            _sessionButton.Style = _running ? UiStyle.Destructive : UiStyle.Prominent;
             UiKit.LabelOf(_modeButton).text = _debug ? "Mode: Debug run" : "Mode: Real session";
         }
 

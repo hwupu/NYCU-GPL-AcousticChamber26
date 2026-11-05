@@ -22,14 +22,14 @@ namespace GPL.UI
     }
 
     /// <summary>
-    /// Modal dialog on top of a canvas: dims the panel, shows a box with a colored top bar, a title, a message and a row of
+    /// Modal dialog on top of a canvas (design system v2): dims the panel, shows a surface box with a title, a message and a row of
     /// buttons. While open, the pointer can only reach this dialog (<see cref="UiPointer.Modal"/>). Used by the Stop dialog
     /// and the data manager's delete confirmations.
     /// </summary>
     [ExecuteAlways] // OnDestroy (Abandoned) also in edit mode / EditMode tests
     public class ModalDialog : MonoBehaviour
     {
-        public static readonly Vector2 DefaultSize = new Vector2(900f, 380f);
+        public static readonly Vector2 DefaultSize = new Vector2(820f, 400f);
 
         Transform _previousModal;
 
@@ -43,40 +43,45 @@ namespace GPL.UI
         /// <summary>Raised when the dialog is destroyed without <see cref="Close"/> (e.g. its canvas or scene unloaded).</summary>
         public event Action Abandoned;
 
-        public static ModalDialog Show(Transform canvas, string title, string message, Color barColor, params DialogButton[] buttons) =>
-            Show(canvas, title, message, barColor, new Vector2(0f, 100f), DefaultSize, buttons);
+        public static ModalDialog Show(Transform canvas, string title, string message, params DialogButton[] buttons) =>
+            Show(canvas, title, message, Vector2.zero, DefaultSize, buttons);
 
-        public static ModalDialog Show(Transform canvas, string title, string message, Color barColor, Vector2 pos, Vector2 size,
+        /// <summary>
+        /// Opens a dialog box at <paramref name="pos"/>: title and message left-aligned, buttons right-aligned in the given
+        /// order (put the main action last: it ends up on the right). Each button is as wide as its label needs, at least
+        /// the minimum button width.
+        /// </summary>
+        public static ModalDialog Show(Transform canvas, string title, string message, Vector2 pos, Vector2 size,
                                        params DialogButton[] buttons)
         {
             var th = UiKit.Theme;
+            const float pad = 48f;
             var root = UiKit.Fill(UiKit.Rect(canvas, "Dialog", Vector2.zero, Vector2.zero));
             var dialog = root.gameObject.AddComponent<ModalDialog>();
-            UiKit.Background(root, "Dim", new Color(0f, 0f, 0f, 0.55f)).sprite = null;
+            UiKit.Background(root, "Dim", th.dim);
 
             var box = UiKit.Box(root, "Box", pos, size, th.surface).rectTransform;
-            var bar = UiKit.Box(box, "Bar", Vector2.zero, new Vector2(0f, 16f), barColor);
-            bar.rectTransform.anchorMin = new Vector2(0f, 1f);
-            bar.rectTransform.anchorMax = new Vector2(1f, 1f);
-            bar.rectTransform.pivot = new Vector2(0.5f, 1f);
-            bar.rectTransform.anchoredPosition = Vector2.zero;
-            bar.rectTransform.sizeDelta = new Vector2(0f, 16f);
+            float top = size.y / 2f - pad;
+            float innerW = size.x - 2 * pad;
+            UiKit.Text(box, "Title", title, th.headingSize, new Vector2(0f, top - th.headingSize * 0.7f), new Vector2(innerW, th.headingSize * 1.4f),
+                       bold: true, align: TMPro.TextAlignmentOptions.Left);
+            float msgTop = top - th.headingSize * 1.4f - 16f;
+            float msgBottom = -size.y / 2f + pad + th.buttonHeight + 24f;
+            UiKit.Text(box, "Message", message, 32, new Vector2(0f, (msgTop + msgBottom) / 2f), new Vector2(innerW, msgTop - msgBottom),
+                       color: th.text2, align: TMPro.TextAlignmentOptions.TopLeft);
 
-            float y = size.y / 2f - 16f - th.gap - th.headingSize * 0.75f;
-            UiKit.Text(box, "Title", title, th.headingSize, new Vector2(0f, y), new Vector2(size.x - 2 * th.gap, th.headingSize * 1.4f), bold: true);
-            UiKit.Text(box, "Message", message, th.bodySize, new Vector2(0f, 10f), new Vector2(size.x - 4 * th.gap, size.y - 220f),
-                       color: th.textSecondary);
-
-            int n = Mathf.Max(buttons.Length, 1);
-            float w = Mathf.Min(360f, (size.x - (n + 1) * th.gap) / n);
-            float by = -size.y / 2f + th.gap + th.buttonHeight / 2f + 10f;
-            for (int i = 0; i < buttons.Length; i++)
+            float by = -size.y / 2f + pad + th.buttonHeight / 2f;
+            float right = size.x / 2f - pad;
+            for (int i = buttons.Length - 1; i >= 0; i--)
             {
                 var b = buttons[i];
-                float x = (i - (buttons.Length - 1) / 2f) * (w + th.gap);
-                var button = UiKit.Button(box, "Button " + b.Label, b.Label, b.Style, new Vector2(x, by), new Vector2(w, th.buttonHeight),
-                                          bold: b.Style == UiStyle.Primary);
-                button.GetComponent<RectTransform>().sizeDelta = new Vector2(w, th.buttonHeight);
+                var button = UiKit.Button(box, "Button " + b.Label, b.Label, b.Style, Vector2.zero, new Vector2(0f, th.buttonHeight));
+                var label = UiKit.LabelOf(button);
+                float w = Mathf.Max(th.buttonMinWidth, label.GetPreferredValues(b.Label).x + 64f);
+                var rt = (RectTransform)button.transform;
+                rt.sizeDelta = new Vector2(w, th.buttonHeight);
+                rt.anchoredPosition = new Vector2(right - w / 2f, by);
+                right -= w + th.gap;
                 button.onClick.AddListener(() =>
                 {
                     if (b.Closes) dialog.Close();
