@@ -19,7 +19,7 @@ Assets/
     Modules/<Module>/        portable, generic (namespace GPL.<Module>)
     App/                     Main Hall, chamber catalog, routing (this project only)
     Chambers/<ChamberId>/    one chamber per folder (namespace AcousticChamber.Chambers.<ChamberId>)
-    Chambers/_Template/      copy to start a new chamber
+    Chambers/_Template/      copy to start a new chamber (chamber ID `Template`)
     Settings/                project-level assets we own (lighting, mixer templates, fonts)
   Oculus/, XR/, Resources/, Settings/, Plugins/   Unity and Meta generated (left where the tools put them)
   <ThirdParty>/              Asset Store / vendor packages, untouched
@@ -70,10 +70,12 @@ Modules stay plain folders (copy the folder plus `GPL.Core`). Turning a stable m
 
 ## 5. App shell (`Assets/AcousticChamber/App`)
 - **`ChamberDefinition`** (ScriptableObject in each chamber folder): `id` (the chamber name, e.g. `HumPerHW2`: folder, data folder, file names, `chamber` column), `label` (display ID `C01`, `C02`, ...; Hall and README only, may change without touching data), title (English / 中文), description, thumbnail, scene, `version` (written into every log row), supported modes, default `ResumePolicy`, input bindings, posture, enabled flag.
-- **`ChamberCatalog`**: list shown in the Hall. `Magic > App > Sync Chambers` collects every `ChamberDefinition`, updates the catalog and the build profile scene list. Removing a chamber = delete its folder + Sync. `Validate Setup` flags orphans.
-- **Main Hall** (`MainHall.unity`): own rig and GUI; panel listing the chambers (title, number of unfinished sessions). No Study ID here.
-- **`SessionRouter`**: on launch, if the last used chamber has unfinished sessions it opens **that chamber's menu** (not the trials). Otherwise the Hall.
-- **Scenes:** one scene per chamber, each with its own Building Blocks rig, loaded singly behind a fade. A small persistent object hands over only the mode (real / Debug). The participant language is chosen inside the chamber session (Language stage, stored in the session record); system screens are English only.
+- **Chamber ID rule** (PB-06a): letters, digits and `-` only (it is a token of data file names split on `_`). The folder is the ID or `_` + ID: `Chambers/_Template/` holds the chamber `Template`. The definition is `Chambers/<Folder>/<Folder>.ChamberDefinition.asset`.
+- **`ChamberCatalog`** (`App/ChamberCatalog.asset`): list shown in the Hall, ordered by label, then ID. `Magic > App > Sync Chambers` collects every `ChamberDefinition`, leaves out (with an error) those that break the ID rule, lack their scene or repeat an ID, updates the catalog and sets the build scene list to MainHall + the chamber scenes. Removing a chamber = delete its folder + Sync. `Validate Setup` flags orphans.
+- **Main Hall** (`MainHall.unity`, `HallMenu`): own rig and GUI; 2-column card grid of the enabled chambers (title, number of unfinished sessions). No Study ID and **no Debug mode** here: Debug lives in each chamber (its menu's Debug button; PO 2026-11-06).
+- **Sandbox** (`App/Scenes/Sandbox.unity`, not in the build): the module test panels (UI, Input, Debug bench, Homing); open it in the Editor and Play over Link (PO 2026-11-06).
+- **`SessionRouter`** (PB-06b): on launch, if the last used chamber (`persistentDataPath/app.state`, key `last_chamber`, written when a chamber is entered) has unfinished sessions it opens **that chamber's menu** (not the trials). Otherwise the Hall.
+- **Scenes:** one scene per chamber, each with its own Building Blocks rig, loaded singly (`AppNav`) behind a fade to black: 0.3 s out, 0.3 s in (Meta `OVRScreenFade`, added to the center eye at run time by `SceneFade`; overlay panels hide their window first because the fade does not cover compositor layers). A scene switch resets `Time.timeScale` to 1. The participant language is chosen inside the chamber session (Language stage, stored in the session record); system screens are English only.
 
 ## 6. Chamber menu and session flow
 Every chamber starts at its **chamber menu** (generic, from `GPL.UI` + `GPL.Session`, HW2 style):

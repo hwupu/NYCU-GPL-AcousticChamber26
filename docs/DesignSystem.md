@@ -129,7 +129,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - No DEBUG tag on the Debug pages. Playback tests (play stimulus, play background) and Debug-only display switches are **not saved** in presets (ADR-0002).
 
 ### Mode indicator
-- **DEBUG** as amber text (`debug`, 24 u bold, letter-spaced) at the right of the header of the Hall and chamber menu while the app is in Debug mode; nothing in real runs.
+- **DEBUG** as amber text (`debug`, 24 u bold, letter-spaced) at the right of the header of the chamber menu while the chamber is in Debug mode; nothing in real runs. The Hall has no Debug mode and no tag (PO 2026-11-06).
 
 ## 8. In the scene
 - Laser pointer: white URP Unlit material asset (single-pass stereo).

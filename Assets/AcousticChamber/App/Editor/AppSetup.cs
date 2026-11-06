@@ -181,7 +181,7 @@ namespace AcousticChamber.App.Editor
             return (cue, listener);
         }
 
-        static void RemoveTestPanels(Transform ui)
+        internal static void RemoveTestPanels(Transform ui)
         {
             foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName }) RemoveChild(ui, n);
         }
