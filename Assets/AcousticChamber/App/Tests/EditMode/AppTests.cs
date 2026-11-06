@@ -104,5 +104,17 @@ namespace AcousticChamber.App.Tests
             Assert.AreEqual("C04 · HumPerHW2", ChamberRules.MenuTitle("C04", "HumPerHW2"));
             Assert.AreEqual("Template", ChamberRules.MenuTitle("", "Template"));
         }
+
+        [Test]
+        public void SessionRouter_OpensTheLastChamberOnlyWithUnfinishedSessions()
+        {
+            var ids = new[] { "Template", "HumPerHW2" };
+            System.Func<string, int> counts = id => id == "Template" ? 2 : 0;
+            Assert.AreEqual("Template", SessionRouter.Route("Template", ids, counts));
+            Assert.IsNull(SessionRouter.Route("HumPerHW2", ids, counts), "no unfinished sessions");
+            Assert.IsNull(SessionRouter.Route("Gone", ids, _ => 5), "not in the Hall");
+            Assert.IsNull(SessionRouter.Route("", ids, counts), "no last chamber");
+            Assert.IsNull(SessionRouter.Route("Template", ids, _ => throw new IOException("unreadable")), "unreadable = 0");
+        }
     }
 }

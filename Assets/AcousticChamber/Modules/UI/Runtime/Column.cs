@@ -16,7 +16,7 @@ namespace GPL.UI
         /// <summary>Space between a group label and its group.</summary>
         public const float LabelGap = 8f;
 
-        float _y;
+        float _y, _end;
 
         public ScrollList List { get; }
         public RectTransform Content => List.Content;
@@ -52,6 +52,7 @@ namespace GPL.UI
             float h = Mathf.Ceil(t.GetPreferredValues(text, Width - 2f * UiKit.RowTextPad, 0f).y);
             t.rectTransform.sizeDelta = new Vector2(Width - 2f * UiKit.RowTextPad, h);
             ScrollList.TopAnchored(t.rectTransform, _y);
+            _end = _y + h;
             _y += h + LabelGap;
             return t;
         }
@@ -61,6 +62,7 @@ namespace GPL.UI
         {
             var g = UiKit.Group(Content, name, Vector2.zero, Width, rows);
             ScrollList.TopAnchored(g, _y);
+            _end = _y + g.sizeDelta.y;
             _y += g.sizeDelta.y + SectionGap;
             return g;
         }
@@ -75,6 +77,7 @@ namespace GPL.UI
             float pad = th.groupPadding;
             var g = UiKit.Box(Content, name, Vector2.zero, new Vector2(Width, th.buttonHeight + 2f * pad), th.raised, th.groupRadius).rectTransform;
             ScrollList.TopAnchored(g, _y);
+            _end = _y + g.sizeDelta.y;
             _y += g.sizeDelta.y + SectionGap;
             int n = buttons.Length;
             float gap = pad;
@@ -93,9 +96,12 @@ namespace GPL.UI
         }
 
         /// <summary>Empty space.</summary>
-        public void Gap(float height) => _y += height;
+        public void Gap(float height) { _y += height; _end = Mathf.Max(_end, _y); }
 
-        /// <summary>Sets the scroll extent; call after the last item (and again after adding more).</summary>
-        public void Finish() => List.ContentHeight = Mathf.Max(0f, _y - SectionGap);
+        /// <summary>Sets the scroll extent to the bottom of the last item (+ <see cref="BottomPad"/>); call after the last item (and again after adding more).</summary>
+        public void Finish() => List.ContentHeight = Mathf.Max(0f, _end + BottomPad);
+
+        /// <summary>Space below the last item when scrolled to the end.</summary>
+        public const float BottomPad = 16f;
     }
 }

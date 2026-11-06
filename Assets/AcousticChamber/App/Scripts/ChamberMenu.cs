@@ -16,8 +16,8 @@ namespace AcousticChamber.App
 {
     /// <summary>
     /// The chamber menu every chamber starts at (Architecture section 6, DesignSystem section 7): ‹ back to the Hall, the Study
-    /// ID number pad, "Preset: &lt;active&gt;", Start, Debug (the Debug bench) and the unfinished sessions (tap = fill the
-    /// Study ID). Start with an ID that has an unfinished session asks Resume / Start new / Back; then the headset volume
+    /// ID number pad, Start, Debug (the Debug bench), and under them "Running on custom preset: X" (not for Default) and
+    /// "Unfinished: S0005, ..." (managed on Debug > Data files). Start with an ID that has an unfinished session asks Resume / Start new / Back; then the headset volume
     /// step; then the chamber's <see cref="ChamberBehaviour.Run"/>. The menu owns the session files, the start and end rows
     /// and the Stop dialog (Y): Drop out ends a real session, Back to the chamber menu ends a Debug run.
     /// </summary>
@@ -30,8 +30,8 @@ namespace AcousticChamber.App
         public ChamberDefinition chamber;
         public ChamberBehaviour logic;
 
-        RectTransform _canvas, _window, _unfinished;
-        TextMeshProUGUI _preset, _status;
+        RectTransform _canvas, _window;
+        TextMeshProUGUI _preset, _unfinished, _status;
         NumberPadEntry _pad;
         PageStack _pages;
         PresetStore _presets;
@@ -90,6 +90,8 @@ namespace AcousticChamber.App
             BuildMenu(menu.Rect);
             menu.Returned += Refresh;
             Refresh();
+            if (AppNav.TakeRoutedAtLaunch())
+                SetStatus("Opened at launch: this chamber has unfinished sessions. Enter the Study ID, then Start.");
         }
 
         // ---- menu page -----------------------------------------------------------------------------------------
@@ -108,50 +110,45 @@ namespace AcousticChamber.App
             float colRight = Size.x / 2f - Page.EdgePad;
             float colW = colRight - colLeft, colX = (colLeft + colRight) / 2f;
             float y = top - th.gap;
-            _preset = UiKit.Text(r, "Preset", "", th.smallSize, new Vector2(colX, y - 20f), new Vector2(colW, 40f), color: th.text2,
-                                 align: TextAlignmentOptions.MidlineLeft);
-            y -= 40f + th.gap;
             UiKit.Button(r, "Start", "Start", UiStyle.Prominent, new Vector2(colX, y - th.buttonHeight / 2f), new Vector2(colW, 0f), OnStart);
             y -= th.buttonHeight + th.gap;
             UiKit.Button(r, "Debug", "Debug", UiStyle.Gray, new Vector2(colX, y - th.buttonHeight / 2f), new Vector2(colW, 0f),
                          () => _bench.OpenDebugPage());
             y -= th.buttonHeight + 2f * th.gap;
-            UiKit.Text(r, "Unfinished Label", "Unfinished sessions", th.smallSize, new Vector2(colX, y - 18f), new Vector2(colW, 36f),
-                       color: th.text2, align: TextAlignmentOptions.MidlineLeft);
-            y -= 36f + 8f;
-            float bottom = -Size.y / 2f + 64f;
-            var list = ScrollList.Create(r, "Unfinished", new Vector2(colX, (y + bottom) / 2f), new Vector2(colW, y - bottom));
-            _unfinished = list.Content;
+            // status lines under the buttons; empty (hidden) when there is nothing to say
+            _preset = Line(r, "Preset", colX, y - 20f, colW);
+            _unfinished = Line(r, "Unfinished", colX, y - 20f - 48f, colW);
 
             _status = UiKit.Text(r, "Status", "", th.smallSize, new Vector2(0f, -Size.y / 2f + 34f), new Vector2(Page.ContentWidth(Size.x), 40f),
                                  color: th.text2);
         }
 
-        /// <summary>Updates the preset line and the unfinished sessions.</summary>
+        static TextMeshProUGUI Line(RectTransform r, string name, float x, float y, float w)
+        {
+            var t = UiKit.Text(r, name, "", UiKit.Theme.smallSize, new Vector2(x, y), new Vector2(w, 40f), color: UiKit.Theme.text2,
+                               align: TextAlignmentOptions.Left);
+            UiKit.SingleLine(t); // a 40 u box is shorter than one 28 u line (41 u): TMP would hide it
+            return t;
+        }
+
+        /// <summary>
+        /// The two lines under the buttons: "Running on custom preset: X" (nothing for the preset Default) and "Unfinished: S0005,
+        /// S0012" (nothing when none). Unfinished sessions are managed on Debug > Data files.
+        /// </summary>
         void Refresh()
         {
             if (_preset == null) return;
-            _preset.text = "Preset: " + _presets.ActiveName;
-            UiKit.Clear(_unfinished);
-            var list = _sessions.ListUnfinished();
-            var scroll = _unfinished.parent.GetComponent<ScrollList>();
-            if (list.Count == 0)
-            {
-                var t = UiKit.Text(_unfinished, "None", "None", UiKit.Theme.smallSize, Vector2.zero, new Vector2(scroll.Viewport.rect.width, 40f),
-                                   color: UiKit.Theme.text3, align: TextAlignmentOptions.MidlineLeft);
-                ScrollList.TopAnchored(t.rectTransform, 0f);
-                scroll.ContentHeight = 40f;
-                return;
-            }
-            float w = scroll.Viewport.rect.width;
-            var g = UiKit.Group(_unfinished, "Sessions", Vector2.zero, w, list.Count);
-            ScrollList.TopAnchored(g, 0f);
-            for (int i = 0; i < list.Count; i++)
-            {
-                var rec = list[i];
-                UiKit.Row(g, i, rec.StudyId, logic.Describe(rec), () => _pad.SetValue(rec.StudyId.Substring(StudyId.Prefix.Length)), chevron: false);
-            }
-            scroll.ContentHeight = g.sizeDelta.y;
+            string active = _presets.ActiveName;
+            bool custom = !string.Equals(active, PresetStore.DefaultName, StringComparison.OrdinalIgnoreCase);
+            _preset.text = custom ? "Running on custom preset: " + active : "";
+            var ids = new List<string>();
+            foreach (var rec in _sessions.ListUnfinished())
+                if (!ids.Contains(rec.StudyId)) ids.Add(rec.StudyId);
+            ids.Sort(StringComparer.Ordinal);
+            _unfinished.text = ids.Count > 0 ? "Unfinished: " + string.Join(", ", ids) : "";
+            // no gap when the preset line is empty
+            var p = _unfinished.rectTransform.anchoredPosition;
+            _unfinished.rectTransform.anchoredPosition = new Vector2(p.x, _preset.rectTransform.anchoredPosition.y - (custom ? 48f : 0f));
         }
 
         void SetStatus(string s)
@@ -191,7 +188,7 @@ namespace AcousticChamber.App
                 return;
             }
             ModalDialog.Show(_canvas, id + " has an unfinished session",
-                             logic.Describe(old) + ".\nResume continues it. Start new closes it (its data are kept) and starts again.",
+                             logic.Describe(old) + ", started " + old.Created.ToString("yyyy-MM-dd HH:mm") + ".\nResume continues it. Start new closes it (its data are kept) and starts again.",
                              new DialogButton("Back", UiStyle.Borderless),
                              new DialogButton("Start new", UiStyle.Gray, () => AskVolume(v => BeginNew(id, v, old))),
                              new DialogButton("Resume", UiStyle.Prominent, () => AskVolume(v => BeginResume(old, v))));

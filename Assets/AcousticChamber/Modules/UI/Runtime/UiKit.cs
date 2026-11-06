@@ -158,6 +158,7 @@ namespace GPL.UI
             var text = Text(img.transform, "Label", label, fontSize > 0 ? fontSize : th.buttonSize, Vector2.zero, Vector2.zero);
             text.textWrappingMode = TextWrappingModes.NoWrap;
             Fill(text.rectTransform, 8f);
+            Lift(text); // single line: up by OpticalLift (Noto's line box sits the letters low)
             var button = img.gameObject.AddComponent<UiButton>();
             button.targetGraphic = img;
             var nav = button.navigation;
@@ -223,7 +224,7 @@ namespace GPL.UI
             ((RectTransform)b.transform).sizeDelta = size;
             Round(b.GetComponent<Image>(), Mathf.Max(0f, th.groupRadius - th.groupPadding));
             var l = LabelOf(b);
-            l.alignment = TextAlignmentOptions.MidlineLeft;
+            l.alignment = TextAlignmentOptions.Left;
             l.fontSize = th.bodySize;
             LayoutRowText(b.transform, l, sub);
             string trailing = (value ?? "") + (chevron ? (string.IsNullOrEmpty(value) ? "›" : "  ›") : "");
@@ -244,7 +245,7 @@ namespace GPL.UI
             var th = Theme;
             RowGeometry(group, index, out Vector2 pos, out Vector2 size);
             var row = Rect(group, "Row " + label, pos, size);
-            var l = Text(row, "Label", label, th.bodySize, Vector2.zero, Vector2.zero, align: TextAlignmentOptions.MidlineLeft);
+            var l = Text(row, "Label", label, th.bodySize, Vector2.zero, Vector2.zero, align: TextAlignmentOptions.Left);
             l.textWrappingMode = TextWrappingModes.NoWrap;
             Fill(l.rectTransform);
             LayoutRowText(row, l, sub);
@@ -261,34 +262,98 @@ namespace GPL.UI
             pos = new Vector2(0f, g.y / 2f - pad - RowHeight / 2f - index * (RowHeight + th.inset));
         }
 
-        /// <summary>Label alone: centered vertically. With a secondary line: label above, the line (24 u, text2) below it.</summary>
+        /// <summary>Line height of Noto Sans TC as a multiple of the font size (ascender 1.16 + descender 0.29; CSS "normal").</summary>
+        public const float LineFactor = 1.45f;
+
+        /// <summary>One line of text at <paramref name="fontSize"/> (TMP needs at least this height, or an ellipsis line vanishes).</summary>
+        public static float LineHeight(float fontSize) => fontSize * LineFactor;
+
+        /// <summary>
+        /// Single-line text sits visually low when centered by line metrics (the line box keeps room for 中文 ascenders):
+        /// moved up by this fraction of the font size (PO 2026-11-07: about 1-2 u). Two-line rows are not moved.
+        /// </summary>
+        public const float OpticalLift = 0.05f;
+
+        /// <summary>Moves a stretched single-line text up by <see cref="OpticalLift"/>.</summary>
+        public static void Lift(TextMeshProUGUI t)
+        {
+            float d = t.fontSize * OpticalLift;
+            var rt = t.rectTransform;
+            rt.offsetMin = new Vector2(rt.offsetMin.x, rt.offsetMin.y + d);
+            rt.offsetMax = new Vector2(rt.offsetMax.x, rt.offsetMax.y + d);
+        }
+
+        /// <summary>
+        /// One line that ends in … when too long. Makes the box at least one line high (TMP hides a line that does not fit
+        /// the height when the overflow mode is Ellipsis), keeping its center.
+        /// </summary>
+        public static TextMeshProUGUI SingleLine(TextMeshProUGUI t)
+        {
+            t.textWrappingMode = TextWrappingModes.NoWrap;
+            t.overflowMode = TextOverflowModes.Ellipsis;
+            var rt = t.rectTransform;
+            float need = LineHeight(t.fontSize) + 4f, h = rt.rect.height;
+            if (Mathf.Approximately(rt.anchorMin.y, rt.anchorMax.y)) { if (rt.sizeDelta.y < need) rt.sizeDelta = new Vector2(rt.sizeDelta.x, need); }
+            else if (h < need)
+            {
+                float g = (need - h) / 2f;
+                rt.offsetMin = new Vector2(rt.offsetMin.x, rt.offsetMin.y - g);
+                rt.offsetMax = new Vector2(rt.offsetMax.x, rt.offsetMax.y + g);
+            }
+            return t;
+        }
+
+        /// <summary>
+        /// Label alone: centered vertically. With a secondary line: label and line (24 u, text2) stacked and centered together
+        /// as one block, each in a box one line high, so they sit like two lines of text (DesignSystem, components.html).
+        /// Text is centered by the font's line metrics (TMP "Left"/"Right", not "Midline", which centers the ink and moves
+        /// words with descenders or 中文).
+        /// </summary>
         static void LayoutRowText(Transform row, TextMeshProUGUI label, string sub)
         {
             var th = Theme;
-            var lr = label.rectTransform;
             if (string.IsNullOrEmpty(sub))
             {
-                lr.offsetMin = new Vector2(RowTextPad, 0f);
-                lr.offsetMax = new Vector2(-RowTextPad, 0f);
+                PlaceRowLabel(label.rectTransform, null, label, null);
                 return;
             }
-            lr.offsetMin = new Vector2(RowTextPad, RowHeight * 0.38f);
-            lr.offsetMax = new Vector2(-RowTextPad, -6f);
-            var s = Text(row, "Sub", sub, th.minimumSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.MidlineLeft);
+            var s = Text(row, "Sub", sub, th.minimumSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.Left);
             s.textWrappingMode = TextWrappingModes.NoWrap;
-            var sr = Fill(s.rectTransform);
-            sr.offsetMin = new Vector2(RowTextPad, 8f);
-            sr.offsetMax = new Vector2(-RowTextPad, -RowHeight * 0.62f);
+            s.overflowMode = TextOverflowModes.Ellipsis; // a long line ends in … instead of running under the value
+            Fill(s.rectTransform);
+            PlaceRowLabel(label.rectTransform, s.rectTransform, label, s);
+        }
+
+        /// <summary>One line: the label fills the row. Two lines: label box above the sub box, the pair centered in the row.</summary>
+        static void PlaceRowLabel(RectTransform lr, RectTransform sr, TextMeshProUGUI label, TextMeshProUGUI sub)
+        {
+            float right = -lr.offsetMax.x > RowTextPad ? lr.offsetMax.x : -RowTextPad; // keep a wider right margin set by the caller
+            if (sr == null)
+            {
+                float up = label.fontSize * OpticalLift;
+                lr.offsetMin = new Vector2(RowTextPad, up);
+                lr.offsetMax = new Vector2(right, up);
+                return;
+            }
+            float mid = RowHeight / 2f;
+            float lh = LineHeight(label.fontSize), sh = LineHeight(sub.fontSize);
+            float lc = sh / 2f, sc = -lh / 2f; // centers relative to the row center
+            const float slack = 2f; // boxes 4 u taller than a line, same centers (text is centered in its box)
+            lr.offsetMin = new Vector2(RowTextPad, mid + lc - lh / 2f - slack);
+            lr.offsetMax = new Vector2(right, lc + lh / 2f - mid + slack);
+            sr.offsetMin = new Vector2(RowTextPad, mid + sc - sh / 2f - slack);
+            sr.offsetMax = new Vector2(right, sc + sh / 2f - mid + slack);
         }
 
         static TextMeshProUGUI RowValue(Transform row, string text, float right)
         {
             var th = Theme;
-            var v = Text(row, "Value", text, th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.MidlineRight);
+            var v = Text(row, "Value", text, th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.Right);
             v.textWrappingMode = TextWrappingModes.NoWrap;
             Fill(v.rectTransform);
-            v.rectTransform.offsetMin = new Vector2(RowTextPad, 0f);
-            v.rectTransform.offsetMax = new Vector2(-right, 0f);
+            float up = v.fontSize * OpticalLift;
+            v.rectTransform.offsetMin = new Vector2(RowTextPad, up);
+            v.rectTransform.offsetMax = new Vector2(-right, up);
             return v;
         }
 
@@ -303,8 +368,7 @@ namespace GPL.UI
             bool show = !string.IsNullOrEmpty(sub);
             s.text = sub ?? "";
             s.gameObject.SetActive(show);
-            l.rectTransform.offsetMin = new Vector2(RowTextPad, show ? RowHeight * 0.38f : 0f);
-            l.rectTransform.offsetMax = new Vector2(-RowTextPad, show ? -6f : 0f);
+            PlaceRowLabel(l.rectTransform, show ? s.rectTransform : null, l, show ? s : null);
         }
 
         /// <summary>The text of a row's child "Value" / "Sub" / "Label" (null if it has none).</summary>

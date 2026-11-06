@@ -59,9 +59,9 @@ namespace GPL.UI
             float right = size.x / 2f - Page.EdgePad - (debugTag ? 200f : 0f);
             float w = Mathf.Max(0f, right - left);
             page.TitleText = UiKit.Text(rt, "Title", title, th.titleSize, new Vector2(left + w / 2f, y), new Vector2(w, d),
-                                        bold: true, align: TextAlignmentOptions.MidlineLeft);
-            page.TitleText.textWrappingMode = TextWrappingModes.NoWrap;
-            page.TitleText.overflowMode = TextOverflowModes.Ellipsis;
+                                        bold: true, align: TextAlignmentOptions.Left);
+            UiKit.SingleLine(page.TitleText); // the 80 u header is shorter than one 56 u line (81 u): TMP would hide it
+            page.TitleText.rectTransform.anchoredPosition += new Vector2(0f, th.titleSize * UiKit.OpticalLift);
             if (debugTag) UiKit.DebugTag(rt);
 
             if (!first)

@@ -27,7 +27,8 @@ namespace GPL.DebugBench
     /// </summary>
     public sealed partial class DebugBench
     {
-        public const float StatusHeight = 56f;
+        /// <summary>Space reserved for the status line at the bottom of the Debug page (the line is centered in it).</summary>
+        public const float StatusHeight = 88f;
 
         readonly PageStack _pages;
         readonly Transform _canvas;
@@ -54,7 +55,7 @@ namespace GPL.DebugBench
         public void SetStatus(string text)
         {
             if (_status != null) _status.text = text;
-            Debug.Log("[GPL] DebugBench: " + text);
+            if (!string.IsNullOrEmpty(text)) Debug.Log("[GPL] DebugBench: " + text);
         }
 
         // ---- Debug page ----------------------------------------------------------------------------------------
@@ -89,10 +90,10 @@ namespace GPL.DebugBench
             var size = page.Rect.rect.size;
             _status = UiKit.Text(page.Rect, "Status", "", th.smallSize, new Vector2(0f, -size.y / 2f + StatusHeight / 2f),
                                  new Vector2(Page.ContentWidth(size.x) - 2f * UiKit.RowTextPad, StatusHeight), color: th.text2,
-                                 align: TextAlignmentOptions.MidlineLeft);
-            _status.textWrappingMode = TextWrappingModes.NoWrap;
-            _status.overflowMode = TextOverflowModes.Ellipsis;
-            SetStatus(Work.Warnings.Count > 0 ? Work.Warnings.Count + " repairs when loading " + Work.Source + " (see the log)" : "Ready.");
+                                 align: TextAlignmentOptions.Left);
+            UiKit.SingleLine(_status);
+            // empty until something happens (PO 2026-11-07: no "Ready."); success and failure notes stay
+            SetStatus(Work.Warnings.Count > 0 ? Work.Warnings.Count + " repairs when loading " + Work.Source + " (see the log)" : "");
 
             page.Returned += RefreshDebugPage;
             return page;

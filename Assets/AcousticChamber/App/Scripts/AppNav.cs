@@ -21,8 +21,22 @@ namespace AcousticChamber.App
 
         public static string StatePath => Path.Combine(Application.persistentDataPath, AppState.FileName);
 
+        /// <summary>Set by the Hall's launch routing; the chamber menu reads and clears it (<see cref="TakeRoutedAtLaunch"/>).</summary>
+        public static bool RoutedAtLaunch { get; set; }
+
+        public static bool TakeRoutedAtLaunch()
+        {
+            bool r = RoutedAtLaunch;
+            RoutedAtLaunch = false;
+            return r;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => Busy = false;
+        static void ResetStatics()
+        {
+            Busy = false;
+            RoutedAtLaunch = false;
+        }
 
         /// <summary>Null if <paramref name="scenePath"/> can be loaded, otherwise why not.</summary>
         public static string Problem(string scenePath)

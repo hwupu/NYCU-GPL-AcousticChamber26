@@ -72,10 +72,11 @@ namespace AcousticChamber.Chambers.Template
         {
             var plan = CreatePlan(SessionLauncher.Snapshot(r, Schema));
             var c = r.Cursor;
-            string where = c.Stage < plan.Stages.Count ? plan.Stages[c.Stage].Name : "end";
-            if (where == Stages.Experiment)
-                where = "block " + (c.Block + 1) + " of " + plan.Stages[c.Stage].Blocks + ", " + c.TrialsDone + " trials done";
-            return where + " · " + ResumeNames.Name(r.ResumePolicy) + " · " + r.Created.ToString("MM-dd HH:mm");
+            if (c.Stage >= plan.Stages.Count) return "At the end";
+            var stage = plan.Stages[c.Stage];
+            if (stage.Name == Stages.Experiment)
+                return "Block " + (c.Block + 1) + " of " + stage.Blocks + " · " + c.TrialsDone + (c.TrialsDone == 1 ? " trial" : " trials") + " done";
+            return char.ToUpperInvariant(stage.Name[0]) + stage.Name.Substring(1);
         }
 
         public override string ResumeProblem(SessionRecord r, ParameterSet snapshot)

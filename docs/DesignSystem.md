@@ -1,6 +1,6 @@
 # Design System (v2, accepted 2026-11-05, PB-16 → PB-17/18)
 
-v1 (PB-16) was accepted earlier on 2026-11-05; v2 replaces its colors, button styles and dialogs after four preview rounds with the PO. Interactive reference: [design/components.html](design/components.html) (open in a browser; the mouse stands in for the controller ray). v1 is in git history (this file, and [design/preview.html](design/preview.html): HW2 vs v1). Decision record: [ADR-0005](decisions/ADR-0005-ui-components-and-sheets.md).
+v1 (PB-16) was accepted earlier on 2026-11-05; v2 replaces its colors, button styles and dialogs after four preview rounds with the PO. Interactive reference: [design/components.html](design/components.html) (open in a browser; the mouse stands in for the controller ray). Since v3 (2026-11-07) it mirrors the built screens and names every element with its run-time GameObject name (hover shows the Hierarchy path; section 0 is the shared vocabulary). v1 is in git history (this file, and [design/preview.html](design/preview.html): HW2 vs v1). Decision record: [ADR-0005](decisions/ADR-0005-ui-components-and-sheets.md).
 
 Principles: **flat, solid, quiet.** No glass, no blur at rest, no transparency except the dim layer behind a sheet. Hierarchy comes from fill and brightness, not hue. The study is about perception: the UI must not draw attention, and nothing in the UI moves while a stimulus plays.
 
@@ -119,7 +119,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - 2-column grid of cards: a 16:9 cover (solid `cover` placeholder until a chamber has an image), the C-ID and an "N unfinished" pill on the cover, the title below; no description. The whole card is the target; the hover fill shows 4 u around the cover (card radius 40, cover 36).
 
 ### Chamber menu
-- Header: ‹ (Hall), title "C04 · HumPerHW2", DEBUG tag in Debug mode. Study ID number pad; "Preset: <active>"; **Start** (prominent), **Debug** (gray).
+- Header: ‹ (Hall), title "C04 · HumPerHW2", DEBUG tag in Debug mode. Study ID number pad; **Start** (prominent), **Debug** (gray); under them, in `text2`, one line each only when needed: "Running on custom preset: <name>", "Unfinished: S0005, S0012" (one line, ends in … when long).
 
 ### Stop dialog (Y)
 - Real session: **Drop out** (red text) · **Keep going** (prominent); Drop out asks once more: "Drop out S0012?" Cancel · Drop out (destructive). Debug run: Back to the chamber menu (borderless) · Keep going (prominent). The session is frozen while it is open.

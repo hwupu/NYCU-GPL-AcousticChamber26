@@ -27,7 +27,40 @@ namespace AcousticChamber.App
         RectTransform _window;
         TextMeshProUGUI _status;
 
-        void Start() => Build();
+        /// <summary>The launch routing ran in this app run (the Hall routes only when the app starts, not on Back to the Hall).</summary>
+        static bool _routed;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => _routed = false;
+
+        void Start()
+        {
+            Build();
+            if (_routed) return;
+            _routed = true;
+            RouteAtLaunch();
+        }
+
+        /// <summary>PB-06b: the last chamber with unfinished sessions opens at its chamber menu (<see cref="SessionRouter"/>).</summary>
+        void RouteAtLaunch()
+        {
+            if (catalog == null) return;
+            var visible = catalog.Visible();
+            var ids = new List<string>();
+            foreach (var c in visible) ids.Add(c.id);
+            string last;
+            try { last = AppState.Load(AppNav.StatePath).LastChamber; }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[GPL] HallMenu: cannot read " + AppState.FileName + ": " + e.Message);
+                return;
+            }
+            string id = SessionRouter.Route(last, ids, cid => Unfinished(catalog.Find(cid)));
+            if (id == null) return;
+            Debug.Log("[GPL] HallMenu: launch routing to " + id + " (unfinished sessions)");
+            AppNav.RoutedAtLaunch = true;
+            Open(catalog.Find(id));
+        }
 
         public void Build()
         {

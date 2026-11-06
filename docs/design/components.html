@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>AcousticChamber26 — component preview (proposal for PB-17 / PB-18)</title>
+<title>AcousticChamber26 — UI components as built, with Unity names (v3)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -185,25 +185,54 @@ body.showinset .container > *, body.showinset .group > *, body.showinset .card >
 .page.hidden { opacity:0; transform:scale(.98); filter:blur(calc(var(--u)*6)); pointer-events:none; }
 .page .scroll-wrap { flex:1; margin:0 calc(var(--u)*44) calc(var(--u)*24); min-height:0; }
 .page .scroll { height:100%; }
-.statusline { font-size:calc(var(--u)*24); color:var(--text2); padding:0 calc(var(--u)*48) calc(var(--u)*24); }
+.statusline { font-size:calc(var(--u)*28); color:var(--text2); padding:0 calc(var(--u)*80); height:calc(var(--u)*88); line-height:calc(var(--u)*88); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:none; }
 .flowmap { font-size:12px; color:#444; background:#fff; border:1px solid #ddd; border-radius:6px; padding:8px 12px; max-width:460px; }
 .flowmap code { background:#f2f2f2; padding:0 3px; border-radius:3px; }
 #toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:6px 14px; border-radius:6px;
          font-size:13px; opacity:0; transition:opacity .2s; z-index:99; }
 #toast.on { opacity:1; }
+
+/* ===== v3 additions: built layout + GameObject names ===== */
+.fill { position:absolute; inset:0; }
+.mhdr { display:flex; align-items:center; gap:calc(var(--u)*8); padding:calc(var(--u)*40) calc(var(--u)*48) 0; height:calc(var(--u)*120); }
+.mbody { display:flex; gap:calc(var(--u)*40); padding:calc(var(--u)*20) calc(var(--u)*48) 0; }
+.mcol { flex:1; display:flex; flex-direction:column; gap:calc(var(--u)*20); }
+.mline { font-size:calc(var(--u)*28); color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:calc(var(--u)*40); }
+.mline:empty { display:none; }
+.mstatus { position:absolute; left:calc(var(--u)*48); right:calc(var(--u)*48); bottom:calc(var(--u)*14); text-align:center; font-size:calc(var(--u)*28); color:var(--text2); min-height:calc(var(--u)*40); }
+.display .ph { color:var(--text3); font-weight:400; font-size:calc(var(--u)*32); }
+.grow .lbl > .l1 { display:block; }
+.grow.one .lbl { align-self:stretch; display:flex; align-items:center; }
+.cue { position:absolute; left:0; right:0; text-align:center; font-weight:700; font-size:calc(var(--u)*56); color:var(--text); text-shadow:0 0 calc(var(--u)*8) #0008; }
+.pscreen .ptext { position:absolute; left:calc(var(--u)*48); right:calc(var(--u)*48); text-align:center; font-weight:700; font-size:calc(var(--u)*44); white-space:pre-line; }
+.picker { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+table.vocab { border-collapse:collapse; font-size:12px; background:#fff; max-width:1180px; }
+table.vocab td, table.vocab th { border:1px solid #ddd; padding:3px 8px; text-align:left; vertical-align:top; }
+table.vocab code { background:#f2f2f2; padding:0 3px; border-radius:3px; }
+
+/* names: hover = the element under the mouse, all = every named element */
+body.names-all [data-n]::before, body.names-hover [data-n].nhov::before {
+  content:attr(data-c) "  ·  " attr(data-n); position:absolute; left:0; top:0; z-index:30; pointer-events:none;
+  font:600 10px/14px ui-monospace, Consolas, monospace; letter-spacing:0; text-transform:none; text-shadow:none;
+  color:#fff; background:#0a6ccf; padding:0 4px; border-radius:0 0 4px 0; white-space:nowrap; transform:none; filter:none; opacity:1; }
+body.names-all [data-n] { outline:1px dashed #4aa3ff99; outline-offset:-1px; }
+body.names-hover [data-n].nhov { outline:2px solid #0a6ccf; outline-offset:-2px; }
+#path { position:fixed; left:0; right:0; bottom:0; z-index:60; background:#10243a; color:#cfe6ff; font:12px/1.6 ui-monospace, Consolas, monospace;
+        padding:4px 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#path b { color:#fff; }
 </style>
 </head>
-<body>
-<h1>Component preview — buttons, sheets, Main Hall, Debug + presets (round 4)</h1>
-<p class="note">Proposal for PB-17 (components + motion) and PB-18 (sheets, scrolling, Debug bench, presets). Scheme B (mono + white).
-Units are canvas units (1 u = 1 pt; at 2 m 1 u = 2 mm ≈ 0.057°). The mouse stands in for the controller ray: hover = ray on
-the element, click = trigger. Our screens are English; participant screens (Stop dialog, onboarding) follow the participant's
-language. The participant Language screen is designed later with the onboarding ticket.</p>
+<body class="names-hover">
+<h1>UI components — as built, with Unity names (v3, PB-07c)</h1>
+<p class="note">This page mirrors the screens the code builds at run time (scheme B; 1 u = 1 pt, at 2 m 1 u = 2 mm). The hover tag reads <b>code that builds it · GameObject name</b> (e.g. <code>UiKit.Row · Row Working copy</code>: a list row made by <code>UiKit.Row</code> whose label is "Working copy"); the bar at the bottom adds what the component is. Every element carries
+the <b>GameObject name</b> the runtime gives it: hover an element and the bar at the bottom shows its path as it appears in the
+Unity <b>Hierarchy during Play</b> (Ctrl+click copies the path). Use these names when we talk about a part ("Row Working copy ›
+Sub"). Sizes and positions are close, not exact; the code is the reference. Section 0 lists the vocabulary.</p>
 
 <div class="toolbar">
+  <label>Names <select id="names"><option value="hover" selected>on hover</option><option value="all">all</option><option value="off">off</option></select></label>
   <label>Zoom <select id="zoom"><option value="0.5">0.5 px/u</option><option value="0.7" selected>0.7 px/u</option><option value="1">1 px/u</option></select></label>
-  <label title="Participant screens only (Stop dialog). Our screens stay English."><input type="checkbox" id="zh"> Participant language 中文</label>
-  <label><input type="checkbox" id="debugmode" checked> Debug mode</label>
+  <label title="Participant screens and the Stop dialog. Our screens stay English."><input type="checkbox" id="zh"> Participant language 中文</label>
   <label><input type="checkbox" id="reduce"> Reduce motion</label>
   <label><input type="checkbox" id="showhit"> 60 u hit areas</label>
   <label><input type="checkbox" id="showinset"> 4 u insets</label>
@@ -211,11 +240,42 @@ language. The participant Language screen is designed later with the onboarding 
 </div>
 
 <!-- ============================================================================================================ -->
+<h2>0. Vocabulary: component → code → GameObject name</h2>
+<p class="note">Where to look in the Hierarchy (Play mode): <code>UI › &lt;canvas&gt;</code>. The chamber scene's canvas is
+<b>Chamber Menu</b>, the Hall's is <b>Hall</b>. Screens are children of the canvas: the menu's <b>Window</b> holds a stack of
+<b>Page …</b> objects; sheets and dialogs, participant screens and the cue text are added next to the Window.</p>
+<table class="vocab">
+<tr><th>Component</th><th>Code</th><th>GameObject name</th><th>Children</th></tr>
+<tr><td>Window</td><td><code>UiKit.Window</code></td><td><code>Window</code>, or the screen's name (<code>Language Screen</code>, <code>Message Screen</code>)</td><td><code>Background</code>, <code>Push Dim</code>, content</td></tr>
+<tr><td>Page</td><td><code>PageStack.Push</code></td><td><code>Page &lt;title&gt;</code> (<code>Page C00 · Template</code>, <code>Page Debug</code>)</td><td><code>Back</code>, <code>Title</code>, <code>Action &lt;label&gt;</code>, <code>Body</code>, <code>Status</code></td></tr>
+<tr><td>Back / Close (‹ ×)</td><td><code>UiKit.IconButton</code></td><td><code>Back</code> on pages, <code>Close</code> on sheets</td><td><code>Label</code></td></tr>
+<tr><td>Header action</td><td><code>Page.AddHeaderAction</code></td><td><code>Action Revert</code>, <code>Action Delete all</code></td><td><code>Label</code></td></tr>
+<tr><td>Button</td><td><code>UiKit.Button</code></td><td>the caller's name: <code>Start</code>, <code>OK</code>, <code>Button &lt;label&gt;</code> (dialogs, button groups)</td><td><code>Label</code></td></tr>
+<tr><td>Text</td><td><code>UiKit.Text</code></td><td>the caller's name: <code>Title</code>, <code>Message</code>, <code>Status</code>, <code>Preset</code>, <code>Unfinished</code></td><td>—</td></tr>
+<tr><td>Scroll list</td><td><code>ScrollList.Create</code></td><td><code>Body</code> (pages), <code>Chambers</code> (Hall)</td><td><code>Content</code>, <code>Fade Top</code>, <code>Fade Bottom</code>, <code>Indicator</code></td></tr>
+<tr><td>Group label</td><td><code>Column.Label</code></td><td><code>Label &lt;its text&gt;</code></td><td>—</td></tr>
+<tr><td>Group (raised box of rows)</td><td><code>Column.Group</code>, <code>UiKit.Group</code></td><td>its name: <code>Parameters</code>, <code>Data</code>, <code>Files</code>, <code>Group Procedure</code>, <code>Actions</code></td><td><code>Row …</code></td></tr>
+<tr><td>Button group</td><td><code>Column.Buttons</code></td><td><code>Run</code>, <code>Save</code></td><td><code>Button &lt;label&gt;</code></td></tr>
+<tr><td><b>Row</b> (a button)</td><td><code>UiKit.Row</code></td><td><code>Row &lt;label&gt;</code></td><td><code>Label</code>, <code>Sub</code> (two-line rows only), <code>Value</code> (value text and ›)</td></tr>
+<tr><td><b>Info row</b> (not a button)</td><td><code>UiKit.InfoRow</code></td><td><code>Row &lt;label&gt;</code></td><td><code>Label</code>, <code>Sub</code>, <code>Value</code>, then controls: <code>Minus</code>, <code>Plus</code> or <code>Delete</code></td></tr>
+<tr><td>Switch row</td><td><code>UiKit.SwitchRow</code></td><td><code>Row &lt;label&gt;</code></td><td><code>Label</code>, <code>Sub</code>, <code>Switch</code> › <code>Knob</code></td></tr>
+<tr><td>Small button</td><td><code>UiKit.SmallButton</code></td><td><code>Minus</code>, <code>Plus</code>, <code>Delete</code></td><td><code>Label</code></td></tr>
+<tr><td>Sheet</td><td><code>Sheet.Open</code></td><td><code>Volume Step</code>, <code>Preset &lt;name&gt;</code></td><td><code>Close</code>, <code>Title</code>, <code>Message</code>, …, <code>Push Dim</code></td></tr>
+<tr><td>Dialog (sheet without ×)</td><td><code>ModalDialog.Show</code></td><td><code>Dialog</code></td><td><code>Title</code>, <code>Message</code>, <code>Button &lt;label&gt;</code></td></tr>
+<tr><td>Number pad</td><td><code>NumberPadEntry.Create</code></td><td><code>Number Pad</code></td><td><code>Display</code> › <code>Text</code>, <code>Keys</code> › <code>Key 0</code>…<code>Key 9</code>, <code>Key Clear</code>, <code>Key Backspace</code></td></tr>
+<tr><td>Hall card</td><td><code>HallMenu.Card</code></td><td><code>Card &lt;chamber id&gt;</code></td><td><code>Label</code>, <code>Cover</code> › <code>Thumbnail</code>, <code>C-ID</code>, <code>Unfinished</code> › <code>Label</code></td></tr>
+<tr><td>Cue text (no panel)</td><td><code>ProtocolScreens.Cue</code></td><td><code>Protocol Cue</code></td><td>—</td></tr>
+<tr><td colspan="4"><b>Row layouts.</b> <b>One-line row</b>: <code>Label</code> fills the row's height and is centered in it. <b>Two-line row</b>:
+<code>Label</code> in the upper 62 % of the row, <code>Sub</code> (24 u, secondary color) in the lower 38 %. In both, <code>Value</code> is centered
+on the whole row. An info row switches between the two at run time (Parameters: the <code>Sub</code> shows the description, or
+"Default: 2" when edited, and disappears when there is neither).</td></tr>
+</table>
+
+<!-- ============================================================================================================ -->
 <h2>1. Buttons and states</h2>
 <p class="note">Hierarchy by fill. <b>Prominent</b>: the one main action of a screen. <b>Gray</b>: a secondary action that needs a
 visible target. <b>Borderless</b>: everything else (back, cancel, keys, list actions). <b>Destructive</b>: red fill only on a final
-confirmation; elsewhere red text. Every state gets <b>brighter</b>: normal → hover → pressed (pressed is the brightest). Red rises in
-brightness only (same hue and saturation).</p>
+confirmation; elsewhere red text. Normal → hover → pressed get brighter. Every button is a GameObject with a child <code>Label</code>.</p>
 <div class="row">
   <div class="room"><div class="panel ui states" id="states"></div></div>
   <div>
@@ -225,197 +285,277 @@ brightness only (same hue and saturation).</p>
       <tr><td>hover out</td><td><input data-var="--hover-out" value="350"></td><td>slower fade when the ray leaves</td></tr>
       <tr><td>press</td><td>0</td><td>instant on trigger down</td></tr>
       <tr><td>release</td><td><input data-var="--release" value="250"></td><td>scale and fill settle back</td></tr>
-      <tr><td>sheet / page in, out</td><td><input data-var="--sheet" value="450"></td><td>scale 0.94 → 1, blur → sharp, fade</td></tr>
-      <tr><td>push back</td><td><input data-var="--push" value="450"></td><td>window behind to 94 %, dims</td></tr>
-      <tr><td colspan="3">curve: settle = cubic-bezier(.16, 1, .3, 1), fast start, long soft landing, no overshoot</td></tr>
+      <tr><td>sheet / page in, out</td><td><input data-var="--sheet" value="450"></td><td>scale 0.94 → 1 and fade (no blur on Quest)</td></tr>
+      <tr><td>push back</td><td><input data-var="--push" value="450"></td><td>window behind to 94 %, dims (<code>Push Dim</code>)</td></tr>
     </table>
     <table class="tok" style="margin-top:10px" id="palette"></table>
   </div>
 </div>
 
 <!-- ============================================================================================================ -->
-<h2>2. Chamber menu</h2>
-<p class="note">Our screen (English). Number-pad keys are borderless; the pad is a container with a 4 u inset, inner radius =
-outer − 4. One prominent button (Start); Debug is gray. Back to the Hall is the ‹ at the top left (the place of every back /
-close button). The DEBUG tag shows only while the app is in Debug mode.</p>
+<h2>2. Chamber menu (canvas <code>Chamber Menu</code>)</h2>
+<p class="note">As built after PB-07c: Study ID pad at the left; <b>Start</b> and <b>Debug</b> at the right; under them one line each, only
+when needed: <code>Preset</code> ("Running on custom preset: Custom") and <code>Unfinished</code> ("Unfinished: S0005"). <code>Status</code> at
+the bottom. Start: an ID with an unfinished session asks Resume / Start new / Back (<code>Dialog</code>), then the <code>Volume Step</code>
+sheet. Y opens the Stop dialog while a run is going (try the buttons below).</p>
 <div class="row">
-  <div class="room"><div class="panel ui" style="width:calc(var(--u)*1000);height:calc(var(--u)*700)">
-    <div class="hdr" style="padding-bottom:0"><button class="btn iconbtn" title="Back to Hall" onclick="toast('Back to Hall')">‹</button>
-      <div class="t-title">C04 · HumPerHW2</div><div class="debugtag">DEBUG</div></div>
-    <div style="display:flex;gap:calc(var(--u)*60);padding:calc(var(--u)*24) calc(var(--u)*48)">
-      <div style="width:calc(var(--u)*380)">
-        <div class="t-small" style="margin-bottom:calc(var(--u)*8)">Study ID</div>
-        <div class="display empty" id="disp">S____</div>
-        <div class="container pad" style="margin-top:calc(var(--u)*12)" id="pad"></div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:calc(var(--u)*20)">
-        <div class="t-small" id="menuPreset">Preset: Pilot-A</div>
-        <button class="btn prominent">Start</button>
-        <button class="btn">Debug</button>
-      </div>
+  <div>
+    <div class="room"><div class="stage ui" id="menu" data-n="UI / Chamber Menu"></div></div>
+    <div class="picker">
+      <label><input type="checkbox" id="mCustom"> custom preset active</label>
+      <label><input type="checkbox" id="mUnf" checked> S0005 unfinished</label>
+      <button onclick="openStop('menu', false)">Y (real session)</button><button onclick="openStop('menu', true)">Y (Debug run)</button>
     </div>
+  </div>
+  <div>
+    <div class="room"><div class="stage ui" id="trial" data-n="UI / Chamber Menu"></div></div>
+    <div class="picker"><button onclick="openStop('trial', false)">Y (during a trial)</button></div>
+    <div class="cap">During a trial the window is hidden: the Stop <code>Dialog</code> appears alone over the scene.</div>
+  </div>
+</div>
+
+<!-- ============================================================================================================ -->
+<h2>3. Main Hall (canvas <code>Hall</code>)</h2>
+<p class="note">2-column grid of <code>Card &lt;id&gt;</code> in the scroll list <code>Chambers</code>; the "N unfinished" pill is
+<code>Unfinished</code> on the <code>Cover</code>. Only the Template exists today; the gray cards show how more chambers would sit.</p>
+<div class="row">
+  <div class="room"><div class="panel ui" style="width:calc(var(--u)*1000);height:calc(var(--u)*700)" data-n="UI / Hall">
+    <div class="fill" data-n="Window"><div class="fill" data-n="Page Main Hall">
+      <div class="hdr"><div class="t-title" data-n="Title">Main Hall</div></div>
+      <div class="scroll-wrap" style="margin:0 calc(var(--u)*44)" data-n="Chambers">
+        <div class="scroll" style="height:calc(var(--u)*500)"><div class="grid" id="hall" data-n="Content"></div></div>
+        <div class="fade top" data-n="Fade Top"></div><div class="fade bottom" data-n="Fade Bottom"></div><div class="indicator" data-n="Indicator"></div>
+      </div>
+      <div class="mstatus" data-n="Status"></div>
+    </div></div>
   </div></div>
 </div>
 
 <!-- ============================================================================================================ -->
-<h2>3. Sheets: appear in place, push back and dim</h2>
-<p class="note">The sheet grows from 94 % to full size while it sharpens and fades in, and settles; the window behind scales to
-94 % and dims; a second sheet pushes both back. During a trial the sheet appears alone over the dimmed scene. Press Y
-(keyboard <b>Y</b> works too, <b>Esc</b> closes). The Stop dialog is a participant screen: it follows the participant's language.</p>
+<h2>4. Debug pages (GPL.DebugBench, on the chamber menu's <code>Window</code>)</h2>
+<p class="note">Debug opens <code>Page Debug</code> on the same page stack; Parameters, Presets and Data files push their pages on top.
+The Template's parameters are shown. Both row layouts appear here: one-line rows (Practice trials, Blocks, …) and two-line rows
+(Response timeout with its description; any edited value shows "Default: …" as its <code>Sub</code>).</p>
 <div class="row">
-  <div>
-    <div class="room"><div class="stage ui" id="stageA"></div></div>
-    <div style="margin-top:6px;display:flex;gap:8px">
-      <button onclick="openStop('A', false)">Y (real session)</button><button onclick="openStop('A', true)">Y (Debug run)</button>
-    </div>
-  </div>
-  <div>
-    <div class="room"><div class="stage ui" id="stageB"></div></div>
-    <div style="margin-top:6px"><button onclick="openStop('B', false)">Y (during a trial)</button></div>
-  </div>
-</div>
-
-<!-- ============================================================================================================ -->
-<h2>4. Main Hall: 2-column grid, borderless scrolling</h2>
-<p class="note">Large covers (16:9, solid gray placeholders), the C-ID and an "unfinished" pill on the cover, the title below; no
-description. Cards sit 4 u apart side by side and 8 u apart vertically; each card is a container with 4 u padding, so the hover fill shows 4 u around the cover
-(concentric corners 40 / 36). No frame, no scrollbar: edges fade only where more content waits; a thin indicator shows while
-scrolling. Headset: <b>right thumbstick</b> scrolls, or <b>hold the trigger and drag</b> (a click turns into a drag after 12 u).</p>
-<div class="row">
-  <div class="room"><div class="panel ui" style="width:calc(var(--u)*1000);height:calc(var(--u)*700)">
-    <div class="hdr"><div class="t-title">Main Hall</div><div class="debugtag">DEBUG</div></div>
-    <div class="scroll-wrap" style="margin:0 calc(var(--u)*44)">
-      <div class="scroll" style="height:calc(var(--u)*560)"><div class="grid" id="hall"></div></div>
-      <div class="fade top"></div><div class="fade bottom"></div><div class="indicator"></div>
-    </div>
-  </div><div class="cap">C05–C08 are placeholders to fill the grid.</div></div>
-</div>
-
-<!-- ============================================================================================================ -->
-<h2>5. Debug flow with the preset manager</h2>
-<p class="note">One panel, a stack of pages that change in place (fade + slight scale, no slide). <b>‹ Back</b> at the top left of
-every pushed page; <b>× Close</b> at the same spot on sheets you may leave without a choice; decision sheets have Cancel instead.
-No DEBUG tag on the Debug pages (you know where you are).<br>
-Presets follow ADR-0002: Debug edits a <b>working copy</b>; <b>Save</b> overwrites the preset it came from, <b>Save as</b> makes a new
-one, <b>Make active</b> chooses the preset real sessions use (shown on the chamber menu). "Default" comes from the chamber's
-<code>Config/default.params</code> and is read-only. <b>Not saved in presets</b>: playback tests (play stimulus, play background)
-and Debug-only display switches (show audio sphere).</p>
-<div class="row">
-  <div class="room"><div class="stage ui" id="dbg"></div></div>
+  <div class="room"><div class="stage ui" id="dbg" data-n="UI / Chamber Menu"></div></div>
   <div class="flowmap">
-    <b>Flow</b><br>
-    Chamber menu <code>‹ Hall</code> · Start → (unfinished) sheet <code>×</code>: Start new / Resume<br>
-    └ Debug → <b>Debug</b> <code>‹ Menu</code><br>
-    &nbsp;&nbsp;&nbsp;├ Run: Run experiment trials (working copy, _DEBUG) · Practice trial<br>
-    &nbsp;&nbsp;&nbsp;├ Parameters: working copy of a preset → <b>Parameters</b> <code>‹</code><br>
-    &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;− / + · Revert · Save · Save as…<br>
-    &nbsp;&nbsp;&nbsp;├ Presets → <b>Presets</b> <code>‹</code>: list, ✓ = active<br>
-    &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;tap → sheet <code>×</code>: Make active · Edit (load into working copy) · Delete<br>
-    &nbsp;&nbsp;&nbsp;├ Test playback (not saved): stimulus, background<br>
-    &nbsp;&nbsp;&nbsp;├ Display (not saved): show audio sphere<br>
-    &nbsp;&nbsp;&nbsp;├ Room: Quiet / Noisy / Reverb / Meta · Measure RT60<br>
-    &nbsp;&nbsp;&nbsp;└ Data files → <b>Data files</b> <code>‹</code> → Delete → confirm sheet<br><br>
-    <b>Generic (GPL.DebugBench)</b>: page stack, Run, Parameters (from the schema), Presets, Data files, status line.<br>
-    <b>Per chamber</b>: its own groups (here Test playback, Display and Room are HumPerHW2's).<br><br>
+    <b>Pages</b> (all children of <code>Window</code>)<br>
+    <code>Page Debug</code>: Run (Run experiment trials · Practice trial) · Parameters (Working copy ›, Presets ›) · Data (Data files ›) · Status<br>
+    <code>Page Parameters</code>: Action Revert · one group per parameter group · Save (Save as Custom)<br>
+    <code>Page Presets</code>: Default, Custom (✓ = active) → sheet <code>Preset &lt;name&gt;</code>: Make active · Delete<br>
+    <code>Page Data files</code>: Action Delete all · Files (Row &lt;file&gt; with Delete) → <code>Dialog</code><br><br>
     <span id="dbgstate"></span>
   </div>
 </div>
 
+<!-- ============================================================================================================ -->
+<h2>5. Participant screens (GPL.Protocol, Template order)</h2>
+<p class="note">Built on the same canvas while a session runs (the menu window is hidden). Each screen is its own window named after
+it; the cue text <code>Protocol Cue</code> has no panel, so the world (fixation dot) stays visible. Text follows the participant
+language (toolbar).</p>
+<div class="row">
+  <div>
+    <div class="room"><div class="stage ui" id="part" data-n="UI / Chamber Menu"></div></div>
+    <div class="picker" id="partPick"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
+<div id="path">Hover an element to see its path in the Hierarchy.</div>
 
 <script>
+/* ---------- strings ---------- */
 const S = {
   en: { stopTitle:"Stop the session?", stopMsg:"Everything is paused. Keep going continues where you left off. Drop out ends the session for good.",
         stopMsgDbg:"Debug run, paused. Back to the chamber menu ends this run.", keep:"Keep going", drop:"Drop out", backMenu:"Back to the chamber menu",
-        confTitle:"Drop out S0012?", confMsg:"This session cannot be resumed.", cancel:"Cancel" },
+        confTitle:"Drop out S0005?", confMsg:"This session cannot be resumed.", cancel:"Cancel",
+        choose:"Choose a language", handover:"Please hand the headset to the participant.", cont:"Continue", look:"Look straight ahead and press A.",
+        block:"Block 1 of 2 done.\nPress A to continue.", thanks:"Thank you.\nPlease return the headset.", finish:"Finish", dot:"Look at the dot", pressA:"Press A" },
   zh: { stopTitle:"要停止嗎？", stopMsg:"目前已暫停。「繼續」會從剛才的地方接著進行；「退出實驗」會結束本次實驗，之後無法再繼續。",
-        stopMsgDbg:"Debug run, paused. Back to the chamber menu ends this run.", keep:"繼續", drop:"退出實驗", backMenu:"Back to the chamber menu",
-        confTitle:"確定要讓 S0012 退出實驗嗎？", confMsg:"本次實驗結束後無法再繼續。", cancel:"取消" }
+        stopMsgDbg:"除錯模式，已暫停。「回到選單」會結束這次執行。", keep:"繼續", drop:"退出實驗", backMenu:"回到選單",
+        confTitle:"確定要讓 S0005 退出實驗嗎？", confMsg:"本次實驗結束後無法再繼續。", cancel:"取消",
+        choose:"請選擇語言", handover:"請將頭戴裝置交給受試者。", cont:"繼續", look:"請直視前方，然後按 A。",
+        block:"第 1 段（共 2 段）完成。\n請按 A 繼續。", thanks:"謝謝您的參與。\n請將頭戴裝置交還給實驗人員。", finish:"完成", dot:"請看圓點", pressA:"請按 A" }
 };
 let lang = "en";
 const t = k => S[lang][k];
 const $ = (s, r=document) => r.querySelector(s);
-function toast(m) { const e=$("#toast"); e.textContent=m; e.classList.add("on"); clearTimeout(toast.h); toast.h=setTimeout(()=>e.classList.remove("on"),1600); }
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+const N = n => `data-n="${esc(n)}"`;
+function toast(m) { const e=$("#toast"); e.textContent=m; e.classList.add("on"); clearTimeout(toast.h); toast.h=setTimeout(()=>e.classList.remove("on"),1800); }
 
-/* --- toolbar --- */
+/* ---------- names: positioning, hover, path ---------- */
+/** [code that builds it, what it is] for a named element, from its name and its parent (same rules as the runtime). */
+function kindOf(el) {
+  const n = el.dataset.n, up = el.parentElement && el.parentElement.closest("[data-n]"), pn = up ? up.dataset.n : "";
+  const isBtn = el.tagName === "BUTTON";
+  if (n.startsWith("UI / ")) return ["UiSetup.CreateOverlayCanvas", "the overlay canvas (scene object under the UI group)"];
+  if (n === "Window") return ["UiKit.Window", "the canvas's main panel: background + content, pushed back by sheets"];
+  if (n.endsWith(" Screen")) return [n.startsWith("Language") ? "ProtocolScreens.Language → UiKit.Window" : "ProtocolScreens.Message → UiKit.Window", "a participant screen (its own window)"];
+  if (n === "Background") return ["UiKit.Background", "panel fill of a window"];
+  if (n.startsWith("Page ")) return ["PageStack.Push → Page", "one page of the window's page stack (header + body)"];
+  if (n === "Back") return ["PageStack header → UiKit.IconButton", "‹ back to the previous page (or to the Hall)"];
+  if (n === "Close") return ["Sheet.AddCloseButton → UiKit.IconButton", "× closes the sheet without a choice"];
+  if (n.startsWith("Action ")) return ["Page.AddHeaderAction → UiKit.Button", "small action at the right of a page header"];
+  if (n === "Push Dim") return ["UiLayer", "dims a layer while a sheet lies on top"];
+  if (n.startsWith("Row ")) return el.classList.contains("tap")
+    ? ["UiKit.Row", "list row that is a button: Label, optional Sub, Value (text and ›)"]
+    : ["UiKit.InfoRow", "list row that is not a button: Label, optional Sub, Value, own controls (− +, Delete)"];
+  if (n === "Label" && up && up.classList.contains("grow")) return ["UiKit.Row / InfoRow → Text \"Label\"", "the row's main text"];
+  if (n === "Sub") return ["UiKit.Row / InfoRow → Text \"Sub\"", "the row's second line (two-line rows only)"];
+  if (n === "Value") return ["UiKit.Row / InfoRow → Text \"Value\"", "the row's right-hand text (value and ›), centered on the row"];
+  if (n === "Label" && up && up.classList.contains("card")) return ["UiKit.Button → Text \"Label\"", "the card's title"];
+  if (n === "Label") return ["UiKit.Button → Text \"Label\"", "a button's label"];
+  if (n.startsWith("Label ")) return ["Column.Label", "group label: small gray text above a group"];
+  if (n === "Body" || n === "Chambers") return ["ScrollList.Create", "scrolling area (no frame; fades at the edges)"];
+  if (n === "Content") return ["ScrollList → \"Content\"", "what scrolls"];
+  if (n.startsWith("Fade ")) return ["ScrollList → fade", "edge fade where more content waits"];
+  if (n === "Indicator") return ["ScrollList → \"Indicator\"", "thin bar while scrolling"];
+  if (el.classList.contains("group")) return el.querySelector(":scope > .grow.buttons")
+    ? ["Column.Buttons", "group holding a row of buttons"] : ["Column.Group / UiKit.Group", "raised box of rows"];
+  if (n === "Number Pad") return ["NumberPadEntry.Create", "digit entry: Display + Keys"];
+  if (n === "Display") return ["NumberPadEntry → UiKit.Box \"Display\"", "the entered value"];
+  if (n === "Keys") return ["NumberPadEntry → \"Keys\"", "key container (4 u inset)"];
+  if (n.startsWith("Key ")) return ["NumberPadEntry → UiKit.Button", "a number pad key"];
+  if (n === "Dialog") return ["ModalDialog.Show → Sheet", "decision sheet: Title, Message, buttons"];
+  if (el.classList.contains("sheet")) return ["Sheet.Open", "sheet over the window (× closes)"];
+  if (n === "Minus" || n === "Plus" || (n === "Delete" && isBtn)) return ["UiKit.SmallButton", "small button inside a row"];
+  if (n.startsWith("Card ")) return ["HallMenu.Card → UiKit.Button", "a chamber card in the Hall"];
+  if (n === "Cover") return ["UiKit.Box \"Cover\"", "16:9 cover of a card"];
+  if (n === "C-ID") return ["UiKit.Text \"C-ID\"", "chamber label on the cover"];
+  if (n === "Unfinished" && pn === "Cover") return ["UiKit.Box \"Unfinished\"", "pill: unfinished sessions of the chamber"];
+  if (n === "Protocol Cue") return ["ProtocolScreens.Cue → UiKit.Text", "bare cue text, no panel (gate hint, Press A)"];
+  if (n === "Preset" || n === "Unfinished") return ["ChamberMenu.Line → UiKit.Text", "status line under Start / Debug (empty = hidden)"];
+  if (n === "Status") return ["UiKit.Text \"Status\"", "status line at the bottom of the page"];
+  if (isBtn) return ["UiKit.Button", "button (Label child)"];
+  return ["UiKit.Text \"" + n + "\"", "text"];
+}
+function fixPos(root = document) {
+  root.querySelectorAll("[data-n]").forEach(e => {
+    if (getComputedStyle(e).position === "static") e.style.position = "relative";
+    if (!e.dataset.c) { const [c, m] = kindOf(e); e.dataset.c = c; e.dataset.m = m; }
+  });
+  centerGlyphs(root);
+}
+/** ‹ and × sit low in their line box: move each onto the button's center by its ink (canvas text metrics). */
+const glyphCtx = document.createElement("canvas").getContext("2d");
+function centerGlyphs(root = document) {
+  if (!glyphCtx) return;
+  root.querySelectorAll(".iconbtn > span").forEach(s => {
+    const cs = getComputedStyle(s), fs = parseFloat(cs.fontSize);
+    glyphCtx.font = `${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
+    const m = glyphCtx.measureText(s.textContent);
+    if (!m.fontBoundingBoxAscent) return;
+    const lh = parseFloat(cs.lineHeight) || fs;
+    const baseline = (lh - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+    const ink = baseline + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
+    s.style.display = "block"; s.style.lineHeight = lh + "px";
+    s.style.transform = `translateY(${(lh / 2 - ink).toFixed(2)}px)`;
+  });
+}
+if (document.fonts) document.fonts.ready.then(() => centerGlyphs());
+function pathOf(el) { const p = []; for (let e = el; e && e !== document.body; e = e.parentElement) if (e.dataset && e.dataset.n) p.unshift(e.dataset.n); return p.join(" / "); }
+let hovered = null;
+document.addEventListener("mouseover", e => {
+  const el = e.target.closest && e.target.closest("[data-n]");
+  if (hovered) hovered.classList.remove("nhov");
+  hovered = el; if (!el) return;
+  el.classList.add("nhov");
+  const p = pathOf(el), i = p.lastIndexOf(" / ");
+  $("#path").innerHTML = (i < 0 ? `<b>${esc(p)}</b>` : esc(p.slice(0, i + 3)) + `<b>${esc(p.slice(i + 3))}</b>`) +
+    (el.dataset.c ? `  <span style="color:#ffd27a">— ${esc(el.dataset.c)}</span><span style="color:#9fb8d4">: ${esc(el.dataset.m)}</span>` : "");
+});
+document.addEventListener("click", e => {
+  if (!e.ctrlKey) return; const el = e.target.closest("[data-n]"); if (!el) return;
+  e.preventDefault(); e.stopPropagation(); navigator.clipboard && navigator.clipboard.writeText(pathOf(el)); toast("Copied: " + pathOf(el));
+}, true);
+new MutationObserver(() => fixPos()).observe(document.body, { childList:true, subtree:true });
+
+/* ---------- toolbar ---------- */
 const setU = () => document.documentElement.style.setProperty("--u", $("#zoom").value + "px");
-$("#zoom").onchange = setU; setU();
-$("#zh").onchange = e => { lang = e.target.checked ? "zh" : "en"; };
-$("#debugmode").onchange = e => document.body.classList.toggle("nodebug", !e.target.checked);
+$("#zoom").onchange = () => { setU(); centerGlyphs(); }; setU();
+$("#names").onchange = e => { document.body.classList.remove("names-hover","names-all"); if (e.target.value !== "off") document.body.classList.add("names-" + e.target.value); };
+$("#zh").onchange = e => { lang = e.target.checked ? "zh" : "en"; partRender(); };
 ["reduce","showhit","showinset","darkroom"].forEach(id => $("#"+id).onchange = e => document.body.classList.toggle(id, e.target.checked));
 document.querySelectorAll("input[data-var]").forEach(i => i.oninput = () => document.documentElement.style.setProperty(i.dataset.var, (+i.value||0)+"ms"));
 
 (function palette() {
   const cs = getComputedStyle(document.documentElement), names = [["--surface","surface (panels, sheets)"],["--raised","raised (fields, groups)"],
-    ["--prom","prominent"],["--prom-h","prominent hover"],["--prom-p","prominent pressed"],
-    ["--gray","gray"],["--gray-h","gray hover"],["--gray-p","gray pressed"],
-    ["--bl-h","borderless hover"],["--bl-p","borderless pressed"],
-    ["--red","destructive (final confirm only)"],["--red-h","destructive hover"],["--red-p","destructive pressed"],["--red-text","red text"],
-    ["--cover","cover placeholder"],["--text2","secondary text"],["--text3","disabled text"],["--debug","Debug tag"]];
+    ["--prom","prominent"],["--prom-h","prominent hover"],["--prom-p","prominent pressed"],["--gray","gray"],["--gray-h","gray hover"],["--gray-p","gray pressed"],
+    ["--bl-h","borderless hover"],["--bl-p","borderless pressed"],["--red","destructive (final confirm only)"],["--red-h","destructive hover"],
+    ["--red-p","destructive pressed"],["--red-text","red text"],["--cover","cover placeholder"],["--text2","secondary text"],["--text3","disabled text"]];
   $("#palette").innerHTML = "<tr><th>Color</th><th>value</th></tr>" + names.map(([v,n]) => { const c = cs.getPropertyValue(v).trim();
     return `<tr><td>${n}</td><td><span class="chip" style="background:${c}"></span> ${c}</td></tr>`; }).join("");
 })();
 
-/* --- 1. state strip --- */
 (function states(){
   const rows = [["Prominent","prominent","Start"],["Gray","","Debug"],["Borderless","borderless","Back"],["Destructive","destructive","Drop out"]];
   let h = '<div></div>' + ["normal","hover","pressed","disabled"].map(s=>`<div class="h">${s}</div>`).join("");
   for (const [n,c,l] of rows) h += `<div class="h" style="text-align:right">${n}</div>`
      + `<button class="btn ${c}">${l}</button><button class="btn ${c} s-hover">${l}</button><button class="btn ${c} s-press">${l}</button><button class="btn ${c}" disabled>${l}</button>`;
-  h += '<div class="h" style="text-align:right">live</div>' + rows.map(([n,c,l])=>`<button class="btn ${c}" onclick="toast('${l}')">${l}</button>`).join("");
   $("#states").innerHTML = h;
 })();
 
-/* --- 2. number pad (borderless keys) --- */
-let digits = "";
-(function buildPad() {
-  const keys = ["1","2","3","4","5","6","7","8","9","C","0","←"];
-  $("#pad").innerHTML = keys.map(k => `<button class="btn borderless ${k==="C"?"k-small":""}" data-k="${k}">${k==="C"?"Clear":k}</button>`).join("");
-  $("#pad").querySelectorAll("button").forEach(b => b.onclick = () => { const k=b.dataset.k;
-    if (k==="C") digits=""; else if (k==="←") digits=digits.slice(0,-1); else if (digits.length<4) digits+=k; showId(); });
-  showId();
-})();
-function showId() { const v = digits.replace(/^0+/,""), d=$("#disp");
-  d.textContent = v ? "S" + v.padStart(4,"0") : "S____"; d.classList.toggle("empty", !v); }
+/* ---------- building blocks (same names as the code) ---------- */
+const btn = (name, label, cls = "", act = "", extra = "") =>
+  `<button class="btn ${cls}" ${N(name)} ${act ? `data-act="${act}"` : ""} ${extra}><span ${N("Label")}>${label}</span></button>`;
+const icon = (name, glyph, act) => `<button class="btn iconbtn" ${N(name)} data-act="${act}"><span ${N("Label")}>${glyph}</span></button>`;
+/** UiKit.Row / InfoRow / SwitchRow. sub empty = one-line row. value includes the chevron when chev. */
+function row({ label, sub = "", value = "", chev = false, act = "", controls = "", red = false, valueBright = false }) {
+  const two = sub !== "";
+  return `<div class="grow ${act ? "tap" : ""} ${two ? "" : "one"}" ${N("Row " + label)} ${act ? `data-act="${act}"` : ""}>
+    <span class="lbl"><span class="l1" ${N("Label")} ${red ? 'style="color:var(--red-text)"' : ""}>${label}</span>${two ? `<span class="sub" ${N("Sub")}>${sub}</span>` : ""}</span>
+    ${value || chev ? `<span class="val" ${N("Value")} ${valueBright ? 'style="color:var(--text)"' : ""}>${value}${chev ? `${value ? "&nbsp;&nbsp;" : ""}<span class="chev">›</span>` : ""}</span>` : ""}${controls}</div>`;
+}
+const group = (name, rows) => `<div class="group" ${N(name)}>${rows.join("")}</div>`;
+const btnGroup = (name, buttons) => `<div class="group" ${N(name)}><div class="grow buttons">${buttons.join("")}</div></div>`;
+const colLabel = text => `<div class="glabel" ${N("Label " + text)}>${text}</div>`;
+const body = inner => `<div class="scroll-wrap" ${N("Body")}><div class="scroll"><div ${N("Content")}>${inner}</div></div>
+  <div class="fade top" ${N("Fade Top")}></div><div class="fade bottom" ${N("Fade Bottom")}></div><div class="indicator" ${N("Indicator")}></div></div>`;
+const pageHdr = (title, back, action = "") =>
+  `<div class="hdr">${back ? icon("Back", "‹", back) : ""}<div class="t-title" ${N("Title")}>${title}</div>${action}</div>`;
 
-/* --- sheets (shared) --- */
+/* ---------- number pad ---------- */
+function pad(id, digits, placeholder, fmt) {
+  const keys = ["1","2","3","4","5","6","7","8","9","C","0","←"];
+  const name = k => k === "C" ? "Key Clear" : k === "←" ? "Key Backspace" : "Key " + k;
+  const shown = digits ? fmt(digits) : `<span class="ph">${placeholder}</span>`;
+  return `<div ${N("Number Pad")} style="width:calc(var(--u)*380)">
+    <div class="display" ${N("Display")}><span ${N("Text")}>${shown}</span></div>
+    <div class="container pad" style="margin-top:calc(var(--u)*12)" ${N("Keys")}>${keys.map(k =>
+      `<button class="btn borderless ${k === "C" ? "k-small" : ""}" ${N(name(k))} data-act="key:${id}:${k}"><span ${N("Label")}>${k === "C" ? "Clear" : k}</span></button>`).join("")}</div></div>`;
+}
+const studyFmt = d => "S" + d.replace(/^0+/, "").padStart(4, "0");
+
+/* ---------- sheets ---------- */
 const liveLayers = stage => [...stage.children].filter(l => !l.classList.contains("closing"));
 function relayout(stage) {
   const live = liveLayers(stage);
   live.forEach((l, i) => { const above = live.length - 1 - i; l.classList.toggle("pushed", above >= 1); l.classList.toggle("pushed2", above >= 2); });
 }
-function pushSheet(stage, {title, msg, buttons, close}) {
+/** Sheet.Open / ModalDialog.Show. name = GameObject name ("Dialog" for ModalDialog). */
+function pushSheet(stage, { name = "Dialog", title, msg = "", buttons = [], close = false, html = "", width = 820 }) {
   const layer = document.createElement("div"); layer.className = "layer";
-  const head = close ? `<div class="shdr"><button class="btn iconbtn x">×</button><div class="t-head">${title}</div></div>` : `<div class="t-head">${title}</div>`;
-  layer.innerHTML = `<div class="sheet enter">${head}<div class="msg">${msg}</div><div class="actions"></div><div class="dimmer"></div></div>`;
-  if (close) layer.querySelector(".x").onclick = () => popSheet(stage);
+  const head = close ? `<div class="shdr">${icon("Close", "×", "x")}<div class="t-head" ${N("Title")}>${title}</div></div>` : `<div class="t-head" ${N("Title")}>${title}</div>`;
+  layer.innerHTML = `<div class="sheet enter" ${N(name)} style="width:calc(var(--u)*${width})">${head}${msg ? `<div class="msg" ${N("Message")} style="white-space:pre-line">${msg}</div>` : ""}${html}<div class="actions"></div><div class="dimmer" ${N("Push Dim")}></div></div>`;
+  if (close) layer.querySelector('[data-act="x"]').onclick = e => { e.stopPropagation(); popSheet(stage); };
   const act = layer.querySelector(".actions");
-  for (const b of buttons) { const e=document.createElement("button"); e.className="btn "+b.cls; e.textContent=b.label; e.onclick=b.do; act.appendChild(e); }
+  for (const b of buttons) { const w = document.createElement("div"); w.innerHTML = btn("Button " + b.label, b.label, b.cls); const e = w.firstElementChild; e.onclick = ev => { ev.stopPropagation(); b.do(); }; act.appendChild(e); }
   stage.appendChild(layer);
   relayout(stage);
   requestAnimationFrame(() => requestAnimationFrame(() => layer.querySelector(".sheet").classList.remove("enter")));
+  return layer;
 }
 function popSheet(stage, all) {
-  const ms = document.body.classList.contains("reduce") ? 0 : 450;
-  const live = liveLayers(stage);
+  const ms = document.body.classList.contains("reduce") ? 0 : 450, live = liveLayers(stage);
   let n = all ? live.length - 1 : Math.min(1, live.length - 1);
   while (n-- > 0) { const top = live.pop(); top.classList.add("closing"); top.style.pointerEvents = "none";
     top.querySelector(".sheet").classList.add("enter"); setTimeout(() => top.remove(), ms); }
   relayout(stage);
 }
-
-/* --- 3. Stop dialog --- */
-function resetStages() {
-  $("#stageA").innerHTML = `<div class="layer panel">
-    <div class="hdr"><button class="btn iconbtn">‹</button><div class="t-title">C04 · HumPerHW2</div></div>
-    <div style="padding:calc(var(--u)*20) calc(var(--u)*48);display:flex;flex-direction:column;gap:calc(var(--u)*20);width:calc(var(--u)*640)">
-      <div class="t-small" style="white-space:nowrap">Study ID S0012 · Preset: Pilot-A</div>
-      <button class="btn prominent">Start</button><button class="btn">Debug</button></div><div class="dimmer"></div></div>`;
-  $("#stageB").innerHTML = `<div class="layer" style="border-radius:calc(var(--u)*8)"><div class="scene"><div class="dot"></div></div><div class="dimmer"></div></div>`;
-}
 function openStop(which, debugRun) {
-  const stage = $("#stage" + which); if (liveLayers(stage).length > 1) return;
-  const done = m => { popSheet(stage, true); toast(m); };
+  const stage = $("#" + which); if (liveLayers(stage).length > 1) return;
+  const done = m => { popSheet(stage, true); toast("StopChoice." + m); };
   if (debugRun) return pushSheet(stage, { title:t("stopTitle"), msg:t("stopMsgDbg"), buttons:[
       { label:t("backMenu"), cls:"borderless", do:()=>done("BackToMenu") }, { label:t("keep"), cls:"prominent", do:()=>done("KeepGoing") } ]});
   pushSheet(stage, { title:t("stopTitle"), msg:t("stopMsg"), buttons:[
@@ -423,17 +563,73 @@ function openStop(which, debugRun) {
         { label:t("cancel"), cls:"borderless", do:()=>popSheet(stage) }, { label:t("drop"), cls:"destructive", do:()=>done("DropOut") } ]}) },
     { label:t("keep"), cls:"prominent", do:()=>done("KeepGoing") } ]});
 }
-document.addEventListener("keydown", e => { if (e.key === "y" || e.key === "Y") openStop("A", false);
-  if (e.key === "Escape") { popSheet($("#stageA"), true); popSheet($("#stageB"), true); popSheet($("#dbg"), true); } });
+document.addEventListener("keydown", e => { if (e.key === "y" || e.key === "Y") openStop("menu", false);
+  if (e.key === "Escape") ["menu","trial","dbg","part"].forEach(s => popSheet($("#" + s), true)); });
 
-/* --- 4. Hall grid --- */
-const chambers = [["C01","MovingSource",0],["C02","HiddenSource",2],["C03","HearingLoss",0],["C04","HumPerHW2",1],
-                  ["C05","WhiteRoom",0],["C06","Courtyard",0],["C07","Corridor",0],["C08","Concert",0]];
-$("#hall").innerHTML = chambers.map(([id,n,u]) => `<div class="card"><div class="cover"><div class="cid">${id}</div>
-  ${u?`<span class="pill">${u} unfinished</span>`:""}</div><div class="name">${n}</div></div>`).join("");
-$("#hall").querySelectorAll(".card").forEach(c => c.onclick = () => toast("Open " + c.querySelector(".name").textContent));
+/* ---------- 2. chamber menu ---------- */
+const M = { digits:"", status:"", vol:"" };
+function menuRender() {
+  const custom = $("#mCustom").checked, unf = $("#mUnf").checked;
+  $("#menu").innerHTML = `<div class="layer panel" ${N("Window")}><div class="fill" ${N("Page C00 · Template")}>
+    <div class="mhdr">${icon("Back", "‹", "hall")}<div class="t-title" ${N("Title")}>C00 · Template</div></div>
+    <div class="mbody">${pad("m", M.digits, "Study ID", studyFmt)}
+      <div class="mcol">${btn("Start", "Start", "prominent", "mstart")}${btn("Debug", "Debug", "", "mdebug")}
+        <div class="mline" ${N("Preset")}>${custom ? "Running on custom preset: Custom" : ""}</div>
+        <div class="mline" ${N("Unfinished")}>${unf ? "Unfinished: S0005" : ""}</div></div></div>
+    <div class="mstatus" ${N("Status")}>${M.status}</div></div><div class="dimmer" ${N("Push Dim")}></div></div>`;
+}
+function volumeSheet(stage, then) {
+  const html = `<div style="display:flex;gap:calc(var(--u)*40);margin-top:calc(var(--u)*20)">
+      <div id="volpad">${pad("v", M.vol, "0–15", d => String(+d))}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+        <div class="t-small" ${N("Info")}>Enter the headset volume step (0–15) before handing the headset over. It is logged with the session.</div>
+        ${btn("OK", "OK", "prominent", "vok", M.vol !== "" && +M.vol <= 15 ? "" : "disabled")}</div></div>`;
+  M.then = then;
+  return pushSheet(stage, { name:"Volume Step", title:"Headset volume step", close:true, html, width:860 });
+}
+function refreshVolume(stage) {
+  const sheet = stage.querySelector('[data-n="Volume Step"]'); if (!sheet) return;
+  sheet.querySelector("#volpad").innerHTML = pad("v", M.vol, "0–15", d => String(+d));
+  const ok = sheet.querySelector('[data-n="OK"]'); ok.disabled = !(M.vol !== "" && +M.vol <= 15);
+}
+function menuClick(e) {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const [act, a, b] = el.dataset.act.split(":"), stage = $("#menu");
+  const setStatus = s => { M.status = s; stage.querySelector('[data-n="Status"]').textContent = s; };
+  switch (act) {
+    case "hall": toast("AppNav.BackToHall"); break;
+    case "mdebug": toast("Opens Page Debug (section 4)"); break;
+    case "key": {
+      const isVol = a === "v", max = isVol ? 2 : 4; let d = isVol ? M.vol : M.digits;
+      if (b === "C") d = ""; else if (b === "←") d = d.slice(0, -1); else if (d.length < max) d += b;
+      if (isVol) { M.vol = d; refreshVolume(stage); } else { M.digits = d; stage.querySelector('[data-n="Number Pad"]').outerHTML = pad("m", M.digits, "Study ID", studyFmt); }
+      break; }
+    case "mstart": {
+      if (!M.digits) { setStatus("Enter a Study ID (1 to 4 digits)."); break; }
+      const id = studyFmt(M.digits); M.vol = "";
+      const ask = how => volumeSheet(stage, v => setStatus((how === "resume" ? "Resumed " : "Started ") + "20261107_101500_Template_" + id + " (volume step " + v + ")"));
+      if (id === "S0005" && $("#mUnf").checked)
+        pushSheet(stage, { title: id + " has an unfinished session", msg:"Block 2 of 2 · 2 trials done, started 2026-11-06 14:03.\nResume continues it. Start new closes it (its data are kept) and starts again.",
+          buttons:[ { label:"Back", cls:"borderless", do:()=>popSheet(stage) }, { label:"Start new", cls:"", do:()=>{ popSheet(stage); ask("new"); } },
+                    { label:"Resume", cls:"prominent", do:()=>{ popSheet(stage); ask("resume"); } } ] });
+      else ask("new");
+      break; }
+    case "vok": if (!el.disabled) { const v = +M.vol; popSheet(stage); M.then(v); } break;
+  }
+}
+$("#menu").addEventListener("click", menuClick);
+$("#mCustom").onchange = $("#mUnf").onchange = menuRender;
+menuRender();
+$("#trial").innerHTML = `<div class="layer" style="border-radius:calc(var(--u)*8)"><div class="scene"><div class="dot"></div></div><div class="dimmer"></div></div>`;
 
-/* --- borderless scrolling --- */
+/* ---------- 3. Hall ---------- */
+const chambers = [["C00","Template",1,true],["C01","(future chamber)",0],["C02","(future chamber)",0],["C03","(future chamber)",0]];
+$("#hall").innerHTML = chambers.map(([cid,n,u,real]) => `<div class="card" ${N("Card " + (real ? n : cid))} ${real ? "" : 'style="opacity:.45"'}>
+  <div class="cover" ${N("Cover")}><div class="cid" ${N("C-ID")}>${cid}</div>${u ? `<span class="pill" ${N("Unfinished")}><span ${N("Label")}>${u} unfinished</span></span>` : ""}</div>
+  <div class="name" ${N("Label")}>${n}</div></div>`).join("");
+$("#hall").querySelectorAll(".card").forEach(c => c.onclick = () => toast("AppNav.EnterChamber"));
+
+/* ---------- borderless scrolling ---------- */
 function initScroll(wrap) {
   const sc = wrap.querySelector(".scroll"), top = wrap.querySelector(".fade.top"), bot = wrap.querySelector(".fade.bottom"), ind = wrap.querySelector(".indicator");
   let hide;
@@ -443,91 +639,69 @@ function initScroll(wrap) {
     ind.style.height = h + "px"; ind.style.top = (max > 0 ? (sc.clientHeight - h) * sc.scrollTop / max : 0) + "px";
     if (show && max > 0) { ind.classList.add("on"); clearTimeout(hide); hide = setTimeout(() => ind.classList.remove("on"), 600); } };
   sc.addEventListener("scroll", () => update(true)); setTimeout(() => update(false), 50);
-  let down = null, dragging = false, last = 0, lastT = 0, v = 0, raf;
-  const unit = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--u"));
-  sc.addEventListener("pointerdown", e => { cancelAnimationFrame(raf); down = { y:e.clientY, top:sc.scrollTop }; dragging = false; last = e.clientY; lastT = performance.now(); v = 0; });
-  window.addEventListener("pointermove", e => { if (!down) return;
-    if (!dragging && Math.abs(e.clientY - down.y) > 12 * unit()) { dragging = true; sc.classList.add("dragging"); }
-    if (dragging) { sc.scrollTop = down.top - (e.clientY - down.y); const now = performance.now(); v = (last - e.clientY) / Math.max(1, now - lastT); last = e.clientY; lastT = now; } });
-  window.addEventListener("pointerup", () => { if (!down) return; const was = dragging; down = null; dragging = false; sc.classList.remove("dragging");
-    if (was) { sc.addEventListener("click", ev => ev.stopPropagation(), { capture:true, once:true });
-      if (!document.body.classList.contains("reduce")) { let vel = v * 16; const step = () => { sc.scrollTop += vel; vel *= 0.94; if (Math.abs(vel) > 0.3) raf = requestAnimationFrame(step); }; step(); } } });
 }
 document.querySelectorAll(".scroll-wrap").forEach(initScroll);
 
-/* --- 5. Debug flow + presets --- */
-const SCHEMA = [ { k:"trials", n:"Trials per block", unit:"", step:1, min:1, max:20, dec:0 },
-                 { k:"rt60", n:"RT60 target", unit:" s", step:0.1, min:0.2, max:3, dec:1 },
-                 { k:"isi", n:"Pause between trials", unit:" s", step:0.5, min:0, max:5, dec:1 },
-                 { k:"radius", n:"Source distance", unit:" m", step:0.5, min:0.5, max:5, dec:1 } ];
-const D = {
-  stack:["menu"], status:"Ready.", stim:false, bg:false, sphere:false, room:-1, rt:"–", files:14,
-  presets: [ { name:"Default", builtin:true, v:{ trials:8, rt60:0.7, isi:1.0, radius:2.0 } },
-             { name:"Pilot-A", v:{ trials:6, rt60:0.7, isi:1.0, radius:2.0 } },
-             { name:"Pilot-B", v:{ trials:6, rt60:1.2, isi:1.5, radius:2.0 } } ],
-  active:"Pilot-A", source:"Pilot-A", work:null,
-};
-D.work = { ...D.presets[1].v };
-const P = name => D.presets.find(p => p.name === name);
-const editedKeys = () => SCHEMA.filter(s => D.work[s.k] !== P(D.source).v[s.k]).map(s => s.k);
-const fmtV = (s, v) => v.toFixed(s.dec) + s.unit;
-const dbgStage = () => $("#dbg");
-const hdr = (back, title, trailing = "", tag = false) =>
-  `<div class="hdr">${back ? `<button class="btn iconbtn" data-act="${back}" title="Back">‹</button>` : ""}<div class="t-title">${title}</div>${trailing}${tag ? '<div class="debugtag">DEBUG</div>' : ""}</div>`;
-const swRow = (key, name, sub) => `<div class="grow tap" data-act="sw:${key}"><span class="lbl">${name}<span class="sub">${sub}</span></span><span class="switch ${D[key] ? "on" : ""}"></span></div>`;
-const scrollBody = inner => `<div class="scroll-wrap"><div class="scroll">${inner}</div><div class="fade top"></div><div class="fade bottom"></div><div class="indicator"></div></div>`;
-const ROOMS = ["Quiet 0.3 s", "Noisy 0.7 s", "Reverb 2.2 s", "Meta"];
-const workLabel = () => D.source + (editedKeys().length ? ` · ${editedKeys().length} edited` : "");
-
+/* ---------- 4. Debug pages (Template schema) ---------- */
+const SCHEMA = [
+  { g:"Procedure", k:"practice_trials", n:"Practice trials", d:"", type:"int", v:2, min:0, max:10, step:1, unit:"" },
+  { g:"Procedure", k:"blocks", n:"Blocks", d:"", type:"int", v:2, min:1, max:10, step:1, unit:"" },
+  { g:"Procedure", k:"trials_per_block", n:"Trials per block", d:"", type:"int", v:4, min:1, max:50, step:1, unit:"" },
+  { g:"Procedure", k:"response_timeout_s", n:"Response timeout", d:"no press = timeout", type:"float", v:5, min:1, max:30, step:1, unit:" s" },
+  { g:"Procedure", k:"iti_s", n:"Inter-trial interval", d:"", type:"float", v:1, min:0, max:5, step:0.1, unit:" s" },
+  { g:"Resume", k:"resume_from", n:"Resume from", d:"experiment stage after an interruption", type:"choice", v:"block_start",
+    options:["next_trial","block_start","stage_start","session_start","not_resumable"] },
+  { g:"Head gate", k:"gate.yaw_tol_deg", n:"Yaw tolerance", d:"head may turn this far left or right of forward", type:"float", v:10, min:1, max:45, step:1, unit:" °" },
+  { g:"Head gate", k:"gate.pitch_tol_deg", n:"Pitch tolerance", d:"head may tilt this far up or down", type:"float", v:15, min:1, max:45, step:1, unit:" °" },
+  { g:"Head gate", k:"gate.hold_s", n:"Hold", d:"time inside the tolerance without a break", type:"float", v:0.5, min:0, max:3, step:0.1, unit:" s" },
+  { g:"Head gate", k:"gate.hint_after_s", n:"Hint after", d:"\"Look at the dot\" after this long; 0 = never", type:"float", v:4, min:0, max:30, step:1, unit:" s" },
+];
+const dec = s => s.step < 1 ? 1 : 0;
+const fmt = (s, v) => s.type === "choice" ? v : s.type === "int" ? String(v) + s.unit : (+v).toFixed(dec(s)) + s.unit;
+const defaults = Object.fromEntries(SCHEMA.map(s => [s.k, s.v]));
+const D = { stack:["debug"], status:"", active:"Default", source:"Default", custom:null, work:{ ...defaults },
+  files:["20261107_101500_Template_S0005","20261106_140312_Template_S0005","20261106_133020_Template_DEBUG","20261106_120501_Template_S0004"] };
+const srcVals = () => D.source === "Default" ? defaults : D.custom;
+const edited = () => SCHEMA.filter(s => D.work[s.k] !== srcVals()[s.k]);
+const workLabel = () => D.source + (edited().length ? " · " + edited().length + " edited" : "");
 const PAGES = {
-  menu: () => hdr("hall", "C04 · HumPerHW2", "", true) +
-    `<div style="padding:calc(var(--u)*20) calc(var(--u)*48);display:flex;flex-direction:column;gap:calc(var(--u)*20);width:calc(var(--u)*640)">
-      <div class="t-small" style="white-space:nowrap">Study ID S0012 · Preset: ${D.active}</div>
-      <div class="t-small" style="white-space:nowrap">Unfinished: S0012 (block 2 of 4)</div>
-      <button class="btn prominent" data-act="start">Start</button>
-      <button class="btn" data-act="push:debug">Debug</button></div>`,
-  debug: () => hdr("back", "Debug") + scrollBody(`
-      <div class="glabel">Run</div>
-      <div class="group"><div class="grow buttons"><button class="btn prominent" data-act="run">Run experiment trials</button><button class="btn" data-act="practice">Practice trial</button></div></div>
-      <div class="glabel">Parameters</div>
-      <div class="group">
-        <div class="grow tap" data-act="push:params"><span class="lbl">Working copy<span class="sub">used by Debug runs</span></span><span class="val ${editedKeys().length ? "edited" : ""}">${workLabel()}</span><span class="chev">›</span></div>
-        <div class="grow tap" data-act="push:presets"><span class="lbl">Presets<span class="sub">real sessions use the active one</span></span><span class="val">Active: ${D.active}</span><span class="chev">›</span></div></div>
-      <div class="glabel">Test playback (not saved)</div>
-      <div class="group">${swRow("stim", "Play stimulus", "2 s on, 1 s off, at the current position")}${swRow("bg", "Play background", "loops while on")}</div>
-      <div class="glabel">Display (Debug only, not saved)</div>
-      <div class="group">${swRow("sphere", "Show audio sphere", "always, not only after the answer")}</div>
-      <div class="glabel">Room</div>
-      <div class="group"><div class="grow buttons"><div class="seg4">${ROOMS.map((r, i) => `<button class="btn borderless ${D.room === i ? "on" : ""}" data-act="room:${i}">${r}</button>`).join("")}</div></div>
-        <div class="grow"><span class="lbl">RT60 measured<span class="sub">impulse in the room, 500 Hz – 2 kHz</span></span><span class="val">${D.rt}</span><button class="btn small" data-act="measure">Measure</button></div></div>
-      <div class="glabel">Data</div>
-      <div class="group"><div class="grow tap" data-act="push:data"><span class="lbl">Data files</span><span class="val">${D.files} files</span><span class="chev">›</span></div></div>`)
-      + `<div class="statusline">${D.status}</div>`,
-  params: () => hdr("back", "Parameters", `<button class="btn borderless small" data-act="revert" ${editedKeys().length ? "" : "disabled"}>Revert</button>`) + scrollBody(`
-      <div class="glabel">Working copy of "${D.source}"${editedKeys().length ? ` · ${editedKeys().length} edited` : ""}. Debug runs use it; real sessions use the active preset (${D.active}).</div>
-      <div class="group">${SCHEMA.map((s, i) => { const v = D.work[s.k], pv = P(D.source).v[s.k], ed = v !== pv;
-        return `<div class="grow"><span class="lbl">${s.n}${ed ? `<span class="sub">${D.source}: ${fmtV(s, pv)}</span>` : ""}</span>
-          <span class="val ${ed ? "edited" : ""}">${fmtV(s, v)}</span>
-          <span class="step"><button class="btn" data-act="dec:${i}">−</button><button class="btn" data-act="inc:${i}">+</button></span></div>`; }).join("")}</div>
-      <div class="group" style="margin-top:calc(var(--u)*24)"><div class="grow buttons">
-        <button class="btn" data-act="save" ${!editedKeys().length || P(D.source).builtin ? "disabled" : ""}>Save to ${D.source}</button>
-        <button class="btn" data-act="saveas">Save as…</button></div></div>
-      ${P(D.source).builtin ? `<div class="glabel">"Default" is read-only (Config/default.params); use Save as.</div>` : ""}`),
-  presets: () => hdr("back", "Presets") + scrollBody(`
-      <div class="glabel">✓ = active: real sessions use it, and the chamber menu shows it. Tap a preset for its actions.</div>
-      <div class="group">${D.presets.map((p, i) => `<div class="grow tap" data-act="preset:${i}"><span class="check">${p.name === D.active ? "✓" : ""}</span>
-        <span class="lbl">${p.name}<span class="sub">${p.builtin ? "Config/default.params · read-only" : "on this headset"}${p.name === D.source ? " · in the working copy" : ""}</span></span>
-        <span class="val">${SCHEMA.map(s => fmtV(s, p.v[s.k])).slice(0, 2).join(" · ")}</span><span class="chev">›</span></div>`).join("")}</div>`),
-  data: () => hdr("back", "Data files", `<button class="btn borderless red small" data-act="delall" ${D.files ? "" : "disabled"}>Delete all</button>`) + scrollBody(`
-      <div class="list">${Array.from({ length:D.files }, (_, i) => { const id = String(1 + (i * 7) % 23).padStart(4,"0"), dbg = i % 5 === 3;
-        return `<div class="rowitem"><div class="main"><div class="name">20261105_${String(9 + (i >> 1)).padStart(2,"0")}${String((i*13)%60).padStart(2,"0")}00_HumPerHW2${dbg ? "_DEBUG" : "_S" + id}</div>
-          <div class="desc">${dbg ? "Debug run" : (i % 3 ? "Completed" : "In progress")} · ${12 + i * 3} KB</div></div>
-          <button class="btn borderless red small" data-act="del:${i}">Delete</button></div>`; }).join("")}</div>`),
+  debug: () => pageHdr("Debug", "back") + body(
+      colLabel("Run") + btnGroup("Run", [btn("Button Run experiment trials", "Run experiment trials", "prominent", "run"), btn("Button Practice trial", "Practice trial", "borderless inbox", "practice")]) +
+      colLabel("Parameters") + group("Parameters", [
+        row({ label:"Working copy", sub:"used by Debug runs", value:workLabel(), chev:true, act:"push:params" }),
+        row({ label:"Presets", sub:"real sessions use the active one", value:"Active: " + D.active, chev:true, act:"push:presets" }) ]) +
+      colLabel("Data") + group("Data", [ row({ label:"Data files", sub:"this chamber's CSV and session files", value:D.files.length + " files", chev:true, act:"push:data" }) ]))
+    + `<div class="statusline" ${N("Status")}>${D.status}</div>`,
+  params: () => {
+    const groups = [...new Set(SCHEMA.map(s => s.g))];
+    const action = btn("Action Revert", "Revert", "borderless small", "revert", edited().length ? "" : "disabled");
+    return pageHdr("Parameters", "back", action) + body(
+      colLabel(`Working copy of the active preset, ${workLabel()}. Debug runs use it; real sessions use ${D.source} as saved. Revert goes back to it.`) +
+      groups.map(g => colLabel(g) + group("Group " + g, SCHEMA.filter(s => s.g === g).map(s => {
+        const i = SCHEMA.indexOf(s), ed = D.work[s.k] !== srcVals()[s.k];
+        const controls = `<span class="step">${btn("Minus", "−", "borderless inbox", "dec:" + i)}${btn("Plus", "+", "borderless inbox", "inc:" + i)}</span>`;
+        return row({ label:s.n, sub: ed ? D.source + ": " + fmt(s, srcVals()[s.k]) : s.d, value:fmt(s, D.work[s.k]), valueBright:ed, controls });
+      }))).join("") +
+      btnGroup("Save", [btn("Button Save as Custom", "Save as Custom", "borderless inbox", "save", edited().length ? "" : "disabled")]) +
+      colLabel(D.source === "Default" ? `Default is read-only (Config/default.params). Save as Custom ${D.custom ? "overwrites Custom" : "creates Custom"} and makes it active.` : "Save as Custom overwrites Custom; new real sessions use it."));
+  },
+  presets: () => pageHdr("Presets", "back") + body(
+      colLabel("Real sessions use the active preset (✓). Tap a preset to make it active (it loads into the working copy) or to delete Custom.") +
+      group("Presets", ["Default", ...(D.custom ? ["Custom"] : [])].map(n => {
+        let sub = n === "Default" ? "Config/default.params · read-only" : "";
+        if (D.source === n) sub = (sub ? sub + " · " : "") + "working copy" + (edited().length ? " · " + edited().length + " edited" : "");
+        return row({ label:n, sub, value: n === D.active ? "✓" : "", valueBright:true, act:"preset:" + n });
+      })) +
+      colLabel("Saved on this device in …/Template/presets. Copy them off with the data.")),
+  data: () => pageHdr("Data files", "back", btn("Action Delete all", "Delete all", "borderless red small", "delall", D.files.length ? "" : "disabled")) + body(
+      colLabel(D.files.length ? D.files.length + " files on this device, newest first. Copy them off before deleting: deleting cannot be undone." : "No data files of this chamber on this device.") +
+      (D.files.length ? group("Files", D.files.map((f, i) => row({ label:f, controls: btn("Delete", "Delete", "borderless red small inbox", "del:" + i) }))) : "") +
+      colLabel("Folder: …/Template. Presets (presets/) are not data files and stay.")),
 };
-
 function dbgRender(direction) {
-  const host = dbgStage().querySelector(".pages"), olds = [...host.children], old = olds[olds.length - 1];
-  const pg = document.createElement("div"); pg.className = "page hidden"; pg.innerHTML = PAGES[D.stack[D.stack.length - 1]]();
+  const host = $("#dbg .pages"), olds = [...host.children], old = olds[olds.length - 1];
+  const top = D.stack[D.stack.length - 1], title = { debug:"Debug", params:"Parameters", presets:"Presets", data:"Data files" }[top];
+  const pg = document.createElement("div"); pg.className = "page hidden"; pg.dataset.n = "Page " + title; pg.innerHTML = PAGES[top]();
   host.appendChild(pg);
   pg.querySelectorAll(".scroll-wrap").forEach(initScroll);
   if (direction === "same") {
@@ -537,65 +711,74 @@ function dbgRender(direction) {
     requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.remove("hidden")));
     olds.forEach(o => { o.classList.add("hidden"); o.style.pointerEvents = "none"; setTimeout(() => o.remove(), document.body.classList.contains("reduce") ? 0 : 450); });
   }
-  $("#dbgstate").textContent = "Stack: " + D.stack.join(" › ") + " · active: " + D.active + " · working copy: " + workLabel();
-  $("#menuPreset").textContent = "Preset: " + D.active;
+  $("#dbgstate").textContent = "Stack: Page C00 · Template › " + D.stack.map(s => "Page " + { debug:"Debug", params:"Parameters", presets:"Presets", data:"Data files" }[s]).join(" › ") + " · active: " + D.active + " · working copy: " + workLabel();
 }
-function dbgInit() {
-  dbgStage().innerHTML = `<div class="layer panel"><div class="pages"></div><div class="dimmer"></div></div>`;
-  dbgStage().addEventListener("click", dbgClick);
-  dbgRender();
-}
-function loadPreset(name) { D.source = name; D.work = { ...P(name).v }; }
 function dbgClick(e) {
-  const el = e.target.closest("[data-act]"); if (!el || !dbgStage().contains(el) || el.closest(".sheet")) return;
-  const [act, arg] = el.dataset.act.split(":"), stage = dbgStage();
+  const el = e.target.closest("[data-act]"); if (!el || el.closest(".sheet") || el.disabled) return;
+  const [act, arg] = el.dataset.act.split(":"), stage = $("#dbg");
   switch (act) {
-    case "hall": toast("Back to Hall"); break;
-    case "back": D.stack.pop(); dbgRender(); break;
+    case "back": if (D.stack.length > 1) { D.stack.pop(); dbgRender(); } else toast("Back to Page C00 · Template"); break;
     case "push": D.stack.push(arg); dbgRender(); break;
-    case "start": pushSheet(stage, { close:true, title:"Unfinished session S0012", msg:"Block 2 of 4, 3 of 8 trials done (preset Pilot-A). Resume continues silently after the handover; Start new closes the old session (kept, not deleted).",
-        buttons:[ { label:"Start new", cls:"borderless", do:()=>{ popSheet(stage); toast("session_superseded → new session with " + D.active); } },
-                  { label:"Resume", cls:"prominent", do:()=>{ popSheet(stage); toast("Resume with its own snapshot → hand the headset over"); } } ] }); break;
-    case "sw": D[arg] = !D[arg]; D.status = arg === "stim" ? (D.stim ? "Stimulus playing (2 s on, 1 s off)." : "Stimulus stopped.")
-                 : arg === "bg" ? (D.bg ? "Background playing." : "Background stopped.") : (D.sphere ? "Audio sphere always visible." : "Audio sphere only after the answer.");
-               el.querySelector(".switch").classList.toggle("on", D[arg]); stage.querySelector(".statusline").textContent = D.status; break;
-    case "room": D.room = +arg; D.rt = "–"; D.status = "Room: " + ROOMS[+arg] + "."; dbgRender("same"); break;
-    case "measure": D.rt = D.room < 0 ? "0.41 s" : ["0.31 s","0.68 s","2.17 s","0.93 s"][D.room]; D.status = "Measured RT60 " + D.rt + "."; dbgRender("same"); break;
-    case "run": toast("Run experiment trials with the working copy (" + workLabel() + "), logged _DEBUG"); break;
-    case "practice": toast("One practice trial"); break;
-    case "inc": case "dec": { const s = SCHEMA[+arg]; D.work[s.k] = Math.min(s.max, Math.max(s.min, +(D.work[s.k] + (act === "inc" ? s.step : -s.step)).toFixed(3))); dbgRender("same"); break; }
-    case "revert": loadPreset(D.source); dbgRender("same"); break;
-    case "save": pushSheet(stage, { title:`Overwrite ${D.source}?`, msg: D.source === D.active ? `${D.source} is active: new real sessions will use the new values. Running and unfinished sessions keep their own snapshot.` : `The preset ${D.source} gets the working copy's values.`,
-        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Overwrite", cls:"prominent", do:()=>{ popSheet(stage); P(D.source).v = { ...D.work }; dbgRender("same"); toast("Saved " + D.source); } } ] }); break;
-    case "saveas": { const name = "Pilot-" + String.fromCharCode(65 + D.presets.length - 1);
-      pushSheet(stage, { close:true, title:"Save as a new preset", msg:`Name: ${name} (entered with the keypad). It is not active until you make it active in Presets.`,
-        buttons:[ { label:"Save", cls:"prominent", do:()=>{ popSheet(stage); D.presets.push({ name, v:{ ...D.work } }); D.source = name; dbgRender("same"); toast("Saved " + name); } } ] }); break; }
-    case "preset": { const p = D.presets[+arg], isActive = p.name === D.active, dirty = editedKeys().length > 0 && D.source !== p.name;
-      const btns = [];
-      if (!p.builtin) btns.push({ label:"Delete", cls:"borderless red", do:()=> pushSheet(stage, { title:`Delete ${p.name}?`, msg: isActive ? "It is active; Default becomes active." : "The preset file is removed from the headset.",
-          buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete", cls:"destructive", do:()=>{ popSheet(stage, true);
-            D.presets = D.presets.filter(x => x !== p); if (isActive) D.active = "Default"; if (D.source === p.name) loadPreset(D.active); dbgRender("same"); toast("Deleted " + p.name); } } ] }) });
-      btns.push({ label:"Edit", cls:"", do:()=>{ const go = () => { popSheet(stage, true); loadPreset(p.name); D.stack.push("params"); dbgRender(); };
-          if (dirty) pushSheet(stage, { title:"Discard the edits?", msg:`The working copy has unsaved edits to ${D.source}.`, buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Discard", cls:"destructive", do:go } ] });
-          else go(); } });
-      if (!isActive) btns.push({ label:"Make active", cls:"prominent", do:()=>{ popSheet(stage); D.active = p.name; dbgRender("same"); toast(p.name + " is active: new real sessions use it"); } });
-      pushSheet(stage, { close:true, title:p.name + (isActive ? " (active)" : ""), msg: SCHEMA.map(s => `${s.n} ${fmtV(s, p.v[s.k])}`).join(" · "), buttons:btns }); break; }
-    case "del": pushSheet(stage, { title:"Delete this file pair?", msg:"The CSV and its session file are removed from the headset. This cannot be undone.",
-        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete", cls:"destructive", do:()=>{ popSheet(stage); D.files--; dbgRender("same"); } } ] }); break;
-    case "delall": pushSheet(stage, { title:`Delete all ${D.files} files?`, msg:"Every CSV and session file of HumPerHW2 on this headset.",
-        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete all", cls:"destructive", do:()=>
-          pushSheet(stage, { title:"Really delete all?", msg:`${D.files} files, including unfinished sessions. Copy them to a computer first.`,
-            buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage, true) }, { label:`Delete ${D.files} files`, cls:"destructive", do:()=>{ popSheet(stage, true); D.files = 0; dbgRender("same"); } } ] }) } ] }); break;
+    case "run": toast("Debug run with " + workLabel() + " (_DEBUG CSV)"); break;
+    case "practice": D.status = "Practice trial from the bench: not built yet (use Run)."; dbgRender("same"); break;
+    case "inc": case "dec": { const s = SCHEMA[+arg], dir = act === "inc" ? 1 : -1;
+      if (s.type === "choice") { const i = s.options.indexOf(D.work[s.k]) + dir; if (i >= 0 && i < s.options.length) D.work[s.k] = s.options[i]; }
+      else D.work[s.k] = Math.min(s.max, Math.max(s.min, +(D.work[s.k] + dir * s.step).toFixed(3)));
+      dbgRender("same"); break; }
+    case "revert": D.work = { ...srcVals() }; dbgRender("same"); break;
+    case "save": pushSheet(stage, { title: D.custom ? "Overwrite Custom?" : "Save as Custom?", msg:"Custom gets the working copy's values and becomes active: new real sessions use it. Running and unfinished sessions keep their own snapshot.",
+        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Save", cls:"prominent", do:()=>{ popSheet(stage); D.custom = { ...D.work }; D.source = D.active = "Custom"; dbgRender("same"); toast("Custom saved and active"); } } ] }); break;
+    case "preset": { const n = arg, isActive = n === D.active;
+      const actions = group("Actions", [ row({ label:"Make active", sub: isActive ? "already active" : "loads it into the working copy" + (edited().length ? ` (${edited().length} unsaved edits are discarded)` : ""), value: isActive ? "✓" : "", valueBright:true, act: isActive ? "" : "mk:" + n }),
+        ...(n === "Default" ? [] : [ row({ label:"Delete", sub:"removes the file from this device", red:true, act:"delp:" + n }) ]) ]);
+      const layer = pushSheet(stage, { name:"Preset " + n, title:n, close:true,
+        msg:(isActive ? "Active: new real sessions use it, and the working copy is based on it." : "Not active.") + (n === "Default" ? " Read-only: it is Config/default.params in the project." : ""), html:actions });
+      layer.addEventListener("click", ev => { const a = ev.target.closest("[data-act]"); if (!a) return; const [x, y] = a.dataset.act.split(":");
+        if (x === "mk") { popSheet(stage); D.active = D.source = y; D.work = { ...srcVals() }; dbgRender("same"); }
+        if (x === "delp") pushSheet(stage, { title:"Delete " + y + "?", msg: y === D.active ? "It is active; Default becomes active." : "The preset file is removed from this device.",
+          buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete", cls:"destructive", do:()=>{ popSheet(stage, true); D.custom = null; D.active = D.source = "Default"; D.work = { ...defaults }; dbgRender("same"); } } ] }); });
+      break; }
+    case "del": { const f = D.files[+arg], who = f.endsWith("_DEBUG") ? "this Debug run" : f.split("_").pop() + "'s session";
+      pushSheet(stage, { title:"Delete " + who + "?", msg:"Its CSV and session file are removed from this device. This cannot be undone.",
+        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete", cls:"destructive", do:()=>{ popSheet(stage); D.files.splice(+arg, 1); dbgRender("same"); } } ] }); break; }
+    case "delall": pushSheet(stage, { title:"Delete all " + D.files.length + " files?", msg:"Every CSV and session file of Template on this device, including unfinished sessions. Copy them off first.",
+        buttons:[ { label:"Cancel", cls:"borderless", do:()=>popSheet(stage) }, { label:"Delete all", cls:"destructive", do:()=>{ popSheet(stage); D.files = []; dbgRender("same"); } } ] }); break;
   }
 }
+$("#dbg").innerHTML = `<div class="layer panel" ${N("Window")}><div class="pages"></div><div class="dimmer" ${N("Push Dim")}></div></div>`;
+$("#dbg").addEventListener("click", dbgClick);
+dbgRender();
 
-resetStages(); dbgInit();
-// Screenshot hooks: #demo (stacked Stop sheets), #debug, #debug-params, #debug-presets, #debug-preset (sheet), #debug-data
-if (location.hash === "#demo") { document.body.classList.add("reduce"); openStop("A", false); $("#stageA .sheet .btn.red").click(); openStop("B", false); }
-if (location.hash.startsWith("#debug")) { document.body.classList.add("reduce"); D.stim = true; D.room = 1; D.rt = "0.68 s"; D.work.trials = 5;
-  const sub = location.hash.split("-")[1];
-  D.stack = sub === "preset" ? ["menu","debug","presets"] : sub ? ["menu","debug",sub] : ["menu","debug"]; dbgRender("same");
-  if (sub === "preset") dbgStage().querySelector('[data-act="preset:2"]').click(); }
+/* ---------- 5. participant screens ---------- */
+const PART = [
+  ["Language", "language"], ["Handover 1", "handover"], ["Handover 2", "look"], ["Head gate", "gate"], ["Head gate + hint", "hint"],
+  ["Go cue", "press"], ["Block break", "block"], ["Thanks", "thanks"] ];
+let partSel = "language";
+$("#partPick").innerHTML = PART.map(([l, k]) => `<button data-k="${k}">${l}</button>`).join("");
+$("#partPick").onclick = e => { const b = e.target.closest("button"); if (b) { partSel = b.dataset.k; partRender(); } };
+function partRender() {
+  const scene = `<div class="scene" style="border-radius:calc(var(--u)*8)">${partSel === "gate" || partSel === "hint" ? '<div class="dot"></div>' : ""}</div>`;
+  const win = (name, inner) => `<div class="layer panel pscreen" ${N(name)} style="position:absolute;inset:0"><div class="fill" ${N("Background")}></div>${inner}</div>`;
+  const msg = (text, button) => win("Message Screen", `<div class="ptext" ${N("Text")} style="top:calc(var(--u)*${button ? 170 : 250})">${text}</div>` +
+      (button ? `<div style="position:absolute;left:0;right:0;bottom:calc(var(--u)*120);display:flex;justify-content:center">${btn("Button", button, "prominent", "", 'style="min-width:calc(var(--u)*360)"')}</div>` : ""));
+  let html = "";
+  switch (partSel) {
+    case "language": html = win("Language Screen", `<div class="ptext" ${N("Title")} style="top:calc(var(--u)*150)">${S.en.choose}\n${S.zh.choose}</div>
+        <div style="position:absolute;left:0;right:0;top:calc(var(--u)*390);display:flex;justify-content:center;gap:calc(var(--u)*40)">
+        ${btn("English", "English", "prominent", "", 'style="min-width:calc(var(--u)*300)"')}${btn("Chinese", "中文", "prominent", "", 'style="min-width:calc(var(--u)*300)"')}</div>`); break;
+    case "handover": html = msg(t("handover"), t("cont")); break;
+    case "look": html = msg(t("look")); break;
+    case "gate": html = ""; break;
+    case "hint": html = `<div class="cue" ${N("Protocol Cue")} style="top:calc(var(--u)*570)">${t("dot")}</div>`; break;
+    case "press": html = `<div class="cue" ${N("Protocol Cue")} style="top:calc(var(--u)*310)">${t("pressA")}</div>`; break;
+    case "block": html = msg(t("block")); break;
+    case "thanks": html = msg(t("thanks"), t("finish")); break;
+  }
+  $("#part").innerHTML = `<div class="layer">${scene}${html}<div class="dimmer"></div></div>`;
+  $("#partPick").querySelectorAll("button").forEach(b => b.style.fontWeight = b.dataset.k === partSel ? "700" : "400");
+}
+partRender();
+fixPos();
 </script>
 </body>
 </html>

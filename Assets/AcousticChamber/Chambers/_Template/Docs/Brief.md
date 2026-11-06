@@ -4,7 +4,7 @@
 
 The minimal working chamber, to copy when starting a new one (PB-13 automates the copy). It has no stimuli; it shows every
 part a real chamber uses:
-- the chamber menu (Study ID, Preset line, Start, Debug, unfinished sessions, Resume / Start new / Back),
+- the chamber menu (Study ID, Start, Debug, custom-preset and unfinished lines, Resume / Start new / Back),
 - a protocol of stages, blocks and trials (`GPL.Protocol`),
 - homing (system recenter at handover, head gate before every trial),
 - a response (press A) with a reaction time,
