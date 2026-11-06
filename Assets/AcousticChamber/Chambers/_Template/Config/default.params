@@ -1,0 +1,11 @@
+# Template (C00) preset Default. Design: Docs/Design.md
+practice_trials=2
+blocks=2
+trials_per_block=4
+response_timeout_s=5
+iti_s=1
+resume_from=block_start
+gate.yaw_tol_deg=10
+gate.pitch_tol_deg=15
+gate.hold_s=0.5
+gate.hint_after_s=4

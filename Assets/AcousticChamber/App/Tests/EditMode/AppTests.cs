@@ -43,6 +43,55 @@ namespace AcousticChamber.App.Tests
         }
 
         [Test]
+        public void SessionLauncher_NewSupersedeSnapshot()
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "gpl_launch_" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                var schema = new GPL.Params.ParameterSchema(
+                    GPL.Params.ParamDef.Int("blocks", 2, 1, 10, "Blocks"),
+                    GPL.Params.ParamDef.Choice("resume_from", "block_start", ResumeNames.All, "Resume from"));
+                var values = schema.Defaults();
+                values.Set("blocks", 3);
+                var store = new GPL.Session.SessionStore(dir);
+                var clock = new GPL.Core.ManualClock(new System.DateTime(2026, 11, 6, 10, 0, 0));
+                var logSchema = new GPL.Logging.LogSchema("rt_s");
+
+                var a = SessionLauncher.NewSession(store, "Template", "0.1", "0.1.0", "S0001", "Default", values, 42, clock.Now);
+                Assert.AreEqual("20261106_100000_Template_S0001", a.SessionId);
+                Assert.AreEqual(a.SessionId, store.FindUnfinished("S0001").SessionId);
+                using (var log = GPL.Logging.EventLog.Open(store.CsvPathFor(a.SessionId), clock, logSchema, SessionLauncher.ContextOf(a)))
+                    log.Write(GPL.Logging.LogEvents.SessionStart, "test");
+
+                clock.AdvanceSeconds(60);
+                var b = SessionLauncher.NewSession(store, "Template", "0.1", "0.1.0", "S0001", "Default", values, 43, clock.Now);
+                SessionLauncher.Supersede(store, a, b.SessionId, logSchema, clock);
+                Assert.AreEqual(GPL.Session.SessionStatus.Superseded, store.Load(a.SessionId).Status);
+                Assert.AreEqual(b.SessionId, store.FindUnfinished("S0001").SessionId);
+                var lines = File.ReadAllLines(store.CsvPathFor(a.SessionId));
+                Assert.AreEqual(3, lines.Length);
+                StringAssert.StartsWith("session_superseded,", lines[2]);
+                StringAssert.Contains("by " + b.SessionId, lines[2]);
+
+                var snap = SessionLauncher.Snapshot(store.Load(b.SessionId), schema);
+                Assert.AreEqual(3, snap.GetInt("blocks"));
+                Assert.AreEqual(values.Hash(), snap.Hash());
+                Assert.Throws<System.ArgumentException>(() =>
+                    SessionLauncher.NewSession(store, "Template", "0.1", "", "1", "Default", values, 1, clock.Now));
+                StringAssert.EndsWith("_Template_DEBUG", SessionLauncher.DebugRunId("Template", clock.Now));
+            }
+            finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }
+        }
+
+        [Test]
+        public void ResumeNames_RoundTrip()
+        {
+            foreach (var n in ResumeNames.All) Assert.AreEqual(n, ResumeNames.Name(ResumeNames.Parse(n)));
+            Assert.AreEqual(GPL.Session.ResumeFrom.BlockStart, ResumeNames.Parse("block_start"));
+            Assert.Throws<System.ArgumentException>(() => ResumeNames.Parse("BlockStart"));
+        }
+
+        [Test]
         public void ChamberRules_IdAndFolder()
         {
             Assert.IsNull(ChamberRules.Problem("HumPerHW2", "HumPerHW2"));

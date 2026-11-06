@@ -16,7 +16,7 @@ namespace AcousticChamber.App
         void Awake()
         {
             OVRCameraRig rig = null;
-            foreach (var r in FindObjectsByType<OVRCameraRig>(FindObjectsSortMode.None))
+            foreach (var r in FindObjectsByType<OVRCameraRig>())
                 if (r.gameObject.scene == gameObject.scene) rig = r;
             if (rig == null)
             {

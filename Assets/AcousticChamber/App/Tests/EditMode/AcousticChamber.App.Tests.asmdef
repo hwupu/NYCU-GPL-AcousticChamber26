@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.App.Tests",
     "rootNamespace": "AcousticChamber.App.Tests",
-    "references": ["GPL.Core", "AcousticChamber.App.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "AcousticChamber.App.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.Template",
+    "rootNamespace": "AcousticChamber.Chambers.Template",
+    "references": ["AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing.Core", "GPL.Homing", "Unity.TextMeshPro", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
