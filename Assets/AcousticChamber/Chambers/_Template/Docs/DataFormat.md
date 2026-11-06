@@ -20,8 +20,8 @@ params_hash, stage, block, condition, trial, attempt`, then the Template columns
 | `stage` | `language`, `handover`, `practice`, `experiment`, `thanks` | all after the menu | |
 | `block` | int, 1-based | `experiment` rows | block number; `practice` rows have 1 |
 | `condition` | `default` | trial rows | the Template has no conditions |
-| `trial` | int, 1-based within the block | trial and homing rows | |
-| `attempt` | int, ≥ 1 | all | attempt of the block (resume with `block_start` etc. adds 1) |
+| `trial` | int, 1-based within the block | trial rows and the gate `homing` rows | |
+| `attempt` | int, ≥ 1 | block, trial and homing rows of `practice` and `experiment` | attempt of the block (resume with `block_start` etc. adds 1); empty in plain stages (language, handover, thanks) |
 | `rt_s` | seconds, 3 decimals | `trial` | cue onset to the A press; empty on a timeout |
 | `timed_out` | 0 / 1 | `trial` | no press within `response_timeout_s` |
 | `gate_s` | seconds, 3 decimals | `trial` | time from the dot onset until the gate passed |
@@ -35,6 +35,10 @@ params_hash, stage, block, condition, trial, attempt`, then the Template columns
 `recenter` (participant used the Meta button), `block_begin`, `block_end`, `block_restart`, `trial`, `session_resume`,
 `participant_dropout`, `session_superseded`, `session_end`, `app_paused`, `app_resumed`; Debug runs also `debug_begin`,
 `debug_end`, `param_change`.
+
+A block of attempt 2 or later starts with `block_restart` instead of `block_begin`; a block continued after a `next_trial` resume
+starts with `block_begin` noted `continued at trial n`. `stage_begin` rows of a handover run again after a resume are noted
+`again after resume`. `language` notes the code (`en`, `zh-TW`).
 
 ## Rebuilding the trial table
 1. Keep rows with `event == trial` and `mode == EXPERIMENT`.

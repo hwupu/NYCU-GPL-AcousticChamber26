@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Protocol.Tests",
+    "rootNamespace": "GPL.Protocol.Tests",
+    "references": ["GPL.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

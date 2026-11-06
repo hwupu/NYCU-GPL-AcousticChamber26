@@ -29,6 +29,9 @@ namespace AcousticChamber.App
         /// <summary>The unfinished-session line of the chamber menu, e.g. "Block 2 of 4, 3 trials done".</summary>
         public virtual string Describe(SessionRecord r) => r.Describe();
 
+        /// <summary>Why this session cannot be resumed (e.g. its plan hash no longer matches), or null. Checked before Resume.</summary>
+        public virtual string ResumeProblem(SessionRecord r, ParameterSet snapshot) => null;
+
         /// <summary>
         /// The run: a real session, a resumed one (<see cref="ChamberRun.IsResume"/>) or a Debug run. Returning = completed.
         /// The menu stops the coroutine when the Stop dialog ends the run, then calls <see cref="Abort"/>.

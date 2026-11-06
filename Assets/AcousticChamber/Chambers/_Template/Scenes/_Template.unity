@@ -9846,6 +9846,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AcousticChamber.Chambers.Template::AcousticChamber.Chambers.Template.TemplateChamber
   defaultParams: {fileID: 2811297602134710623, guid: 7529c0cd8ffafaa4cb5f1b8d454ae9d7, type: 3}
+  cue: {fileID: 1574678999}
+  listener: {fileID: 1574678998}
 --- !u!114 &1890000903
 MonoBehaviour:
   m_ObjectHideFlags: 0

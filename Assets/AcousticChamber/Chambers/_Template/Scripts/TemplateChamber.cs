@@ -1,25 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using AcousticChamber.App;
+using GPL.Core;
 using GPL.Homing;
-using GPL.Input;
 using GPL.Logging;
 using GPL.Params;
+using GPL.Protocol;
 using GPL.Session;
 using GPL.UI;
-using TMPro;
 using UnityEngine;
 
 namespace AcousticChamber.Chambers.Template
 {
     /// <summary>
-    /// The Template chamber (C00, Docs/Design.md). PB-07a: the parameters and log columns of the design and a placeholder run
-    /// (one screen, A completes the session) so the chamber menu, sessions, Stop dialog and data files can be tested. The
-    /// protocol (language, handover, practice, blocks of gate + press A, thanks) replaces the placeholder in PB-07b.
+    /// The Template chamber (C00, Docs/Design.md): language, handover (system recenter), practice, blocks of trials (head
+    /// gate on the fixation dot, then "Press A" with the reaction time), thanks. The protocol and its resume rules come from
+    /// <see cref="ProtocolWalker"/>; this class runs the content of each step and writes the chamber's rows.
     /// </summary>
     public class TemplateChamber : ChamberBehaviour
     {
         public const string Id = "Template";
+
+        public static class Stages
+        {
+            public const string Language = "language";
+            public const string Handover = "handover";
+            public const string Practice = "practice";
+            public const string Experiment = "experiment";
+            public const string Thanks = "thanks";
+        }
+
+        [Tooltip("The fixation dot (Magic > Template > Step 2). Empty = the first in the scene.")]
+        public FixationCue cue;
+        [Tooltip("Logs recenters by the Meta button during a run. Empty = the first in the scene.")]
+        public RecenterListener listener;
 
         static ParameterSchema _schema;
         static LogSchema _log;
@@ -42,50 +56,176 @@ namespace AcousticChamber.Chambers.Template
         public static LogSchema CreateLogSchema() =>
             new LogSchema("rt_s", "timed_out", "gate_s", "gate_breaks", "stop_dialog", ChamberMenu.VolumeColumn);
 
+        /// <summary>The stage list (Design.md "Flow"), from the session's parameter values.</summary>
+        public static ProtocolPlan CreatePlan(ParameterSet v) =>
+            new ProtocolPlan()
+                .Stage(Stages.Language, StageFlags.Once)
+                .Stage(Stages.Handover, StageFlags.RepeatOnResume)
+                .Blocks(Stages.Practice, 1, v.GetInt("practice_trials"), ResumeFrom.StageStart)
+                .Blocks(Stages.Experiment, v.GetInt("blocks"), v.GetInt("trials_per_block"), ResumeNames.Parse(v.GetText("resume_from")))
+                .Stage(Stages.Thanks, StageFlags.CompletesSession);
+
         public override ParameterSchema Schema => _schema ?? (_schema = CreateSchema());
         public override LogSchema LogSchema => _log ?? (_log = CreateLogSchema());
 
-        public override string Describe(SessionRecord r) =>
-            "started " + r.Created.ToString("MM-dd HH:mm") + ", " + ResumeNames.Name(r.ResumePolicy);
+        public override string Describe(SessionRecord r)
+        {
+            var plan = CreatePlan(SessionLauncher.Snapshot(r, Schema));
+            var c = r.Cursor;
+            string where = c.Stage < plan.Stages.Count ? plan.Stages[c.Stage].Name : "end";
+            if (where == Stages.Experiment)
+                where = "block " + (c.Block + 1) + " of " + plan.Stages[c.Stage].Blocks + ", " + c.TrialsDone + " trials done";
+            return where + " · " + ResumeNames.Name(r.ResumePolicy) + " · " + r.Created.ToString("MM-dd HH:mm");
+        }
 
-        RectTransform _screen;
+        public override string ResumeProblem(SessionRecord r, ParameterSet snapshot)
+        {
+            string hash = CreatePlan(snapshot).Hash();
+            return string.IsNullOrEmpty(r.PlanHash) || r.PlanHash == hash ? null
+                : "The Template's protocol changed since this session started (plan " + r.PlanHash + ", now " + hash + "). Start new instead.";
+        }
+
+        ChamberRun _run;
+        ProtocolScreens _screens;
+        HeadGateMethod _gate;
+        OVRCameraRig _rig;
 
         public override IEnumerator Run(ChamberRun run)
         {
+            _run = run;
+            _screens = new ProtocolScreens(run.Canvas, run.Actions);
+            _rig = HeadPose.FindRig();
+            if (cue == null) cue = FindAnyObjectByType<FixationCue>();
+            if (listener == null) listener = FindAnyObjectByType<RecenterListener>();
+            if (cue == null) Debug.LogWarning("[Chamber:" + Id + "] no FixationCue: run Magic > Template > Step 2.");
+            if (listener != null) listener.Recentered += OnUserRecenter;
+
             var rec = run.Record;
-            if (!run.IsResume)
+            var plan = CreatePlan(run.Values);
+            if (!run.IsResume) rec.PlanHash = plan.Hash();
+            if (Loc.TryParseCode(rec.Language, out var lang)) Loc.Set(lang);
+            else Loc.Set(UiLanguage.English);
+            var gate = HomingParams.ReadGate(run.Values);
+
+            var walker = new ProtocolWalker(plan, rec, run.IsResume, _ => run.Save());
+            while (walker.Next())
             {
-                rec.EnterStage(0, ResumeNames.Parse(run.Values.GetText("resume_from")));
-                run.Save();
+                var s = walker.Current;
+                ProtocolLog.Write(run.Log, s);
+                switch (s.Kind)
+                {
+                    case StepKind.StageBegin:
+                        yield return RunStage(s);
+                        break;
+                    case StepKind.Trial:
+                        yield return RunTrial(s, gate);
+                        break;
+                    case StepKind.BlockEnd:
+                        if (s.Stage.Name == Stages.Experiment && !s.LastBlock)
+                        {
+                            yield return _screens.Message(Loc.Get(ProtocolStrings.BlockDone, s.Block + 1, s.Blocks), true);
+                            _screens.Hide();
+                        }
+                        break;
+                }
             }
-            BuildScreen(run);
-            // wait for A (ignored while the Stop dialog is open)
+            Cleanup();
+        }
+
+        IEnumerator RunStage(ProtocolStep s)
+        {
+            var run = _run;
+            switch (s.Stage.Name)
+            {
+                case Stages.Language:
+                    yield return _screens.Language(l =>
+                    {
+                        run.Record.Language = Loc.CodeOf(l);
+                        run.Save();
+                        run.Log.Write(LogEvents.Language, Loc.CodeOf(l));
+                    });
+                    break;
+                case Stages.Handover:
+                    yield return _screens.Handover(_rig, r =>
+                    {
+                        run.Log.Write(LogEvents.Handover, "participant pressed A");
+                        run.Log.Write(LogEvents.Homing, r.Note());
+                    });
+                    break;
+                case Stages.Thanks:
+                    yield return _screens.Message(Loc.Get(ProtocolStrings.Thanks), false, ProtocolStrings.Finish);
+                    _screens.Hide();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// One trial (Design.md "Trial"): the inter-trial interval (before every trial but the first of a block, so a trial's
+        /// row is its last action and a kill never leaves a counted trial unlogged), the head gate, then "Press A".
+        /// </summary>
+        IEnumerator RunTrial(ProtocolStep s, GateSettings settings)
+        {
+            var run = _run;
+            int stops = StopDialog.OpenCount;
+            float iti = run.Values.GetFloat("iti_s");
+            if (s.Trial > 0 && iti > 0f) yield return new WaitForSeconds(iti);
+
+            HomingResult gate = null;
+            if (_rig != null)
+            {
+                _gate = new HeadGateMethod(_rig, cue, settings);
+                _gate.HintChanged += on => _screens.Cue(on ? Loc.Get(ProtocolStrings.LookAtDot) : null);
+                yield return _gate.Run(r => gate = r);
+                _gate = null;
+                run.Log.Write(LogEvents.Homing, gate.Note());
+            }
+
+            // go cue: the dot is gone; the reaction time runs from this frame to the frame A is seen
+            _screens.Cue(Loc.Get(ProtocolStrings.PressA), 0f);
+            double t0 = Time.realtimeSinceStartupAsDouble;
+            float timeout = run.Values.GetFloat("response_timeout_s"), waited = 0f;
+            double rt = -1;
             while (true)
             {
-                if (!Freeze.Active && !StopDialog.IsOpen && run.Actions != null && run.Actions.Reader.Down(InputActions.Confirm)) break;
                 yield return null;
+                if (_screens.PressedA())
+                {
+                    rt = Time.realtimeSinceStartupAsDouble - t0;
+                    break;
+                }
+                waited += Time.deltaTime; // scaled: the Stop dialog freezes the timeout
+                if (waited >= timeout) break;
             }
-            HideScreen();
+            _screens.Cue(null);
+
+            var v = new LogValues()
+                .Set("rt_s", rt >= 0 ? Fmt.F(rt, 3) : "")
+                .Set("timed_out", rt < 0)
+                .Set("gate_s", gate != null ? Fmt.F(gate.DurationSec, 3) : "")
+                .Set("gate_breaks", gate != null ? Fmt.I(gate.Breaks) : "")
+                .Set("stop_dialog", StopDialog.OpenCount != stops);
+            run.Log.Write(LogEvents.Trial, v, "");
         }
 
-        public override void Abort(ChamberRun run) => HideScreen();
-
-        void BuildScreen(ChamberRun run)
+        void OnUserRecenter(HomingResult r)
         {
-            var th = UiKit.Theme;
-            _screen = UiKit.Window(run.Canvas, "Run Screen");
-            string who = run.IsDebug ? "Debug run" : (run.IsResume ? "Resumed session " : "Session ") + run.Record.StudyId;
-            UiKit.Text(_screen, "Title", who, th.titleSize, new Vector2(0f, 140f), new Vector2(ChamberMenu.Size.x - 96f, 80f), bold: true);
-            UiKit.Text(_screen, "Info",
-                       "Placeholder for the protocol (PB-07b).\nResume policy: " + run.Values.GetText("resume_from") +
-                       "\n\nA: finish the session · Y: Stop dialog\nQuit the app here to test resume.",
-                       th.bodySize, new Vector2(0f, -60f), new Vector2(ChamberMenu.Size.x - 96f, 300f), color: th.text2);
+            if (_run != null && !_run.Stopped) _run.Log.Write(LogEvents.Recenter, r.Note());
         }
 
-        void HideScreen()
+        public override void Abort(ChamberRun run)
         {
-            if (_screen != null) Destroy(_screen.gameObject);
-            _screen = null;
+            if (_gate != null) _gate.Cancel();
+            if (cue != null) cue.Hide();
+            Cleanup();
+        }
+
+        void Cleanup()
+        {
+            if (listener != null) listener.Recentered -= OnUserRecenter;
+            if (_screens != null) _screens.Clear();
+            _screens = null;
+            _gate = null;
+            _run = null;
         }
     }
 }

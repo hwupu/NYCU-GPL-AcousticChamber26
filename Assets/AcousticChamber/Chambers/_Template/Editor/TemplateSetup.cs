@@ -34,11 +34,35 @@ namespace AcousticChamber.Chambers.Template.Editor
             Debug.Log("[Chamber:Template] Step 1: chamber menu added. Save the scene.");
         }
 
-        /// <summary>Headless (mirror project): open the Template scene, run Step 1, save.</summary>
+        /// <summary>
+        /// Step 2 (PB-07b): the Homing object (group Experiment: fixation dot with its URP Unlit material, recenter listener)
+        /// and the links from TemplateChamber to it.
+        /// </summary>
+        [MenuItem("Magic/Template/Step 2 - Homing (fixation dot, recenter listener)", priority = 101)]
+        public static void HomingStep()
+        {
+            if (!ChamberSetup.IsOpen(ScenePath)) return;
+            var logic = Object.FindAnyObjectByType<TemplateChamber>(FindObjectsInactive.Include);
+            if (logic == null)
+            {
+                Debug.LogError("[Chamber:Template] No TemplateChamber in the scene: run Step 1 first.");
+                return;
+            }
+            var (cue, listener) = AppSetup.EnsureHoming();
+            Undo.RecordObject(logic, "Template homing");
+            logic.cue = cue;
+            logic.listener = listener;
+            EditorUtility.SetDirty(logic);
+            EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
+            Debug.Log("[Chamber:Template] Step 2: fixation dot and recenter listener added. Save the scene.");
+        }
+
+        /// <summary>Headless (mirror project): open the Template scene, run Steps 1 and 2, save.</summary>
         public static void BatchStep1()
         {
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             ChamberMenuStep();
+            HomingStep();
             EditorSceneManager.SaveOpenScenes();
             AssetDatabase.SaveAssets();
         }

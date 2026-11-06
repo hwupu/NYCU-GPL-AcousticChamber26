@@ -20,8 +20,8 @@ Chamber menu → (Start) volume step → handover → stages:
 ## Trial
 1. **Head gate:** the fixation dot appears straight ahead; the participant holds the head within the gate (`gate.*`, default yaw ±10°, pitch ±15°, 0.5 s; hint "Look at the dot" after 4 s). A `homing` row is logged.
 2. **Go cue:** the dot disappears and "Press A" (中文: "請按 A") appears.
-3. **Response:** A ends the trial; the reaction time is from the cue onset to the press. No press within `response_timeout_s` = timeout (logged, not repeated).
-4. **Inter-trial interval:** `iti_s` of empty view, then the next trial.
+3. **Response:** A ends the trial; the reaction time is from the cue onset to the press (frame-based: the frame the cue is shown to the frame A is read, about 11 ms resolution at 90 Hz). No press within `response_timeout_s` = timeout (logged, not repeated).
+4. **Inter-trial interval:** `iti_s` of empty view between trials (it runs at the start of every trial but the first of a block, so the `trial` row is the last thing a trial does and a trial interrupted by a kill is never counted).
 
 ## Parameters (`Config/default.params`, preset "Default")
 | Key | Default | Range | Group |

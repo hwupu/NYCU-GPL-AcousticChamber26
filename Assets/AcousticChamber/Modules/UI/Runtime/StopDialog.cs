@@ -25,11 +25,15 @@ namespace GPL.UI
         /// <summary>True while a Stop dialog (either step) is open.</summary>
         public static bool IsOpen { get; private set; }
 
+        /// <summary>Times a Stop dialog was opened since the app started (a trial compares it to flag an interruption).</summary>
+        public static int OpenCount { get; private set; }
+
         public static void Show(Transform canvas, bool debugRun, string studyId, Action<StopChoice> onChoice, bool freeze = true)
         {
             if (IsOpen) return;
             UiStrings.EnsureRegistered();
             IsOpen = true;
+            OpenCount++;
             if (freeze) Freeze.Begin();
             string who = string.IsNullOrEmpty(studyId) ? "?" : studyId;
 

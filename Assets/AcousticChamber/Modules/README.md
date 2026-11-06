@@ -14,8 +14,9 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 | [Input](Input/README.md) | `GPL.Input.Core` + `GPL.Input` | binding table (action -> controller button), action reader over OVRInput, global Stop action (Y) | Core, Meta XR Core |
 | [DebugBench](DebugBench/README.md) | `GPL.DebugBench.Core` + `GPL.DebugBench` | a chamber's Debug pages: working copy of a preset (step, revert, save, save as), Debug page (Run, Parameters, Presets, chamber sections, Data), Parameters page | Core, Params, Session, UI |
 | [Homing](Homing/README.md) | `GPL.Homing.Core` + `GPL.Homing` | head gate with a fixation dot, system recenter at handover, recenter listener; results as `homing` / `recenter` notes; gate as preset parameters | Core, Params, Meta XR Core |
+| [Protocol](Protocol/README.md) | `GPL.Protocol.Core` + `GPL.Protocol` | stage tree (stage > block > trial) walked with the session cursor: resume policies, attempts, replayed handover, structure log rows; stock screens (language, handover with recenter, messages, cue text) | Core, Session, Logging; screens: UI, Input, Homing, Meta XR Core |
 
-Planned (Architecture section 4): Protocol, Acoustics, HearingLoss, SpatialSources, Responses.
+Planned (Architecture section 4): Acoustics, HearingLoss, SpatialSources, Responses.
 
 Conventions
 - Folder layout: `Core/` (pure, `noEngineReferences: true`), `Runtime/` (Unity), `Editor/`, `Tests/EditMode/`, `README.md`.

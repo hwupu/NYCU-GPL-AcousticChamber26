@@ -84,7 +84,7 @@ namespace AcousticChamber.App
             _pages.RootBack = BackToHall;
             _bench = new DebugBench(_pages, _canvas, work) { Files = new DataFiles(DataDir, chamber.id) };
             _bench.RunRequested += StartDebugRun;
-            _bench.PracticeRequested += () => _bench.SetStatus("Practice trial: comes with the protocol (PB-07b).");
+            _bench.PracticeRequested += () => _bench.SetStatus("Practice trial from the bench: not built yet (use Run).");
 
             var menu = _pages.Push(chamber.MenuTitle);
             BuildMenu(menu.Rect);
@@ -259,6 +259,12 @@ namespace AcousticChamber.App
                 var warnings = new List<string>();
                 var values = SessionLauncher.Snapshot(rec, logic.Schema, warnings);
                 foreach (var w in warnings) Debug.LogWarning("[Chamber:" + chamber.id + "] snapshot of " + rec.SessionId + ": " + w);
+                string problem = logic.ResumeProblem(rec, values);
+                if (problem != null)
+                {
+                    SetStatus("Cannot resume " + rec.StudyId + ": " + problem);
+                    return;
+                }
                 var log = OpenLog(_sessions.CsvPathFor(rec.SessionId), SessionLauncher.ContextOf(rec));
                 log.Write(LogEvents.SessionResume, VolumeValues(log, volume), "resume_from=" + ResumeNames.Name(rec.ResumePolicy) + " cursor=" +
                           rec.Cursor.Stage + "/" + rec.Cursor.Block + "/" + rec.Cursor.TrialsDone + "/" + rec.Cursor.Attempt + StartNote(volume, log, true));
