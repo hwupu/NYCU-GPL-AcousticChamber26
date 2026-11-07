@@ -27,6 +27,7 @@ namespace AcousticChamber.App.Editor
         const string InputTestPanelName = "Input Test Panel";
         const string BenchTestPanelName = "Debug Bench Test Panel";
         const string HomingTestPanelName = "Homing Test Panel";
+        const string HearingLossTestPanelName = "Hearing Loss Test Panel";
         const string GroupExperiment = "Experiment";
         const string HomingName = "Homing";
         const string FixationMatPath = "Assets/AcousticChamber/Settings/Materials/Fixation.mat";
@@ -158,6 +159,39 @@ namespace AcousticChamber.App.Editor
             Debug.Log("[GPL] Homing test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
         }
 
+        /// <summary>
+        /// Adds the GPL.HearingLoss test panel (HearingLossTestPanel: per-ear test tones through the loss, RMS before / after per
+        /// ear); it replaces the other test panels. Headset check for PB-09; use it in the Sandbox scene.
+        /// </summary>
+        [MenuItem("Magic/App/Hearing Loss Test Panel (open scene)", priority = 54)]
+        public static void AddHearingLossTestPanel()
+        {
+            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
+            {
+                Debug.LogError("[GPL] Add the Camera Rig building block first.");
+                return;
+            }
+            var theme = EnsureUiAssets();
+            EnsureGlobalActions();
+            var ui = UiSetup.EnsureGroup(GroupUI);
+            UiSetup.EnsureUiRoot(ui, theme);
+            RemoveTestPanels(ui);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, HearingLossTestPanelName, HearingLossTestPanel.Size);
+            canvas.AddComponent<HearingLossTestPanel>();
+            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
+            UiSetup.MarkSceneDirty();
+            Debug.Log("[GPL] Hearing loss test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+        }
+
+        /// <summary>Headless (mirror project): the hearing loss test panel in the Sandbox scene (created if missing), saved.</summary>
+        public static void BatchHearingLossTestPanel()
+        {
+            HallSetup.CreateSandbox();
+            EditorSceneManager.OpenScene(HallSetup.SandboxScene, OpenSceneMode.Single);
+            AddHearingLossTestPanel();
+            EditorSceneManager.SaveOpenScenes();
+        }
+
         /// <summary>One Homing object (group Experiment) with a FixationCue (URP Unlit #262626 material) and a RecenterListener.</summary>
         public static (FixationCue, RecenterListener) EnsureHoming()
         {
@@ -183,7 +217,7 @@ namespace AcousticChamber.App.Editor
 
         internal static void RemoveTestPanels(Transform ui)
         {
-            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName }) RemoveChild(ui, n);
+            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName }) RemoveChild(ui, n);
         }
 
         static void RemoveChild(Transform parent, string childName)

@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.App.Editor",
     "rootNamespace": "AcousticChamber.App.Editor",
-    "references": ["AcousticChamber.App.Core", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input.Core", "GPL.Input", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.DebugBench.Core", "GPL.DebugBench", "GPL.Homing.Core", "GPL.Homing", "AcousticChamber.App", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
+    "references": ["AcousticChamber.App.Core", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input.Core", "GPL.Input", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.DebugBench.Core", "GPL.DebugBench", "GPL.Homing.Core", "GPL.Homing", "GPL.HearingLoss", "AcousticChamber.App", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

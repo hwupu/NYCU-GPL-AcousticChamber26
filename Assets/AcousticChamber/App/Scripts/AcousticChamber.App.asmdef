@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.App",
     "rootNamespace": "AcousticChamber.App",
-    "references": ["AcousticChamber.App.Core", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.Input.Core", "GPL.Input", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.DebugBench.Core", "GPL.DebugBench", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol.Core", "GPL.Protocol", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
+    "references": ["AcousticChamber.App.Core", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.Input.Core", "GPL.Input", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.DebugBench.Core", "GPL.DebugBench", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol.Core", "GPL.Protocol", "GPL.HearingLoss.Core", "GPL.HearingLoss", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

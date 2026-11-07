@@ -28,6 +28,6 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 | PB-20 Onboarding slides + sequence | Done | `4093c2e`, `c32b798`; 20a slide screen, 20b onboarding sequence; headset tests passed |
 | PB-21 Refactor before HumPerHW2 | Done | 21a `1b14b55`, 21c `22bba33`, 21b Debug sections + Practice trial; headset check passed |
 | PB-08 HumPerHW2 chamber | Doing | 08a docs approved; 08b `GPL.Acoustics` `a373286`; 08c `32813cb`; 08d-1 `d107cbc`; 08d-2 `0345c8e`; 08d-3 protocol committed (trial, practice choice, conditions per block, resume re-apply, Step 5 slides, trigger bindings, picture aspect, Stop dialog hides view blockers; simulator check passed, 191 pass); next 08e Debug + headset |
-| PB-09 GPL.HearingLoss | Done | ANSIS344 (20 vectors exact), presets, state, per-ear banks on the AudioListener, test tone; 247 pass |
+| PB-09 GPL.HearingLoss | Done | ANSIS344 (20 vectors exact), presets, state, per-ear banks on the AudioListener, test tone + Hearing Loss Test Panel; headset tone check open |
 | PB-10 HearingLoss chamber | Built | experience chamber (ADR-0006): panel, floor-drag speaker (`FloorDragSource`, pointer `IRayTarget`), dry; 257 pass; PO: run Magic > HearingLoss 1-2, headset check |
 | PB-13 New-chamber tooling | Done | `Magic > App > New Chamber...` (ChamberCopy rules + NewChamber window); probe chamber compiled and ran its Steps headless; 262 pass |
