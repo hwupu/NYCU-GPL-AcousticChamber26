@@ -11,7 +11,7 @@ Product Owner: researcher. Status: Done / Open / Blocked (waiting for PO) / Clos
 | PB-05 | GPL.Input + GPL.UI + GPL.Homing runtime | Bindings, Stop dialog, overlay canvas, pointer, `ITextEntry` (number pad first), panel placer, slides; head gate, recenter listener, system recenter (replaced the planned software recenter), handover | Done (2026-11-07; 05a-c; panel placer = `OverlayPanel`; slides moved to PB-20) |
 | PB-06 | Main Hall + catalog + routing | Hall scene, chamber list, routing to the chamber menu of unfinished sessions | Done (2026-11-07) |
 | PB-07 | `_Template` chamber | Chamber menu (Study ID, Start, Debug, preset line, unfinished list), presets, all resume variants proven by a kill-the-app test | Done (2026-11-07) |
-| PB-08 | HumPerHW2 chamber (HW2 rebuilt) | Same protocol and trial data as HW2 on the modules; GPL.Acoustics, SpatialSources, Responses, DebugBench extracted | Open |
+| PB-08 | HumPerHW2 chamber (HW2 rebuilt) | Same protocol and trial data as HW2 on the modules; GPL.Acoustics, SpatialSources, Responses, DebugBench extracted | Done (2026-11-08, PO; Quest checklist, Android RT60 and HW2 CSV comparison not run) |
 | PB-09 | GPL.HearingLoss | ANSIS344 + test vectors; per-ear filter on the final output; per-ear test-tone check | Done (2026-11-07; PO verified on the headset 2026-11-08) |
 | PB-10 | HearingLoss chamber | Experience chamber (ADR-0006, PO 2026-11-07): own panel (sound, play / pause, ear, NIOSH presets), speaker dragged on the floor, dry, no logs; headset check | Done (PO verified 2026-11-08; panel corrections 2026-11-08: Normal hearing / ear auto-levels, other ear 0 dB) |
 | PB-11 | MovingSource chamber | as above | Blocked (Questions Q35-Q38, 2026-11-07) |
