@@ -18,7 +18,10 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 
 | [Acoustics](Acoustics/README.md) | `GPL.Acoustics.Core` + `GPL.Acoustics` | Meta XR Audio shoebox: RT60 target via a measured coefficient table, RT60 measurement of the rendered output (Schroeder T20/T30), clip levels; Editor: Reflection mixer, room builder, audio build-settings guard | Core, Meta XR Audio, URP |
 
-Planned (Architecture section 4): HearingLoss, SpatialSources, Responses.
+| [SpatialSources](SpatialSources/README.md) | `GPL.SpatialSources.Core` + `GPL.SpatialSources` | sounds on a circle around an origin (azimuth, radius, re-placed or room-fixed), pulse train, background bed fixed in the room, Debug source marker | Core, Acoustics, Meta XR Audio |
+| [Responses](Responses/README.md) | `GPL.Responses.Core` + `GPL.Responses` | method-of-adjustment in azimuth with the triggers (rate, clamp, confirm guard, paused time excluded), result with signed error and a log note | Core, Input |
+
+Planned (Architecture section 4): HearingLoss.
 
 Conventions
 - Folder layout: `Core/` (pure, `noEngineReferences: true`), `Runtime/` (Unity), `Editor/`, `Tests/EditMode/`, `README.md`.
