@@ -182,7 +182,7 @@ A chamber supplies a protocol (stages + resume policies), a trial runner (`ITria
 
 Planned chambers (independent; order is a backlog decision):
 - **HumPerHW2** — HW2 rebuilt on the modules (proves the refactoring; same data format where possible).
-- **HearingLoss** — unilateral / bilateral loss on the output.
+- **HearingLoss** (C02) — experience chamber (ADR-0006): unilateral / bilateral loss on the output, a speaker dragged on the floor, own panel, no logs.
 - **MovingSource** — move a source (grab / scripted) to experience spatial audio.
 - **HiddenSource** — locate an invisible source placed at random.
 - Realistic room, outdoor (later).

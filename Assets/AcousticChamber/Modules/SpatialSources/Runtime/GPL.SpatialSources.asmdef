@@ -1,7 +1,7 @@
 {
     "name": "GPL.SpatialSources",
     "rootNamespace": "GPL.SpatialSources",
-    "references": ["GPL.Core", "GPL.SpatialSources.Core", "GPL.Acoustics.Core", "GPL.Acoustics", "Meta.XR.Audio"],
+    "references": ["GPL.Core", "GPL.SpatialSources.Core", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.UI", "Meta.XR.Audio"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

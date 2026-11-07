@@ -27,6 +27,8 @@ namespace GPL.UI
         public float pitchDownDeg = 8f;
         [Tooltip("Extra height (m) after the pitch, e.g. a HUD strip above the scene.")]
         public float heightOffsetM = 0f;
+        [Tooltip("Panel center to the side of straight ahead (deg). Negative = left.")]
+        public float yawOffsetDeg = 0f;
         public bool followRecenter = true;
         [Tooltip("Head must be this far above the rig origin before placing (m).")]
         public float minHeadHeightM = 0.3f;
@@ -89,7 +91,7 @@ namespace GPL.UI
             if (_rig == null) return;
             var head = _rig.centerEyeAnchor.position;
             var yaw = Quaternion.Euler(0f, _rig.transform.eulerAngles.y, 0f);
-            var rot = yaw * Quaternion.Euler(pitchDownDeg, 0f, 0f); // +X pitch tilts forward downward
+            var rot = yaw * Quaternion.Euler(0f, yawOffsetDeg, 0f) * Quaternion.Euler(pitchDownDeg, 0f, 0f); // +X pitch tilts forward downward
             transform.SetPositionAndRotation(head + rot * Vector3.forward * distanceM + Vector3.up * heightOffsetM, rot);
             transform.localScale = Vector3.one * (ScalePerMeter * distanceM);
             Placed?.Invoke();

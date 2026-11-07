@@ -18,7 +18,7 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 
 | [Acoustics](Acoustics/README.md) | `GPL.Acoustics.Core` + `GPL.Acoustics` | Meta XR Audio shoebox: RT60 target via a measured coefficient table, RT60 measurement of the rendered output (Schroeder T20/T30), clip levels; Editor: Reflection mixer, room builder, audio build-settings guard | Core, Meta XR Audio, URP |
 
-| [SpatialSources](SpatialSources/README.md) | `GPL.SpatialSources.Core` + `GPL.SpatialSources` | sounds on a circle around an origin (azimuth, radius, re-placed or room-fixed), pulse train, background bed fixed in the room, Debug source marker | Core, Acoustics, Meta XR Audio |
+| [SpatialSources](SpatialSources/README.md) | `GPL.SpatialSources.Core` + `GPL.SpatialSources` | sounds on a circle around an origin (azimuth, radius, re-placed or room-fixed), a source dragged on the floor with the ray, pulse train, background bed fixed in the room, Debug source marker | Core, Acoustics, UI, Meta XR Audio |
 | [Responses](Responses/README.md) | `GPL.Responses.Core` + `GPL.Responses` | method-of-adjustment in azimuth with the triggers (rate, clamp, confirm guard, paused time excluded), result with signed error and a log note | Core, Input |
 
 | [HearingLoss](HearingLoss/README.md) | `GPL.HearingLoss.Core` + `GPL.HearingLoss` | hearing loss on the final L/R output: ANSI S3.44 prediction (NIOSH HLSim port), presets, manual, per-ear 10-band peaking banks on the AudioListener, per-ear test tone | — (no Core dependency) |

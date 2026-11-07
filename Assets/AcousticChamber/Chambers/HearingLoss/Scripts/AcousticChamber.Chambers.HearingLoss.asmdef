@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HearingLoss",
+    "rootNamespace": "AcousticChamber.Chambers.HearingLoss",
+    "references": ["AcousticChamber.Chambers.HearingLoss.Core", "AcousticChamber.App", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing", "GPL.HearingLoss.Core", "GPL.HearingLoss", "GPL.SpatialSources.Core", "GPL.SpatialSources", "Unity.TextMeshPro", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

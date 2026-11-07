@@ -58,12 +58,14 @@ namespace GPL.UI
         void Update()
         {
             var targets = Selectable.allSelectablesArray;
-            bool any = false;
+            if (_held != null && Modal != null) ReleaseHeld(); // a sheet opened while dragging
+            bool any = _held != null || (Modal == null && RayTargets.All.Count > 0);
             for (int i = 0; i < targets.Length && !any; i++) any = IsUsable(targets[i]);
             if (!any)
             {
                 _line.enabled = false;
                 SetHover(null);
+                SetHover3D(null);
                 return;
             }
 
@@ -77,17 +79,44 @@ namespace GPL.UI
             {
                 _line.enabled = false;
                 SetHover(null);
+                SetHover3D(null);
+                ReleaseHeld();
                 return;
             }
 
             var ray = new Ray(origin.position, origin.forward);
+
+            // a held 3D target owns the trigger until it is released
+            if (_held != null)
+            {
+                if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, _heldHand))
+                {
+                    var end = _held.RayDrag(ray);
+                    _line.enabled = true;
+                    _line.SetPosition(0, ray.origin);
+                    _line.SetPosition(1, end);
+                    return;
+                }
+                ReleaseHeld();
+            }
+
             float dt = Time.unscaledDeltaTime;
             Vector3 hitPoint = Vector3.zero;
             Selectable hit = null;
             if (_scrolling == null || !_scrolling.Model.Dragging) hit = Raycast(ray, targets, out hitPoint); // no hover while dragging
-            if (hit == null) hitPoint = ray.origin + ray.direction * idleLaserLengthM;
+
+            // a 3D target nearer than the UI hit wins
+            IRayTarget target = null;
+            if (_scrolling == null && Modal == null && RayTargets.All.Count > 0)
+            {
+                float uiDistance = hit != null ? Vector3.Distance(ray.origin, hitPoint) : maxDistanceM;
+                var t = RayTargets.Pick(ray, maxDistanceM, out float d);
+                if (t != null && d < uiDistance) { target = t; hit = null; hitPoint = ray.origin + ray.direction * d; }
+            }
+            if (hit == null && target == null) hitPoint = ray.origin + ray.direction * idleLaserLengthM;
             SetHover(hit);
-            var list = _scrolling != null ? _scrolling : ScrollList.Under(ray, maxDistanceM);
+            SetHover3D(target);
+            var list = target != null ? null : _scrolling != null ? _scrolling : ScrollList.Under(ray, maxDistanceM);
 
             _line.enabled = true;
             _line.SetPosition(0, ray.origin);
@@ -103,6 +132,13 @@ namespace GPL.UI
             if (leftDown || rightDown)
             {
                 ReleasePressed();
+                if (target != null)
+                {
+                    _held = target;
+                    _heldHand = hand;
+                    target.RayPress(ray);
+                    return;
+                }
                 var button = hit as Button;
                 bool inList = list != null && (button == null || button.transform.IsChildOf(list.Content));
                 if (inList && list.LocalPoint(ray, out Vector2 local))
@@ -153,6 +189,34 @@ namespace GPL.UI
 
         UiButton _pressed;
         OVRInput.Controller _pressedHand;
+        IRayTarget _held, _hovered3D;
+        OVRInput.Controller _heldHand;
+
+        /// <summary>The 3D target being dragged, or null.</summary>
+        public IRayTarget Held => _held;
+
+        void ReleaseHeld()
+        {
+            if (_held == null) return;
+            var h = _held;
+            _held = null;
+            h.RayRelease();
+        }
+
+        void SetHover3D(IRayTarget t)
+        {
+            if (_hovered3D == t) return;
+            var old = _hovered3D;
+            _hovered3D = t;
+            old?.RayHover(false);
+            t?.RayHover(true);
+        }
+
+        void OnDisable()
+        {
+            ReleaseHeld();
+            SetHover3D(null);
+        }
         ScrollList _scrolling;
         Button _pendingClick;
 

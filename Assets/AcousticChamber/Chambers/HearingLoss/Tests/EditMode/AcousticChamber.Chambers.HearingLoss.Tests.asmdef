@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HearingLoss.Tests",
+    "rootNamespace": "AcousticChamber.Chambers.HearingLoss.Tests",
+    "references": ["AcousticChamber.Chambers.HearingLoss.Core", "GPL.HearingLoss.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -4,7 +4,7 @@ Spatial sounds placed around the listener: on a circle around an origin (azimuth
 recenter or fixed in the room; a pulse train; a bed of looping background recordings fixed in the room; a Debug marker that shows
 where a sound is. Ported and generalized from HW2 `StimulusController` and `AcousticConditions` (PB-08c).
 
-**Copy:** this folder + `Core/` and `Acoustics/`. **Dependencies:** GPL.Core, GPL.Acoustics (clip levels), Meta XR Audio SDK
+**Copy:** this folder + `Core/`, `Acoustics/` and `UI/`. **Dependencies:** GPL.Core, GPL.Acoustics (clip levels), GPL.UI (`IRayTarget` for dragging), Meta XR Audio SDK
 (`MetaXRAudioSource`: gain boost, Enable Acoustics). Route every source to the Reflection mixer (GPL.Acoustics `ReflectionMixer`).
 
 ## Frame
@@ -22,10 +22,12 @@ the rig forward (the rig stays at identity, GPL.Homing).
 | `Runtime/PlacedSource.cs` | on the AudioSource: `Place(origin, yaw, radius, az)`, `SetAzimuth(az)` (radius locked), `Replace(origin, yaw)` after a recenter (`Anchoring.Replaced`; `RoomFixed` ignores it), `LevelDbfs` (clip RMS + Meta gain boost), `SetAcoustics(on)` |
 | `Runtime/PulseTrain.cs` | plays the source's clip as a pulse train (`Play(onS, offS)`, `Stop()`), scaled time (the Stop dialog holds it) |
 | `Runtime/BackgroundBed.cs` | looping sources placed once (`Begin(origin, yaw, radius, azimuths)`) and then held in place every frame; `End`, `Pause(bool)`, `LevelDbfs` (power sum; from `clipLevelsDbfs` measured in the Editor with GPL.Acoustics `WavLevel`, so long clips can stream, or measured in Awake with Decompress On Load), `Note(listener)` = `bg1=-2,0,0;bg2=2,0,0;bg3=0,0,-2 spatial=1` |
+| `Core/FloorDrag.cs` | pure: where a ray meets the floor (or the far point when it points above the horizon), clamp to a ring [min, max] around the listener, ray-sphere pick |
+| `Runtime/FloorDragSource.cs` | a sound object on the floor dragged with the GPL.UI pointer (`IRayTarget`, trigger held): follows the ray's floor point, 0.5-6 m from `center` (the head), faces it, tints `tinted` renderers on hover / hold, `PlaceInFront(head, m)`, `PlaceAt(p)`, `Polar(out m, out az)`, `Grabbed` / `Released`; room-fixed (PB-10) |
 | `Runtime/SourceMarker.cs` | Debug marker (an unlit sphere): follows a target or is pinned at a point; save it inactive |
 
 Not built yet (Architecture section 4; added when a chamber needs them): constrained random placement, trajectories,
-`MovingSource`, `GrabbableSource`.
+`MovingSource` (grab in 3D; `FloorDragSource` covers dragging on the floor).
 
 ## Use
 ```csharp
