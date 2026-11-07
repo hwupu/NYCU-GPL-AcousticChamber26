@@ -15,6 +15,9 @@ namespace GPL.SpatialSources
         public AudioSource[] sources = new AudioSource[0];
         [Tooltip("Optional: assigned to the sources in Awake (by index).")]
         public AudioClip[] clips = new AudioClip[0];
+        [Tooltip("RMS of each clip in dBFS, measured in the Editor (long clips can then stream: no Decompress On Load). " +
+                 "Empty or a different count = measured in Awake, which needs Decompress On Load.")]
+        public float[] clipLevelsDbfs = new float[0];
 
         public bool Playing { get; private set; }
         public bool Paused { get; private set; }
@@ -27,12 +30,13 @@ namespace GPL.SpatialSources
 
         void Awake()
         {
+            bool stored = clipLevelsDbfs != null && clipLevelsDbfs.Length == sources.Length;
             var levels = new float[sources.Length];
             for (int i = 0; i < sources.Length; i++)
             {
                 UnityGain.Apply(sources[i], loop: true);
                 if (i < clips.Length && clips[i] != null) sources[i].clip = clips[i];
-                levels[i] = ClipLevels.RmsDbfs(sources[i].clip);
+                levels[i] = stored ? clipLevelsDbfs[i] : ClipLevels.RmsDbfs(sources[i].clip);
             }
             _levelDbfs = AudioLevelMath.PowerSumDb(levels);
         }

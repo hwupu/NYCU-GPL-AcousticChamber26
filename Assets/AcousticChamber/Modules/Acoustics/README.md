@@ -20,6 +20,7 @@ at all (the Reflection mixer, the audio build-settings guard). Ported and genera
 | `Core/RoomMath.cs` | box volume / surface, V/S, Eyring coefficient ↔ RT60 (amplitude or energy reading), Sabine absorption. Calculated, not what the plugin renders |
 | `Core/Rt60Calibration.cs` | coefficient → RT60 table, log interpolation, V/S scaling to another room size, clamps to the table; `MetaXrAudioShoebox` = the HW2 measurement (Windows plugin, 8.72 × 15 × 3.5 m, 0.30-5.74 s); custom tables via the constructor |
 | `Core/Rt60Estimator.cs` | Schroeder backward integration, noise-floor removal, T20 / T30 line fit; `Rt60Result.Note()` = `valid=1 t20=0.712 t30=0.698 depth_db=48` |
+| `Core/WavLevel.cs` | RMS dBFS of a WAV file on disk (PCM 16 / 24 / 32, float 32, EXTENSIBLE), same value as `ClipLevels.RmsDbfs`; lets long clips stream (GetData does not work on Streaming clips) |
 | `Core/AudioLevelMath.cs` | RMS dBFS, power sum of uncorrelated sources, gain → dB; `Silent` = -200 |
 | `Runtime/ShoeboxRoom.cs` | room size (one size for the visual room and the shoebox), V/S |
 | `Runtime/ReverbTuner.cs` | `SetRt60(s)` (uniform coefficient from the table, pushed to the plugin every frame, the shoebox component disabled), `SetReflection(r)`, `UsePreset()`, `ExpectedRt60()`, `PresetRt60()`, `Note()` for the log, `Describe()` for a Debug status |
@@ -27,7 +28,7 @@ at all (the Reflection mixer, the audio build-settings guard). Ported and genera
 | `Runtime/ClipLevels.cs` | clip RMS dBFS (needs Decompress On Load), source level = RMS + gain boost + volume |
 | `Editor/ReflectionMixer.cs` | create a mixer with the effect on Master (Unity's internal mixer API, by reflection), route sources, list unrouted spatial sources |
 | `Editor/RoomBuilder.cs` | `ApplyBakedLighting(settingsPath)` (no directional light, flat ambient, baked GI), `Build(parent, options)` (white box room, area lights, probes, shoebox of the same size; idempotent), `Bake()` |
-| `Editor/ClipImport.cs` | `DecompressOnLoad(clip)` |
+| `Editor/ClipImport.cs` | `DecompressOnLoad(clip)`, `SetLoadType(clip, type)` |
 | `Editor/AudioBuildSettingsGuard.cs` | `IPreprocessBuildWithReport`, last: sample rate 0 (system), DSP buffer 1024, requested 0 = `ProjectSettings/AudioManager.asset` |
 
 ## Use

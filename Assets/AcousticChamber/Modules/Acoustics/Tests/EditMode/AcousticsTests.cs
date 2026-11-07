@@ -53,6 +53,68 @@ namespace GPL.Acoustics.Tests
             Assert.AreEqual(AudioLevelMath.Silent, AudioLevelMath.PowerSumDb());
         }
 
+        // ---- WavLevel -------------------------------------------------------------------------------------
+
+        /// <summary>A WAV in memory: <paramref name="values"/> (−1..1) as PCM 16 / 24 bit or float 32, optionally EXTENSIBLE, with an extra chunk.</summary>
+        static System.IO.MemoryStream Wav(double[] values, int bits, bool isFloat, bool extensible, int channels = 1)
+        {
+            var data = new System.IO.MemoryStream();
+            var d = new System.IO.BinaryWriter(data);
+            foreach (double v in values)
+            {
+                if (isFloat) d.Write((float)v);
+                else if (bits == 16) d.Write((short)Math.Round(v * 32767));
+                else { int s = (int)Math.Round(v * 8388607); d.Write((byte)s); d.Write((byte)(s >> 8)); d.Write((byte)(s >> 16)); }
+            }
+            var ms = new System.IO.MemoryStream();
+            var w = new System.IO.BinaryWriter(ms);
+            int fmtSize = extensible ? 40 : 16;
+            w.Write("RIFF".ToCharArray()); w.Write(0); w.Write("WAVE".ToCharArray());
+            w.Write("LIST".ToCharArray()); w.Write(4); w.Write("INFO".ToCharArray());            // a chunk to skip
+            w.Write("fmt ".ToCharArray()); w.Write(fmtSize);
+            w.Write((ushort)(extensible ? 0xFFFE : isFloat ? 3 : 1)); w.Write((ushort)channels); w.Write(48000);
+            w.Write(48000 * channels * bits / 8); w.Write((ushort)(channels * bits / 8)); w.Write((ushort)bits);
+            if (extensible)
+            {
+                w.Write((ushort)22); w.Write((ushort)bits); w.Write(4);
+                w.Write((ushort)(isFloat ? 3 : 1)); w.Write(new byte[14]);                    // sub-format GUID
+            }
+            w.Write("data".ToCharArray()); w.Write((int)data.Length); w.Write(data.ToArray());
+            ms.Position = 0;
+            return ms;
+        }
+
+        static double[] Sine(double amplitude, int n)
+        {
+            var a = new double[n];
+            for (int i = 0; i < n; i++) a[i] = amplitude * Math.Sin(2 * Math.PI * 1000 * i / 48000.0);
+            return a;
+        }
+
+        [Test]
+        public void WavLevel_MatchesTheSampleRms([Values(16, 24)] int bits, [Values(false, true)] bool extensible)
+        {
+            var sine = Sine(0.5, 48000);
+            float expected = AudioLevelMath.RmsDbfs(Array.ConvertAll(sine, v => (float)v));   // -9.03 dB
+            float got = WavLevel.RmsDbfs(Wav(sine, bits, false, extensible), out var info);
+            Assert.AreEqual(expected, got, 0.01);
+            Assert.AreEqual(-9.03, got, 0.01);
+            Assert.AreEqual(48000, info.Frames);
+            Assert.AreEqual(1.0, info.DurationS, 1e-9);
+            Assert.AreEqual(bits, info.BitsPerSample);
+        }
+
+        [Test]
+        public void WavLevel_FloatStereoAndSilence()
+        {
+            float got = WavLevel.RmsDbfs(Wav(new[] { 1.0, -1.0, 1.0, -1.0 }, 32, true, false, channels: 2), out var info);
+            Assert.AreEqual(0f, got, 1e-4);
+            Assert.IsTrue(info.Float);
+            Assert.AreEqual(2, info.Frames);
+            Assert.AreEqual(AudioLevelMath.Silent, WavLevel.RmsDbfs(Wav(new double[100], 16, false, false), out _));
+            Assert.Throws<System.IO.InvalidDataException>(() => WavLevel.RmsDbfs(new System.IO.MemoryStream(new byte[12]), out _));
+        }
+
         // ---- Rt60Calibration ------------------------------------------------------------------------------
 
         [Test]

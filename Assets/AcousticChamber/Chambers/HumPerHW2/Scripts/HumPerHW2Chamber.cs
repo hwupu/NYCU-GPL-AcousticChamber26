@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using AcousticChamber.App;
+using GPL.Acoustics;
 using GPL.Homing;
+using GPL.SpatialSources;
 using GPL.Logging;
 using GPL.Params;
 using GPL.Protocol;
@@ -27,6 +29,18 @@ namespace AcousticChamber.Chambers.HumPerHW2
             public const string Experiment = "experiment";
             public const string Thanks = OnboardingStages.Thanks;
         }
+
+        [Header("Scene (Magic > HumPerHW2 > Steps 3-4)")]
+        [Tooltip("The white-noise source on the circle (pulse train, moved by the triggers).")]
+        public PlacedSource stimulus;
+        public PulseTrain pulse;
+        [Tooltip("The radio picture: root faces the participant; hidden outside trials.")]
+        public Transform picture;
+        public BackgroundBed background;
+        public ReverbTuner reverb;
+        public ShoeboxRoom room;
+        [Tooltip("Debug: orange sphere on the sound.")]
+        public SourceMarker marker;
 
         static ParameterSchema _schema;
         static LogSchema _log;

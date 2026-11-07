@@ -27,4 +27,4 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 |---|---|---|
 | PB-20 Onboarding slides + sequence | Done | `4093c2e`, `c32b798`; 20a slide screen, 20b onboarding sequence; headset tests passed |
 | PB-21 Refactor before HumPerHW2 | Done | 21a `1b14b55`, 21c `22bba33`, 21b Debug sections + Practice trial; headset check passed |
-| PB-08 HumPerHW2 chamber | Doing | 08a docs approved; 08b `GPL.Acoustics` `a373286`; 08c `32813cb`; 08d-1 skeleton built (definition C01, scene, schema, plan, Latin square, trial lists, Steps 1-2; 184 pass headless; not committed); next 08d-2 room + audio, 08d-3 protocol, 08e Debug + headset |
+| PB-08 HumPerHW2 chamber | Doing | 08a docs approved; 08b `GPL.Acoustics` `a373286`; 08c `32813cb`; 08d-1 `d107cbc`; 08d-2 Steps 3-4 + Bake + Validate built (headless Validate OK, 189 pass; not committed); next 08d-3 protocol, 08e Debug + headset |

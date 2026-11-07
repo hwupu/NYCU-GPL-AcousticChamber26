@@ -21,7 +21,7 @@ the rig forward (the rig stays at identity, GPL.Homing).
 | `Runtime/UnityGain.cs` | volume 1, flat rolloff, no play on awake (the lab's level rule) |
 | `Runtime/PlacedSource.cs` | on the AudioSource: `Place(origin, yaw, radius, az)`, `SetAzimuth(az)` (radius locked), `Replace(origin, yaw)` after a recenter (`Anchoring.Replaced`; `RoomFixed` ignores it), `LevelDbfs` (clip RMS + Meta gain boost), `SetAcoustics(on)` |
 | `Runtime/PulseTrain.cs` | plays the source's clip as a pulse train (`Play(onS, offS)`, `Stop()`), scaled time (the Stop dialog holds it) |
-| `Runtime/BackgroundBed.cs` | looping sources placed once (`Begin(origin, yaw, radius, azimuths)`) and then held in place every frame; `End`, `Pause(bool)`, `LevelDbfs` (power sum), `Note(listener)` = `bg1=-2,0,0;bg2=2,0,0;bg3=0,0,-2 spatial=1` |
+| `Runtime/BackgroundBed.cs` | looping sources placed once (`Begin(origin, yaw, radius, azimuths)`) and then held in place every frame; `End`, `Pause(bool)`, `LevelDbfs` (power sum; from `clipLevelsDbfs` measured in the Editor with GPL.Acoustics `WavLevel`, so long clips can stream, or measured in Awake with Decompress On Load), `Note(listener)` = `bg1=-2,0,0;bg2=2,0,0;bg3=0,0,-2 spatial=1` |
 | `Runtime/SourceMarker.cs` | Debug marker (an unlit sphere): follows a target or is pinned at a point; save it inactive |
 
 Not built yet (Architecture section 4; added when a chamber needs them): constrained random placement, trajectories,
