@@ -58,6 +58,12 @@ namespace GPL.Protocol
 
         public IReadOnlyList<StageSpec> Stages => _stages;
 
+        /// <summary>
+        /// One stage of one block with one trial (PB-21b: the Debug bench's Practice trial). Walked like any plan, it writes
+        /// <c>stage_begin</c>, <c>block_begin</c>, the chamber's trial row, <c>block_end</c>, <c>stage_end</c>.
+        /// </summary>
+        public static ProtocolPlan SingleTrial(string stage) => new ProtocolPlan().Blocks(stage, 1, 1, ResumeFrom.StageStart);
+
         /// <summary>A plain stage (the chamber runs its body between <c>StageBegin</c> and <c>StageEnd</c>).</summary>
         public ProtocolPlan Stage(string name, StageFlags flags = StageFlags.None, ResumeFrom policy = ResumeFrom.StageStart) =>
             Add(new StageSpec(name, null, policy, flags));

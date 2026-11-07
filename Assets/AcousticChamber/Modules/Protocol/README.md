@@ -22,6 +22,8 @@ var plan = new ProtocolPlan()
     .Stage("thanks", StageFlags.CompletesSession);
 record.PlanHash = plan.Hash();                           // a resume with another hash is refused
 ```
+`ProtocolPlan.SingleTrial(stage)`: one block with one trial (the Debug bench's Practice trial, PB-21b).
+
 | Flag | Meaning |
 |---|---|
 | `Once` | skipped once it has ended (also on a `SessionStart` resume); kept as `custom.stage_done.<name>=1` |
@@ -94,7 +96,9 @@ run:    var ob = new Onboarding(screens, record, log, values) { Save, Rig, Cue, 
 links Back on the recenter slide to the language choice and Back on instruction slide 1 to the recenter slide.
 `InRecenterStage` tells a recenter listener that the Meta recenter belongs to the recenter stage (no extra `recenter` row).
 A schema without a switch counts it as on. The App's `ProtocolChamber` uses all of this; a chamber deriving from it gets
-the onboarding for free.
+the onboarding for free, plus the Debug bench's Practice trial (its `RunTrial` once in `SingleTrial("practice")`, no
+onboarding; `PracticeStageName` renames the stage). A chamber adds Debug sections by overriding
+`ChamberBehaviour.DebugSections(col, bench)` (Template: "Fixation dot" Show / Hide).
 
 ## Slide editor helpers (`SlideSetup`, Editor; PB-21c)
 For a chamber's Magic step that sets up its instruction slides; idempotent, existing files keep their .meta and GUID.

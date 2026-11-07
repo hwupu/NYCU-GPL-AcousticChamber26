@@ -121,6 +121,40 @@ namespace GPL.DebugBench.Tests
         }
 
         [Test]
+        public void PracticeButtonFollowsAvailability_ChamberSectionsSitBetweenParametersAndData()
+        {
+            var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
+                var pages = PageStack.On(UiKit.Window(canvas.transform));
+                pages.Push("Menu");
+                var bench = new DebugBench(pages, canvas.transform, new WorkingCopy(_store)) { PracticeAvailable = false };
+                bool practiced = false, shown = false;
+                bench.PracticeRequested += () => practiced = true;
+                bench.ChamberSections = col => col.Buttons("Dot", ("Show dot", UiStyle.Borderless, () => shown = true));
+
+                var debug = bench.OpenDebugPage();
+                Button Find(string label) => debug.GetComponentsInChildren<Button>(true).Single(b => UiKit.LabelOf(b).text == label);
+                Assert.IsFalse(Find("Practice trial").interactable, "no practice trial in the chamber: inactive");
+                Find("Show dot").onClick.Invoke();
+                Assert.IsTrue(shown);
+                float y(string label) => ((RectTransform)Find(label).transform).position.y;
+                Assert.Less(y("Show dot"), y("Playground"));
+                Assert.Greater(y("Show dot"), y("Log files"));
+                Assert.IsFalse(practiced);
+
+                pages.Pop();
+                bench.PracticeAvailable = true;
+                debug = bench.OpenDebugPage();
+                Assert.IsTrue(Find("Practice trial").interactable);
+                Find("Practice trial").onClick.Invoke();
+                Assert.IsTrue(practiced);
+            }
+            finally { Object.DestroyImmediate(canvas); }
+        }
+
+        [Test]
         public void BenchPagesBuildAndFollowTheWorkingCopy()
         {
             var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));

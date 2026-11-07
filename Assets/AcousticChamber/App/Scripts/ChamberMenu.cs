@@ -94,9 +94,14 @@ namespace AcousticChamber.App
             _window = UiKit.Window(_canvas);
             _pages = PageStack.On(_window);
             _pages.RootBack = BackToHall;
-            _bench = new DebugBench(_pages, _canvas, work) { Files = new DataFiles(DataDir, chamber.id) };
-            _bench.RunRequested += StartDebugRun;
-            _bench.PracticeRequested += () => _bench.SetStatus("Practice trial from the bench: not built yet (use Run).");
+            _bench = new DebugBench(_pages, _canvas, work)
+            {
+                Files = new DataFiles(DataDir, chamber.id),
+                PracticeAvailable = logic.HasPracticeTrial,
+            };
+            _bench.ChamberSections = col => logic.DebugSections(col, _bench);
+            _bench.RunRequested += () => StartDebugRun(false);
+            _bench.PracticeRequested += () => StartDebugRun(true);
 
             var menu = _pages.Push(chamber.MenuTitle);
             BuildMenu(menu.Rect);
@@ -328,9 +333,11 @@ namespace AcousticChamber.App
             catch (Exception e) { Fail("Could not resume " + rec.SessionId, e); }
         }
 
-        void StartDebugRun()
+        /// <summary>A Debug run with the playground: the chamber's protocol, or one practice trial (<paramref name="practice"/>).</summary>
+        void StartDebugRun(bool practice)
         {
             if (_run != null) return;
+            if (practice && !logic.HasPracticeTrial) return;
             try
             {
                 var values = _bench.Work.Values.Clone();
@@ -340,8 +347,8 @@ namespace AcousticChamber.App
                 var ctx = new LogContext { SessionId = id, Chamber = chamber.id, ChamberVersion = chamber.version, Mode = LogModes.Debug,
                                            Preset = _bench.Work.Label, ParamsHash = rec.ParamsHash };
                 var log = OpenLog(Path.Combine(DataDir, id + DataFileNames.CsvExtension), ctx);
-                log.Write(LogEvents.DebugBegin, "app " + Application.version + ", " + SystemInfo.deviceModel);
-                Launch(new ChamberRun { Record = rec, Values = values, Log = log, IsDebug = true });
+                log.Write(LogEvents.DebugBegin, (practice ? "practice trial, " : "") + "app " + Application.version + ", " + SystemInfo.deviceModel);
+                Launch(new ChamberRun { Record = rec, Values = values, Log = log, IsDebug = true, IsPractice = practice });
             }
             catch (Exception e) { Fail("Could not start the Debug run", e); }
         }
@@ -376,13 +383,13 @@ namespace AcousticChamber.App
             _stopHost.DebugRun = run.IsDebug;
             _stopHost.StudyId = run.Record.StudyId;
             if (_actions != null) _actions.StopEnabled = true;
-            SetStatus((run.IsDebug ? "Debug run " : run.IsResume ? "Resumed " : "Started ") + run.Record.SessionId);
+            SetStatus((run.IsPractice ? "Practice trial " : run.IsDebug ? "Debug run " : run.IsResume ? "Resumed " : "Started ") + run.Record.SessionId);
             _runCo = StartCoroutine(RunToEnd(run));
         }
 
         IEnumerator RunToEnd(ChamberRun run)
         {
-            yield return logic.Run(run);
+            yield return run.IsPractice ? logic.PracticeTrial(run) : logic.Run(run);
             End(run, null);
         }
 

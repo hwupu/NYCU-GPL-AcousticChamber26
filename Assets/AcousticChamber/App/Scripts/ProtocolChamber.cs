@@ -13,7 +13,7 @@ namespace AcousticChamber.App
     /// Base of a chamber that runs a <see cref="ProtocolPlan"/> (PB-21): owns the run loop (walker, structure rows), the stock
     /// onboarding stages (<see cref="Onboarding"/>), the stock thanks screen, the "block done" break, the head gate before a
     /// trial, Meta-button recenters during the run (<c>recenter</c> rows), the plan hash check on resume, the unfinished-session
-    /// line and the cleanup after Stop. A chamber supplies its schema, log columns, <see cref="CreatePlan"/> and
+    /// line, the cleanup after Stop and the Debug bench's Practice trial (one <see cref="RunTrial"/>). A chamber supplies its schema, log columns, <see cref="CreatePlan"/> and
     /// <see cref="RunTrial"/>, and optionally its own stages (<see cref="RunStage"/>).
     /// </summary>
     public abstract class ProtocolChamber : ChamberBehaviour
@@ -83,6 +83,33 @@ namespace AcousticChamber.App
 
         public override IEnumerator Run(ChamberRun run)
         {
+            Begin(run);
+            var plan = CreatePlan(run.Values);
+            if (!run.IsResume) run.Record.PlanHash = plan.Hash();
+            yield return Walk(plan, run, run.IsResume, true);
+            Cleanup();
+        }
+
+        /// <summary>The stage name in the rows of the bench's Practice trial (default <c>practice</c>).</summary>
+        protected virtual string PracticeStageName => "practice";
+
+        public override bool HasPracticeTrial => true;
+
+        /// <summary>
+        /// The bench's Practice trial (PB-21b): <see cref="RunTrial"/> once, in a one-trial plan
+        /// (<see cref="ProtocolPlan.SingleTrial"/>, stage <see cref="PracticeStageName"/>) with its structure rows; no
+        /// onboarding, no block break, no thanks. The chamber's trial runs as in a session (head gate, cue, trial row).
+        /// </summary>
+        public override IEnumerator PracticeTrial(ChamberRun run)
+        {
+            Begin(run);
+            yield return Walk(ProtocolPlan.SingleTrial(PracticeStageName), run, false, false);
+            Cleanup();
+        }
+
+        /// <summary>Run state for <see cref="Run"/> and <see cref="PracticeTrial"/>: screens, rig, cue, listener, language, gate, onboarding.</summary>
+        void Begin(ChamberRun run)
+        {
             CurrentRun = run;
             Screens = new ProtocolScreens(run.Canvas, run.Actions);
             Rig = HeadPose.FindRig();
@@ -92,8 +119,6 @@ namespace AcousticChamber.App
             if (listener != null) listener.Recentered += OnUserRecenter;
 
             var rec = run.Record;
-            var plan = CreatePlan(run.Values);
-            if (!run.IsResume) rec.PlanHash = plan.Hash();
             if (Loc.TryParseCode(rec.Language, out var lang)) Loc.Set(lang);
             else Loc.Set(UiLanguage.English);
             Gate = HomingParams.ReadGate(run.Values);
@@ -103,8 +128,12 @@ namespace AcousticChamber.App
                 ReadVolume = HeadsetVolume.ReadOrUnknown,
                 VolumeTarget = run.Values.Schema.Contains(HeadsetVolume.TargetKey) ? run.Values.GetInt(HeadsetVolume.TargetKey) : -1,
             };
+        }
 
-            var walker = new ProtocolWalker(plan, rec, run.IsResume, _ => run.Save());
+        /// <summary>Walks <paramref name="plan"/>: structure rows, then each step's body (stages only with <paramref name="stages"/>).</summary>
+        IEnumerator Walk(ProtocolPlan plan, ChamberRun run, bool resume, bool stages)
+        {
+            var walker = new ProtocolWalker(plan, run.Record, resume, _ => run.Save());
             while (walker.Next())
             {
                 var s = walker.Current;
@@ -112,13 +141,12 @@ namespace AcousticChamber.App
                 IEnumerator body = null;
                 switch (s.Kind)
                 {
-                    case StepKind.StageBegin: body = Onboarding.TryRun(s) ?? RunStage(s); break;
+                    case StepKind.StageBegin: body = stages ? Onboarding.TryRun(s) ?? RunStage(s) : null; break;
                     case StepKind.Trial: body = RunTrial(s); break;
-                    case StepKind.BlockEnd: body = BlockEnd(s); break;
+                    case StepKind.BlockEnd: body = stages ? BlockEnd(s) : null; break;
                 }
                 if (body != null) yield return body;
             }
-            Cleanup();
         }
 
         /// <summary>

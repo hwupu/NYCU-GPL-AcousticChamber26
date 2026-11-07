@@ -33,7 +33,7 @@ params_hash, stage, block, condition, trial, attempt`, then the Template columns
 ## Events
 `session_start`, `language`, `stage_begin`, `stage_end`, `handover`, `homing` (Meta-button recenter, final check at the dot, every trial's gate), `volume_check`,
 `recenter` (participant used the Meta button), `slide`, `block_begin`, `block_end`, `block_restart`, `trial`, `session_resume`,
-`participant_dropout`, `session_superseded`, `session_end`, `app_paused`, `app_resumed`; Debug runs also `debug_begin`,
+`participant_dropout`, `session_superseded`, `session_end`, `app_paused`, `app_resumed`; Debug runs also `debug_begin` (note starts `practice trial, ` for the bench's Practice trial: its rows are `stage_begin`, `block_begin`, `homing`, `trial`, `block_end`, `stage_end` of stage `practice`, block 1, trial 1, plus `recenter` if the Meta button was used),
 `debug_end`, `param_change`.
 
 A block of attempt 2 or later starts with `block_restart` instead of `block_begin`; a block continued after a `next_trial` resume

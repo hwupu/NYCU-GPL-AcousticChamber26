@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
+using GPL.DebugBench;
 using GPL.Input;
 using GPL.Logging;
 using GPL.Params;
 using GPL.Session;
+using GPL.UI;
 using UnityEngine;
 
 namespace AcousticChamber.App
@@ -40,12 +42,30 @@ namespace AcousticChamber.App
 
         /// <summary>Cleans up after the run was stopped from the Stop dialog (hide cues, stop sounds).</summary>
         public virtual void Abort(ChamberRun run) { }
+
+        /// <summary>True when <see cref="PracticeTrial"/> is built; false leaves the bench's Practice trial button inactive.</summary>
+        public virtual bool HasPracticeTrial => false;
+
+        /// <summary>
+        /// One practice trial from the Debug bench (PB-21b): a Debug run (<see cref="ChamberRun.IsPractice"/>, <c>_DEBUG</c> log,
+        /// nothing saved, the Stop dialog works). Returning = done; Stop calls <see cref="Abort"/> as for any run.
+        /// </summary>
+        public virtual IEnumerator PracticeTrial(ChamberRun run) { yield break; }
+
+        /// <summary>
+        /// The chamber's own sections on the Debug page, between Parameters and Data (PB-21b): <c>col.Label</c> + groups /
+        /// buttons; report with <c>bench.SetStatus</c>. Experimenter tools only (display switches, test playback); nothing here
+        /// may change a session or its log.
+        /// </summary>
+        public virtual void DebugSections(Column col, DebugBench bench) { }
     }
 
     /// <summary>One run of a chamber, handed to <see cref="ChamberBehaviour.Run"/>.</summary>
     public sealed class ChamberRun
     {
         public bool IsDebug { get; internal set; }
+        /// <summary>A Debug run of one practice trial (<see cref="ChamberBehaviour.PracticeTrial"/>); <see cref="IsDebug"/> is true too.</summary>
+        public bool IsPractice { get; internal set; }
         public bool IsResume { get; internal set; }
 
         /// <summary>The session. In a Debug run an in-memory record (never saved) that holds the cursor all the same.</summary>

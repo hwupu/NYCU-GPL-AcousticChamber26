@@ -38,7 +38,11 @@ namespace GPL.DebugBench
 
         /// <summary>Run experiment trials (real protocol, working copy, <c>_DEBUG</c> log).</summary>
         public event Action RunRequested;
+        /// <summary>One practice trial (a Debug run with the working copy, <c>_DEBUG</c> log).</summary>
         public event Action PracticeRequested;
+
+        /// <summary>False: the Practice trial button is inactive (the chamber has no practice trial). Read when the Debug page opens.</summary>
+        public bool PracticeAvailable = true;
 
         /// <summary>The chamber's own sections on the Debug page, between Parameters and Data (labels + groups on the column).</summary>
         public Action<Column> ChamberSections;
@@ -66,9 +70,10 @@ namespace GPL.DebugBench
             var col = Column.In(page, StatusHeight);
 
             col.Label("Run");
-            col.Buttons("Run",
+            var run = col.Buttons("Run",
                 ("Run experiment trials", UiStyle.Prominent, () => { SetStatus("Run experiment trials with " + Work.Label + " (_DEBUG log)"); RunRequested?.Invoke(); }),
-                ("Practice trial", UiStyle.Borderless, () => { SetStatus("Practice trial"); PracticeRequested?.Invoke(); }));
+                ("Practice trial", UiStyle.Borderless, () => { SetStatus("Practice trial with " + Work.Label + " (_DEBUG log)"); PracticeRequested?.Invoke(); }));
+            run[1].interactable = PracticeAvailable;
 
             col.Label("Parameters");
             var g = col.Group("Parameters", 2);

@@ -183,6 +183,32 @@ namespace GPL.Protocol.Tests
         }
 
         [Test]
+        public void SingleTrial_WalksOneTrialWithItsStructureRows()
+        {
+            var plan = ProtocolPlan.SingleTrial("practice");
+            Assert.AreEqual(1, plan.Stages.Count);
+            Assert.AreEqual(new[] { "StageBegin practice", "BlockBegin practice b1a1", "Trial practice b1a1 t1", "BlockEnd practice b1a1", "StageEnd practice" },
+                            WalkAll(new ProtocolWalker(plan, NewRecord(), false)));
+
+            var sw = new StringWriter();
+            var log = new EventLog(sw, new ManualClock(new DateTime(2026, 11, 7, 10, 0, 0)), new LogSchema("rt_s"), new LogContext { SessionId = "s", Chamber = "Template" });
+            var w = new ProtocolWalker(plan, NewRecord(), false);
+            while (w.Next())
+            {
+                ProtocolLog.Write(log, w.Current);
+                if (w.Current.Kind == StepKind.Trial) log.Write(LogEvents.Trial, new LogValues().Set("rt_s", 0.5f));
+            }
+            var lines = sw.ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(l => l.TrimEnd('\r')).ToList();
+            var header = Csv.SplitLine(lines[0]).ToArray();
+            int ev = Array.IndexOf(header, "event"), st = Array.IndexOf(header, "stage"), tr = Array.IndexOf(header, "trial"), note = Array.IndexOf(header, "note");
+            var rows = lines.Skip(1).Select(l => Csv.SplitLine(l).ToArray()).ToList();
+            Assert.AreEqual(new[] { "stage_begin", "block_begin", "trial", "block_end", "stage_end" }, rows.Select(r => r[ev]).ToArray());
+            Assert.IsTrue(rows.All(r => r[st] == "practice"));
+            Assert.AreEqual("1", rows[2][tr]);
+            Assert.AreEqual("block 1 of 1, 1 trials", rows[1][note]);
+        }
+
+        [Test]
         public void Log_WritesStructureRows_AndPositionColumns()
         {
             var sw = new StringWriter();

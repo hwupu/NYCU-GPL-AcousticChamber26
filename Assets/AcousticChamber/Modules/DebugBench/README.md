@@ -14,7 +14,7 @@ A chamber's Debug pages (ADR-0002, DesignSystem section 7): tune experimental pa
 | `Runtime/DebugBench.Presets.cs` | **Presets** page: Default first, then saved presets; ✓ marks the active one; sub line marks the working copy. Tap → sheet with ×: Make active (also loads it into the working copy; confirms when that discards unsaved edits), Delete (not Default, red text; confirms; deleting the active one makes Default active) |
 | `Runtime/DebugBench.Data.cs` | **Log files** page (needs `Files`, a `GPL.Session.DataFiles` of the chamber folder): one one-line row per session (the file base name, vertically centered, shrinking to fit), newest first, red Delete per row (confirms; warns when the session is unfinished), Delete all in the header (one confirmation naming the count). Presets (`presets/`) and other files are never touched. The Debug page row shows the count |
 
-The bench runs nothing itself. The chamber handles `RunRequested` / `PracticeRequested` (with `Work.Values`), logs
+The bench runs nothing itself. The chamber handles `RunRequested` / `PracticeRequested` (with `Work.Values`; `PracticeAvailable = false` makes Practice trial inactive), logs
 `Work.ParamChanged`, and adds its own sections (test playback, display switches, room ...) in `ChamberSections`. Test playback
 and Debug-only display switches are **not** parameters and are never saved in presets.
 

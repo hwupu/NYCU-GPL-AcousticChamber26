@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using AcousticChamber.App;
 using GPL.Core;
+using GPL.DebugBench;
 using GPL.Homing;
 using GPL.Logging;
 using GPL.Params;
@@ -16,7 +17,7 @@ namespace AcousticChamber.Chambers.Template
     /// The Template chamber (C00, Docs/Design.md): onboarding (the stock stages of <see cref="OnboardingStages"/>, each with a
     /// preset switch), practice, blocks of trials (head gate on the fixation dot, then "Press A" with the reaction time),
     /// thanks. The run loop, onboarding, resume check and cleanup come from <see cref="ProtocolChamber"/>; this class holds
-    /// the schema, the log columns, the plan and the trial.
+    /// the schema, the log columns, the plan and the trial (also the bench's Practice trial), and an example Debug section.
     /// </summary>
     public class TemplateChamber : ProtocolChamber
     {
@@ -108,6 +109,30 @@ namespace AcousticChamber.Chambers.Template
                 .Set("gate_breaks", gate != null ? Fmt.I(gate.Breaks) : "")
                 .Set("stop_dialog", StopDialog.OpenCount != stops);
             run.Log.Write(LogEvents.Trial, v, "");
+        }
+
+        /// <summary>
+        /// Example of a chamber's own Debug section (PB-21b): the fixation dot in front of the headset outside a run, to check
+        /// its distance and height. No session, no log row.
+        /// </summary>
+        public override void DebugSections(Column col, DebugBench bench)
+        {
+            col.Label("Fixation dot");
+            col.Buttons("Fixation dot",
+                ("Show", UiStyle.Borderless, () =>
+                {
+                    var rig = HeadPose.FindRig();
+                    var dot = cue != null ? cue : FindAnyObjectByType<FixationCue>();
+                    if (rig == null || dot == null) { bench.SetStatus("No camera rig or fixation dot in the scene (Magic > Template > Step 2)."); return; }
+                    dot.Show(rig);
+                    bench.SetStatus("Fixation dot shown " + Fmt.F(dot.distanceM, 1) + " m ahead at head height.");
+                }),
+                ("Hide", UiStyle.Borderless, () =>
+                {
+                    var dot = cue != null ? cue : FindAnyObjectByType<FixationCue>();
+                    if (dot != null) dot.Hide();
+                    bench.SetStatus("Fixation dot hidden.");
+                }));
         }
     }
 }
