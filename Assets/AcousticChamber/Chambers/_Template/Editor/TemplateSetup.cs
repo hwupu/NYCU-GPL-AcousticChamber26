@@ -1,5 +1,7 @@
 using AcousticChamber.App;
 using AcousticChamber.App.Editor;
+using GPL.Protocol;
+using GPL.Protocol.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -59,7 +61,6 @@ namespace AcousticChamber.Chambers.Template.Editor
 
         public const string SlidesFolder = Folder + "/Slides";
         public const string SlidesPath = SlidesFolder + "/Instructions.asset";
-        const int SlideW = 2000, SlideH = 936, SafeMarginPx = 96;
         const string Placeholder1 = "Placeholder-1.png", Placeholder2 = "Placeholder-2.png";
         static readonly Color32 Fill1 = new Color32(0x3A, 0x3A, 0x40, 0xFF), Fill2 = new Color32(0x4A, 0x4A, 0x52, 0xFF);
 
@@ -78,84 +79,31 @@ namespace AcousticChamber.Chambers.Template.Editor
                 Debug.LogError("[Chamber:Template] No TemplateChamber in the scene: run Step 1 first.");
                 return;
             }
-            if (!AssetDatabase.IsValidFolder(SlidesFolder)) AssetDatabase.CreateFolder(Folder, "Slides");
+            SlideSetup.EnsureFolder(SlidesFolder);
 
             // existing placeholders of an older size are redrawn at 2000 x 936 (real illustrations have other names)
-            if (System.IO.File.Exists(SlidesFolder + "/" + Placeholder1)) Placeholder(Placeholder1, Fill1);
-            if (System.IO.File.Exists(SlidesFolder + "/" + Placeholder2)) Placeholder(Placeholder2, Fill2);
-            var set = AssetDatabase.LoadAssetAtPath<GPL.Protocol.SlideSet>(SlidesPath);
-            if (set == null)
+            string p1 = SlidesFolder + "/" + Placeholder1, p2 = SlidesFolder + "/" + Placeholder2;
+            if (System.IO.File.Exists(p1)) SlideSetup.Placeholder(p1, Fill1);
+            if (System.IO.File.Exists(p2)) SlideSetup.Placeholder(p2, Fill2);
+            var set = SlideSetup.EnsureSet(SlidesPath, () => new[]
             {
-                set = ScriptableObject.CreateInstance<GPL.Protocol.SlideSet>();
-                set.slides.Add(new GPL.Protocol.SlideSet.Slide
+                new SlideSet.Slide
                 {
                     id = "placeholder_1", titleEnglish = "Placeholder slide 1", titleChinese = "示範投影片 1", shortEnglish = "Slide 1", shortChinese = "投影片 1",
-                    imageEnglish = Placeholder(Placeholder1, Fill1),
-                });
-                set.slides.Add(new GPL.Protocol.SlideSet.Slide
+                    imageEnglish = SlideSetup.Placeholder(p1, Fill1),
+                },
+                new SlideSet.Slide
                 {
                     id = "placeholder_2", titleEnglish = "Placeholder slide 2", titleChinese = "示範投影片 2", shortEnglish = "Slide 2", shortChinese = "投影片 2",
-                    imageEnglish = Placeholder(Placeholder2, Fill2),
-                });
-                AssetDatabase.CreateAsset(set, SlidesPath);
-                AssetDatabase.SaveAssets();
-            }
+                    imageEnglish = SlideSetup.Placeholder(p2, Fill2),
+                },
+            });
 
             Undo.RecordObject(logic, "Template slides");
             logic.instructions = set;
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
             Debug.Log("[Chamber:Template] Step 3: instruction slides linked (" + set.Count + " slides). Save the scene.");
-        }
-
-        /// <summary>Width and height from a PNG header (IHDR), or (0, 0).</summary>
-        static (int w, int h) PngSize(string path)
-        {
-            try
-            {
-                var b = new byte[24];
-                using (var f = System.IO.File.OpenRead(path))
-                    if (f.Read(b, 0, 24) < 24) return (0, 0);
-                int Be(int o) => (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
-                return (Be(16), Be(20));
-            }
-            catch (System.IO.IOException) { return (0, 0); }
-        }
-
-        /// <summary>
-        /// A gray 2000 x 936 PNG with a light frame at the safe margin; kept if it exists with that size (an older placeholder of
-        /// another size is redrawn, its .meta and GUID stay). Imported without NPOT scaling or mipmaps.
-        /// </summary>
-        static Texture2D Placeholder(string file, Color32 fill)
-        {
-            string path = SlidesFolder + "/" + file;
-            if (!System.IO.File.Exists(path) || PngSize(path) != (SlideW, SlideH))
-            {
-                var frame = new Color32(0x6E, 0x6E, 0x78, 0xFF);
-                var px = new Color32[SlideW * SlideH];
-                for (int y = 0; y < SlideH; y++)
-                for (int x = 0; x < SlideW; x++)
-                {
-                    bool onFrame = (x >= SafeMarginPx && x < SlideW - SafeMarginPx && y >= SafeMarginPx && y < SlideH - SafeMarginPx) &&
-                                   (x < SafeMarginPx + 4 || x >= SlideW - SafeMarginPx - 4 || y < SafeMarginPx + 4 || y >= SlideH - SafeMarginPx - 4);
-                    px[y * SlideW + x] = onFrame ? frame : fill;
-                }
-                var tex = new Texture2D(SlideW, SlideH, TextureFormat.RGBA32, false);
-                tex.SetPixels32(px);
-                tex.Apply();
-                System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
-                Object.DestroyImmediate(tex);
-                AssetDatabase.ImportAsset(path);
-            }
-            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
-            if (imp != null && (imp.npotScale != TextureImporterNPOTScale.None || imp.mipmapEnabled || imp.maxTextureSize < 2048))
-            {
-                imp.npotScale = TextureImporterNPOTScale.None;
-                imp.mipmapEnabled = false;
-                imp.maxTextureSize = 2048;
-                imp.SaveAndReimport();
-            }
-            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         /// <summary>Headless (mirror project): open the Template scene, run Steps 1 to 3, save.</summary>

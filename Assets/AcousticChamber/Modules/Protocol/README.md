@@ -6,7 +6,7 @@ messages, cue text). Generalized from HW2's `ExperimentFlow` loop (PB-07b).
 
 **Copy:** this folder + `Core/`, `Params/`, `Session/`, `Logging/`; for the screens also `UI/`, `Input/`, `Homing/`.
 **Dependencies:** `GPL.Protocol.Core`: GPL.Core, GPL.Params.Core, GPL.Session.Core, GPL.Logging.Core (pure C#).
-`GPL.Protocol`: GPL.UI, GPL.Input, GPL.Homing, Meta XR Core, TextMeshPro.
+`GPL.Protocol`: GPL.UI, GPL.Input, GPL.Homing, Meta XR Core, TextMeshPro. `GPL.Protocol.Editor` (Editor only): GPL.Protocol.
 
 ## Plan (`ProtocolPlan`, Core)
 Built by the chamber from the session's parameter snapshot, so a resumed session gets the same plan.
@@ -96,7 +96,20 @@ links Back on the recenter slide to the language choice and Back on instruction 
 A schema without a switch counts it as on. The App's `ProtocolChamber` uses all of this; a chamber deriving from it gets
 the onboarding for free.
 
+## Slide editor helpers (`SlideSetup`, Editor; PB-21c)
+For a chamber's Magic step that sets up its instruction slides; idempotent, existing files keep their .meta and GUID.
+```
+SlideSetup.EnsureFolder(folder);                              // with missing parents
+var tex = SlideSetup.Placeholder(folder + "/Placeholder-1.png", fill);   // gray 2000 x 936, frame at the 96 px safe margin
+var set = SlideSetup.EnsureSet(folder + "/Instructions.asset", () => new[] { new SlideSet.Slide { id = "...", imageEnglish = tex } });
+SlideSetup.ImportForSlides(path);                             // Non-Power of 2 = None, no mipmaps, max size >= 2048
+SlideSetup.PngSize(path);                                     // (w, h) from the header, (0, 0) if not a PNG
+```
+`Placeholder` redraws a file of another size, so call it only on placeholder files, never on a real illustration.
+`EnsureSet` calls its slide list only when it creates the set. `Width`, `Height`, `SafeMarginPx` hold the slide image size.
+
 ## Tests
+`Tests/EditMode/SlideSetupTests.cs`: PNG header size (also missing, short, non-PNG files), the placeholder frame position.
 `Tests/EditMode/OnboardingTests.cs`: stage order and flags, switched-off stages, a schema without switches.
 `Tests/EditMode/ProtocolTests.cs`: plan shape and hash, the full walk, each resume policy, a resume during the language, the
 `NotResumable` policy, and **a kill at every step for every policy** (resume from the saved file, finish, and check that the

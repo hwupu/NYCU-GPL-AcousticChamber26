@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Protocol.Editor",
+    "rootNamespace": "GPL.Protocol.Editor",
+    "references": ["GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.Protocol"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

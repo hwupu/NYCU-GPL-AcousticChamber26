@@ -1,7 +1,7 @@
 {
     "name": "GPL.Protocol.Tests",
     "rootNamespace": "GPL.Protocol.Tests",
-    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "GPL.Protocol.Editor", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
