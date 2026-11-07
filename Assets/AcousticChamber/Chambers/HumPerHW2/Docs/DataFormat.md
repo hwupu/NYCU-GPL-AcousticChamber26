@@ -27,15 +27,20 @@ stage, block, condition, trial, attempt`, then the HumPerHW2 columns, then `note
 | `signed_error_deg` | degrees | `trial` | `audio_final − visual` (positive: the sound ended right of the picture) |
 | `duration_s` | s, 3 decimals | `trial` | stimulus onset to the A press, Stop-dialog time excluded |
 | `radius_m` | m | `trial` | 2.0 (practice 1.2) |
-| `rt60_target_s` | s | block, `trial`, `rt60_measured` | target RT60 of the condition |
+| `rt60_target_s` | s | `condition`, `trial`, `rt60_measured` | target RT60 of the condition |
 | `rt60_measured_s` | s (T20) | `trial`, `rt60_measured` | measured at the block start when `rt60.measure_at_block_start` is on; else empty (reference only) |
-| `background` | 0 / 1 | block, `trial` | background playing |
+| `background` | 0 / 1 | `condition`, `trial` | background playing |
 | `stim_level_dbfs` | dBFS | `trial` | software RMS of the stimulus clip + Meta gain boost (not sound pressure) |
-| `bg_level_dbfs` | dBFS | `trial` | power sum of the three background clips; empty without background |
+| `bg_level_dbfs` | dBFS | `condition`, `trial` | power sum of the three background clips (RMS measured from the WAV files by the setup step); empty without background |
 | `gate_s` | s | `trial` | dot onset until the gate passed |
 | `stop_dialog` | 0 / 1 | `trial` | the Stop dialog was opened during this trial |
 | `volume_step` | int 0-15 | `session_start`, `session_resume`, `volume_check` | headset volume step read from Android |
-| `note` | text | any | free text; `homing`, `recenter`, `background`, `rt60_measured` rows hold `key=value` pairs |
+| `note` | text | any | free text; `homing`, `recenter`, `background`, `condition`, `rt60_measured` and `trial` rows hold `key=value` pairs |
+
+The `condition` column is set on every row of a block (`block_begin` to `block_end`, the gate `homing` rows, `trial`) and on the
+practice rows (`practice`); it is empty on stage rows. The `trial` note is the response record (GPL.Responses
+`AdjustResult.Note()`): `start_deg= final_deg= target_deg= duration_s= reversals= at_limit=` (reversals = changes of direction;
+at_limit = 1 when the sound ended at ±`adjust.limit_deg`).
 
 HW2 → HumPerHW2: the HW2 trial columns keep their names and meaning. `participant` → `study_id` (`S0001`), `mode` `EXPERIMENT` /
 `DEBUG` unchanged, HW2 `condition` `practice` rows → `stage = practice`. New: `stage`, `block`, `attempt`, `radius_m`,
@@ -45,6 +50,9 @@ HW2 → HumPerHW2: the HW2 trial columns keep their names and meaning. `particip
 Common (as the Template): `session_start`, `language`, `stage_begin/end`, `handover`, `homing`, `volume_check`, `recenter`, `slide`,
 `block_begin/end`, `block_restart`, `trial`, `session_resume`, `participant_dropout`, `session_superseded`, `session_end`,
 `app_paused/app_resumed`, `debug_begin/end`, `param_change`. HumPerHW2:
+- `condition` (PB-08d-3): the acoustics were switched, before the first trial of a block (and of the practice), and again after
+  a resume; columns `rt60_target_s`, `background`, `bg_level_dbfs`; note the reverb setting
+  (`mode=custom rt60_target_s= reflection= rt60_expected_s=`) and the plugin status (`room_modeling=on late_reverb=on`).
 - `practice_choice`: after each practice trial, note `again` or `ready`.
 - `background`: note `on` / `off` and, on `on`, each source's listener-relative position (`bg1=x,y,z;...`) and `spatial=1`.
 - `rt60_measured`: note `target= t20= t30= depth_db= source=block_start|debug`.

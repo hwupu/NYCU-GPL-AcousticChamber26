@@ -139,9 +139,9 @@ The decision (Default and Custom presets, Playground, Save as Custom, Make activ
 
 ## 9. Input bindings and text entry
 - **Global actions** are the same in every chamber where possible. Reserved: **Y (left controller) = Stop dialog**. The Meta button belongs to the system. A chamber may remap a global action only by declaring it in its `ChamberDefinition` (bindings table); its menu then shows the binding.
-- **Chamber actions** (confirm, adjust left/right, grab, ...) are declared per chamber in the same table and read through `GPL.Input`, never with direct `OVRInput` calls in chamber code.
+- **Chamber actions** (confirm, adjust left/right, grab, ...) are declared per chamber in the same table (`ChamberBehaviour.DeclareActions`, called by the chamber menu after `confirm` and `back`; PB-08d-3) and read through `GPL.Input`, never with direct `OVRInput` calls in chamber code.
 - **Standard chamber actions** (defaults; a chamber declares only those it uses): `confirm` = A, `back` = B, `trigger_left/right`, `grip_left/right`, `stick_left/right`; X is free. Y works only while a session (real or Debug run) is running; in the Hall and the menus it does nothing.
-- **Stop dialog (Y)**: modal, the session frozen while open (time scale 0, audio paused); Keep going / Drop out (`participant_dropout`, not resumable), in Debug Keep going / Back to the chamber menu. Behaviour: [ADR-0003](decisions/ADR-0003-sessions-resume-input.md); wording and look: [DesignSystem](DesignSystem.md) section 7.
+- **Stop dialog (Y)**: modal, the session frozen while open (time scale 0, audio paused); scene objects that could cover it (fixation dot, the chamber's pictures and markers: `ProtocolChamber.ViewBlockers`) are hidden until it closes (PB-08d-3); Keep going / Drop out (`participant_dropout`, not resumable), in Debug Keep going / Back to the chamber menu. Behaviour: [ADR-0003](decisions/ADR-0003-sessions-resume-input.md); wording and look: [DesignSystem](DesignSystem.md) section 7.
 - **Text entry is swappable** (`ITextEntry`): `NumberPadEntry` (on-canvas, reliable, HW2), `KeypadEntry` (letters + digits), `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`, the Quest system keyboard). Selected per chamber or globally; the native keyboard problem from HW2 is investigated in its own ticket. (Meta's in-app Virtual Keyboard is not part of the installed Core SDK 207.)
 
 ## 10. Logging scheme
@@ -176,7 +176,7 @@ MQDH does not list the per-app folder, so files are managed in the headset.
   Audio/ Images/ Materials/ Models/
   Docs/  Brief.md, Design.md, DataFormat.md, AnalysisPlan.md, SceneSetup.md, decisions/
 ```
-**Chamber logic** (PB-21): a chamber's MonoBehaviour derives from `ProtocolChamber` (App; itself a `ChamberBehaviour`), which owns the run loop (walker + structure rows), the onboarding stages (`GPL.Protocol.Onboarding`, section 8), the head gate before a trial, the block break, thanks, recenter rows, the plan hash check on resume and the cleanup after Stop. The chamber overrides `Schema`, `LogSchema`, `CreatePlan`, `RunTrial` and optionally `RunStage` / `BlockEnd` / `OnAbort`. A chamber without a staged protocol may derive from `ChamberBehaviour` directly.
+**Chamber logic** (PB-21): a chamber's MonoBehaviour derives from `ProtocolChamber` (App; itself a `ChamberBehaviour`), which owns the run loop (walker + structure rows), the onboarding stages (`GPL.Protocol.Onboarding`, section 8), the head gate before a trial, the block break, thanks, recenter rows, the plan hash check on resume and the cleanup after Stop. The chamber overrides `Schema`, `LogSchema`, `CreatePlan`, `RunTrial` and optionally `RunStage` / `BlockEnd` / `OnAbort` / `BeforeRow` (set context columns such as `condition` before a structure row; PB-08d-3). A chamber without a staged protocol may derive from `ChamberBehaviour` directly.
 
 A chamber supplies a protocol (stages + resume policies), a trial runner (`ITrialRunner`), condition appliers (push parameter values into modules; shared by real runs and Debug), its log columns, parameter schema, bindings, posture and docs.
 

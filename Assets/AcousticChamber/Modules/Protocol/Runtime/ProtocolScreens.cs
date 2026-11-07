@@ -107,6 +107,27 @@ namespace GPL.Protocol
         }
 
         /// <summary>
+        /// A question with two buttons in the message layout (e.g. "Practice again" / "I'm ready"); reports 0 for the left
+        /// (<paramref name="leftKey"/>) and 1 for the right button (<paramref name="rightKey"/>, prominent). Keys are localized.
+        /// </summary>
+        public IEnumerator Choice(string text, string leftKey, string rightKey, Action<int> chosen)
+        {
+            var th = UiKit.Theme;
+            var r = Open("Choice Screen");
+            UiKit.Text(r, "Text", text, th.headingSize, new Vector2(0f, MessageTextY), new Vector2(Size.x - 96f, MessageTextH), bold: true);
+            int pick = -1;
+            UiKit.Button(r, "Left", Loc.Get(leftKey), UiStyle.Gray, new Vector2(-200f, MessageButtonY), new Vector2(360f, 0f),
+                         () => { if (InputOpen) pick = 0; });
+            UiKit.Button(r, "Right", Loc.Get(rightKey), UiStyle.Prominent, new Vector2(200f, MessageButtonY), new Vector2(360f, 0f),
+                         () => { if (InputOpen) pick = 1; });
+            yield return null; // the click that closed the previous screen does not count here
+            while (pick < 0) yield return null;
+            Hide();
+            chosen?.Invoke(pick);
+            yield return null;
+        }
+
+        /// <summary>
         /// A message (Message layout); waits for the button (<paramref name="buttonKey"/>, localized) or until
         /// <paramref name="until"/> is true (checked every frame). No screen waits for A. The screen stays until
         /// <see cref="Hide"/> or the next screen.

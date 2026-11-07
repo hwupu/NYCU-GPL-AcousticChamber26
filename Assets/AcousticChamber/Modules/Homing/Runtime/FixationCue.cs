@@ -21,6 +21,9 @@ namespace GPL.Homing
 
         public bool Visible => _dot != null && _dot.gameObject.activeSelf;
 
+        /// <summary>The dot's own GameObject (a child created at run time; null before the first Show). Hiding it leaves this component and its GameObject alone.</summary>
+        public GameObject Dot => _dot != null ? _dot.gameObject : null;
+
         /// <summary>Places the dot straight ahead of the rig's forward at the head's height and shows it.</summary>
         public void Show(OVRCameraRig rig)
         {

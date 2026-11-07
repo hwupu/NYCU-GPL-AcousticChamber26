@@ -25,6 +25,13 @@ namespace AcousticChamber.App
         /// <summary>The chamber's own CSV columns. Declare <see cref="ChamberMenu.VolumeColumn"/> to get the volume step as a column.</summary>
         public abstract LogSchema LogSchema { get; }
 
+        /// <summary>
+        /// The chamber's own input actions (Architecture section 9), added to the binding table after the global Stop (Y) and the
+        /// standard <c>confirm</c> (A) and <c>back</c> (B), e.g. <c>table.DeclareStandard(InputActions.TriggerLeft, "move left")</c>.
+        /// Reading an undeclared action logs an error and returns "not pressed". Default: nothing more.
+        /// </summary>
+        public virtual void DeclareActions(BindingTable table) { }
+
         /// <summary>The text of the preset "Default".</summary>
         public string DefaultParamsText => defaultParams != null ? defaultParams.text : Schema.Defaults().Serialize("defaults of the schema");
 

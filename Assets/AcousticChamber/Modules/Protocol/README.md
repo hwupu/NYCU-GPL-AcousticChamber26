@@ -78,6 +78,7 @@ chamber may override a key by registering its own table later).
   image, caption text for the gray area while there is no image, `Ready` = Next active) plus an optional first Back
   (`firstBackKey`, `firstBack`) and the last Next label (`lastKey`).
 - `Message(text, buttonKey, until)`: the Message layout; waits for the button or until `until()` is true. No screen waits for A.
+- `Choice(text, leftKey, rightKey, chosen)` (PB-08d-3): the Message layout with two buttons (left gray, right prominent); reports 0 / 1.
 - `Cue(text, y)`: bare text without a panel while the world is visible (gate hint, "Press A"); `Cue(null)` hides it.
 - `PressedA()`: A this frame, ignored while the Stop dialog is open (`InputOpen`).
 

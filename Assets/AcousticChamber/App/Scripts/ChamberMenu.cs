@@ -81,6 +81,7 @@ namespace AcousticChamber.App
                 var table = new BindingTable();
                 table.DeclareStandard(InputActions.Confirm);
                 table.DeclareStandard(InputActions.Back);
+                logic.DeclareActions(table);
                 _actions.Use(table);
                 _actions.StopEnabled = false;
             }

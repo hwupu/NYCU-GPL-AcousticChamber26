@@ -46,7 +46,7 @@ Chamber menu → (Start) → stages (onboarding stages switchable by `onboarding
 | 1 | `handover` | Stock: "1. Set the IPD. 2. Hand the headset to the participant." Runs again after every resume. | StageStart |
 | 2 | `language` | English / 中文; skipped on a resume. | StageStart |
 | 3 | `recenter` | Stock Meta-button recenter slide. Runs again after every resume. | StageStart |
-| 4 | `instructions` | HW2 onboarding slides 3-5 (Procedure, Controllers, Practice rounds), English and 中文 image sets ported from HW2 (Q22). HW2 slides 1, 2, 6 are covered by the stock stages. | StageStart; reopens its slide |
+| 4 | `instructions` | HW2 onboarding slides 3-5 (Procedure, Controllers, Practice rounds), English and 中文 image sets ported from HW2 (Q22), fitted to 2000 × 936 (Q32, Step 5); the images carry their titles, so the slide bar has none and the short names label the buttons. HW2 slides 1, 2, 6 are covered by the stock stages. | StageStart; reopens its slide |
 | 5 | `ready` | Stock: dot + head gate, `volume_check`. Runs again after every resume. | StageStart |
 | 6 | `practice` | Practice trials with the hint HUD ("Left / right trigger: move the sound. A: confirm."); after each trial "Practice again" / "I'm ready" (中文 「再練習一次」/「我準備好了」) (Q20). At least one trial. | StageStart |
 | 7 | `experiment` | 3 blocks, one per condition in the session's order, 6 trials each; stock block break between blocks ("Condition n of 3 done." + Continue) (Q26). | `next_trial` (Q21) |

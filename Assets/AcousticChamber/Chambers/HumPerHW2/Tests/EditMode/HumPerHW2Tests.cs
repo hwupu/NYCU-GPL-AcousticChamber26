@@ -148,6 +148,22 @@ namespace AcousticChamber.Chambers.HumPerHW2.Tests
         }
 
         [Test]
+        public void Actions_DeclareBothTriggers()
+        {
+            var go = new UnityEngine.GameObject("chamber");
+            try
+            {
+                var table = new GPL.Input.BindingTable();
+                table.DeclareStandard(GPL.Input.InputActions.Confirm);
+                go.AddComponent<HumPerHW2Chamber>().DeclareActions(table);
+                Assert.IsTrue(table.Has(GPL.Input.InputActions.TriggerLeft));
+                Assert.IsTrue(table.Has(GPL.Input.InputActions.TriggerRight));
+                Assert.IsTrue(table.Has(GPL.Input.InputActions.Confirm));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void LogColumns_AreTheDataFormatColumns()
         {
             CollectionAssert.AreEqual(new[]

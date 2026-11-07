@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using GPL.Homing;
 using GPL.Params;
 using GPL.Protocol;
@@ -48,6 +49,39 @@ namespace AcousticChamber.App
 
         /// <summary>After a block: the default shows "Block n of N done." + Continue between the blocks of a stage.</summary>
         protected virtual IEnumerator BlockEnd(ProtocolStep step) => step.LastBlock ? null : BlockBreak(step);
+
+        /// <summary>
+        /// Called for every step before its structure row is written (e.g. set <c>CurrentRun.Context.Condition</c> for a block, so
+        /// <c>block_begin</c> and the block's rows carry it). Must not yield or write rows. Default: nothing.
+        /// </summary>
+        protected virtual void BeforeRow(ProtocolStep step) { }
+
+        /// <summary>
+        /// Scene objects that could stand between the eyes and the Stop dialog (pictures, markers, the fixation dot). While the
+        /// dialog is open the visible ones are switched off; they come back when it closes. Never list an object that plays a
+        /// sound (switching it off stops the sound; the dialog's freeze pauses audio anyway). Default: the fixation dot.
+        /// </summary>
+        protected virtual IEnumerable<GameObject> ViewBlockers()
+        {
+            if (cue != null && cue.Dot != null) yield return cue.Dot;
+        }
+
+        readonly List<GameObject> _hiddenForDialog = new List<GameObject>();
+
+        void OnStopDialog(bool open)
+        {
+            if (open)
+            {
+                _hiddenForDialog.Clear();
+                foreach (var go in ViewBlockers())
+                    if (go != null && go.activeSelf) { go.SetActive(false); _hiddenForDialog.Add(go); }
+            }
+            else
+            {
+                foreach (var go in _hiddenForDialog) if (go != null) go.SetActive(true);
+                _hiddenForDialog.Clear();
+            }
+        }
 
         /// <summary>Stops the chamber's own things after the Stop dialog ended the run (sounds, stimuli). Called before the base cleanup.</summary>
         protected virtual void OnAbort() { }
@@ -117,6 +151,8 @@ namespace AcousticChamber.App
             if (listener == null) listener = FindAnyObjectByType<RecenterListener>();
             if (cue == null) Debug.LogWarning("[Chamber:" + ChamberId + "] no FixationCue: run the chamber's homing setup step.");
             if (listener != null) listener.Recentered += OnUserRecenter;
+            StopDialog.OpenChanged -= OnStopDialog;
+            StopDialog.OpenChanged += OnStopDialog;
 
             var rec = run.Record;
             if (Loc.TryParseCode(rec.Language, out var lang)) Loc.Set(lang);
@@ -137,6 +173,7 @@ namespace AcousticChamber.App
             while (walker.Next())
             {
                 var s = walker.Current;
+                BeforeRow(s);
                 ProtocolLog.Write(run.Log, s);
                 IEnumerator body = null;
                 switch (s.Kind)
@@ -194,6 +231,8 @@ namespace AcousticChamber.App
         void Cleanup()
         {
             if (listener != null) listener.Recentered -= OnUserRecenter;
+            StopDialog.OpenChanged -= OnStopDialog;
+            _hiddenForDialog.Clear();
             if (Screens != null) Screens.Clear();
             Screens = null;
             Onboarding = null;

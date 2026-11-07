@@ -521,6 +521,23 @@ namespace GPL.UI.Tests
         static float Luma(Color c) => 0.2126f * c.r + 0.7152f * c.g + 0.0722f * c.b;
 
         [Test]
+        public void StopDialogReportsOpenAndCloseBeforeTheChoice()
+        {
+            StopDialog.ResetForTests();
+            var events = new System.Collections.Generic.List<string>();
+            void OnOpen(bool open) => events.Add(open ? "open" : "closed");
+            StopDialog.OpenChanged += OnOpen;
+            try
+            {
+                StopDialog.Show(_canvas.transform, false, "S0012", c => events.Add("choice " + c));
+                CollectionAssert.AreEqual(new[] { "open" }, events);
+                Click("Keep going");
+                CollectionAssert.AreEqual(new[] { "open", "closed", "choice KeepGoing" }, events);
+            }
+            finally { StopDialog.OpenChanged -= OnOpen; }
+        }
+
+        [Test]
         public void StopDialogRealSessionDropOutAsksTwiceAndFreezes()
         {
             StopDialog.ResetForTests();

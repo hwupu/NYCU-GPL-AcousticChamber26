@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using AcousticChamber.App;
 using AcousticChamber.App.Editor;
@@ -222,6 +223,102 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
                       " dBFS combined) and reverb linked; " + (stimSource != null ? "all sources routed to " + MixerPath : "") + ". Save the scene.");
         }
 
+        // ---- Step 5: instruction slides (PB-08d-3, Q22, Q32) -----------------------------------------------
+
+        public const string SlidesFolder = Folder + "/Slides";
+        public const string SlidesPath = SlidesFolder + "/Instructions.asset";
+        const string SourceFolder = SlidesFolder + "/Source";
+
+        /// <summary>HW2 onboarding slides 3-5 (the stock stages cover slides 1, 2 and 6): id, file stem, short names for the buttons.</summary>
+        static readonly (string id, string stem, string en, string zh)[] SlideList =
+        {
+            ("procedure", "3-procedure", "Procedure", "流程"),
+            ("controllers", "4-controller", "Controllers", "控制器"),
+            ("practice", "5-practise", "Practice rounds", "練習回合"),
+        };
+
+        /// <summary>
+        /// Step 5: fitted copies of HW2's slides 3-5 (English and 中文) and the SlideSet <c>Slides/Instructions.asset</c>, linked to the
+        /// chamber. HW2's images are 2000 × 1400 with an empty button strip at the bottom (1/7 of the height): the strip is cut off,
+        /// the rest scaled to 936 px high and centered on a 2000 × 936 slide filled with the image's own background colour. The
+        /// images carry their titles, so the slide titles stay empty (the short names label the Back / Next buttons). Existing
+        /// fitted PNGs and an existing SlideSet are kept (delete them to regenerate).
+        /// </summary>
+        [MenuItem("Magic/HumPerHW2/Step 5 - Instruction slides (HW2 3-5)", priority = 114)]
+        public static void SlidesStep()
+        {
+            if (!ChamberSetup.IsOpen(ScenePath)) return;
+            var logic = Logic();
+            if (logic == null) return;
+            GPL.Protocol.Editor.SlideSetup.EnsureFolder(SlidesFolder);
+            var images = new Dictionary<string, Texture2D>();
+            foreach (var s in SlideList)
+                foreach (var lang in new[] { "en", "zh" })
+                {
+                    string src = SourceFolder + "/" + lang + "-" + s.stem + ".jpg";
+                    string dst = SlidesFolder + "/" + lang + "-" + s.stem + ".png";
+                    if (!File.Exists(dst))
+                    {
+                        if (!File.Exists(src)) { Debug.LogError(Log + "Missing " + src); return; }
+                        FitSlide(src, dst);
+                    }
+                    GPL.Protocol.Editor.SlideSetup.ImportForSlides(dst);
+                    images[lang + s.id] = AssetDatabase.LoadAssetAtPath<Texture2D>(dst);
+                }
+            var set = GPL.Protocol.Editor.SlideSetup.EnsureSet(SlidesPath, () =>
+            {
+                var list = new List<GPL.Protocol.SlideSet.Slide>();
+                foreach (var s in SlideList)
+                    list.Add(new GPL.Protocol.SlideSet.Slide
+                    {
+                        id = s.id, titleEnglish = "", titleChinese = "", shortEnglish = s.en, shortChinese = s.zh,
+                        imageEnglish = images["en" + s.id], imageChinese = images["zh" + s.id],
+                    });
+                return list;
+            });
+            Undo.RecordObject(logic, "HumPerHW2 slides");
+            logic.instructions = set;
+            EditorUtility.SetDirty(logic);
+            EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
+            Debug.Log(Log + "Step 5: " + set.Count + " instruction slides linked. Save the scene.");
+        }
+
+        /// <summary>Crops the bottom strip (1/7 of the height), scales to the slide height, centers on the slide size.</summary>
+        static void FitSlide(string srcPath, string dstPath)
+        {
+            int W = GPL.Protocol.Editor.SlideSetup.Width, H = GPL.Protocol.Editor.SlideSetup.Height;
+            var src = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            src.LoadImage(File.ReadAllBytes(srcPath));
+            int sw = src.width, sh = src.height;
+            int strip = Mathf.RoundToInt(sh / 7f);            // 200 px of 1400
+            int ch = sh - strip;                                // kept height (Unity rows start at the bottom: skip the first `strip` rows)
+            float scale = (float)H / ch;
+            int dw = Mathf.Min(W, Mathf.RoundToInt(sw * scale));
+            int x0 = (W - dw) / 2;
+            Color fill = src.GetPixel(2, sh - 3);               // the image's background colour (top-left corner)
+            var pixels = new Color[W * H];
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    Color c = fill;
+                    int dx = x - x0;
+                    if (dx >= 0 && dx < dw)
+                    {
+                        float sx = (dx + 0.5f) / scale, sy = strip + (y + 0.5f) / scale;
+                        c = src.GetPixelBilinear(sx / sw, sy / sh);
+                    }
+                    pixels[y * W + x] = c;
+                }
+            var dst = new Texture2D(W, H, TextureFormat.RGB24, false);
+            dst.SetPixels(pixels);
+            dst.Apply();
+            File.WriteAllBytes(dstPath, dst.EncodeToPNG());
+            Object.DestroyImmediate(src);
+            Object.DestroyImmediate(dst);
+            AssetDatabase.ImportAsset(dstPath);
+            Debug.Log(Log + "Fitted " + Path.GetFileName(srcPath) + " (" + sw + " × " + sh + ") → " + Path.GetFileName(dstPath) + " (" + W + " × " + H + ")");
+        }
+
         // ---- Validate (PB-08d-2) ----------------------------------------------------------------------------
 
         /// <summary>Checks the scene against Design.md: links, clips, routing to the Reflection mixer, one shoebox of the room's size, the spatializer.</summary>
@@ -238,6 +335,17 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             if (logic.stimulus == null || logic.pulse == null || logic.picture == null || logic.marker == null) Problem("stimulus, pulse, picture or marker not linked (Step 4)");
             if (logic.background == null || logic.background.sources.Length != 3 || logic.background.clipLevelsDbfs.Length != 3) Problem("background not set up with 3 sources and levels (Step 4)");
             if (logic.reverb == null || logic.reverb.room == null) Problem("reverb tuner or its shoebox missing (Steps 3-4)");
+            if (GPL.Protocol.SlideSet.CountOf(logic.instructions) != 3) Problem("instruction slides not linked (Step 5)");
+            var image = logic.picture != null ? logic.picture.Find("Image") : null;
+            var picImporter = AssetImporter.GetAtPath(PicturePath) as TextureImporter;
+            if (image != null && picImporter != null)
+            {
+                picImporter.GetSourceTextureWidthAndHeight(out int pw, out int ph);
+                float want = (float)ph / pw, got = image.localScale.y / image.localScale.x;
+                if (Mathf.Abs(want - got) > 0.005f) Problem("picture is " + GPL.Core.Fmt.F(image.localScale.x, 3) + " × " + GPL.Core.Fmt.F(image.localScale.y, 3) +
+                                                            " m, the image is " + pw + " × " + ph + " px (run Step 4)");
+                if (picImporter.npotScale != TextureImporterNPOTScale.None) Problem("Radio.jpg is resized on import (Non-Power of 2 not None; run Step 4)");
+            }
             if (logic.stimulus != null && logic.stimulus.GetComponent<AudioSource>().clip == null) Problem("stimulus has no clip");
             foreach (var s in ReflectionMixer.Unrouted()) Problem(s.name + " is not routed to a mixer with the '" + ReflectionMixer.EffectName + "' effect (room would be dry)");
             var shoeboxes = Object.FindObjectsByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -306,13 +414,18 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(PicturePath);
             if (tex == null) { Debug.LogError(Log + "Missing " + PicturePath); return; }
             var importer = AssetImporter.GetAtPath(PicturePath) as TextureImporter;
-            if (importer != null && (importer.mipmapEnabled || importer.wrapMode != TextureWrapMode.Clamp))
+            // Non-Power of 2 = None: the default (ToNearest) resamples 800 × 669 to 1024 × 512 and squashes the picture
+            if (importer != null && (importer.mipmapEnabled || importer.wrapMode != TextureWrapMode.Clamp || importer.npotScale != TextureImporterNPOTScale.None))
             {
                 importer.mipmapEnabled = false;
                 importer.wrapMode = TextureWrapMode.Clamp;
+                importer.npotScale = TextureImporterNPOTScale.None;
                 importer.SaveAndReimport();
                 tex = AssetDatabase.LoadAssetAtPath<Texture2D>(PicturePath);
             }
+            // aspect of the source file (not of the imported texture, which an import setting may resize)
+            int srcW = tex.width, srcH = tex.height;
+            if (importer != null) importer.GetSourceTextureWidthAndHeight(out srcW, out srcH);
             var quadT = picture.Find("Image");
             GameObject quad;
             if (quadT != null) quad = quadT.gameObject;
@@ -326,7 +439,7 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             // a Quad shows its face toward -z; the root's +z points at the participant, so the quad turns around
             quad.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             quad.transform.localPosition = Vector3.zero;
-            quad.transform.localScale = new Vector3(PictureWidthM, PictureWidthM * tex.height / tex.width, 1f);
+            quad.transform.localScale = new Vector3(PictureWidthM, PictureWidthM * srcH / srcW, 1f);
             quad.GetComponent<Renderer>().sharedMaterial = UnlitMat("Picture", Color.white, tex);
         }
 
@@ -369,13 +482,14 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             return def;
         }
 
-        /// <summary>Headless (mirror project): Steps 1 to 4 (no bake), save, Validate (an error exit when it finds a problem).</summary>
+        /// <summary>Headless (mirror project): Steps 1 to 5 (no bake), save, Validate (an error exit when it finds a problem).</summary>
         public static void BatchSteps()
         {
             ChamberStep();
             HomingStep();
             RoomStep();
             AudioStep();
+            SlidesStep();
             EditorSceneManager.SaveOpenScenes();
             AssetDatabase.SaveAssets();
             if (ValidateSetup() != 0) EditorApplication.Exit(1);

@@ -28,6 +28,18 @@ namespace GPL.UI
         /// <summary>Times a Stop dialog was opened since the app started (a trial compares it to flag an interruption).</summary>
         public static int OpenCount { get; private set; }
 
+        /// <summary>
+        /// Raised with true when the dialog opens and with false when it closes (before the choice is handed on), e.g. to hide
+        /// scene objects that could stand between the eyes and the dialog.
+        /// </summary>
+        public static event Action<bool> OpenChanged;
+
+        static void RaiseOpenChanged(bool open)
+        {
+            try { OpenChanged?.Invoke(open); }
+            catch (Exception e) { Debug.LogException(e); }
+        }
+
         public static void Show(Transform canvas, bool debugRun, string studyId, Action<StopChoice> onChoice, bool freeze = true)
         {
             if (IsOpen) return;
@@ -35,12 +47,14 @@ namespace GPL.UI
             IsOpen = true;
             OpenCount++;
             if (freeze) Freeze.Begin();
+            RaiseOpenChanged(true);
             string who = string.IsNullOrEmpty(studyId) ? "?" : studyId;
 
             void Finish(StopChoice choice)
             {
                 IsOpen = false;
                 if (freeze) Freeze.End();
+                RaiseOpenChanged(false);
                 Debug.Log("[GPL] Stop dialog: " + choice);
                 onChoice?.Invoke(choice);
             }
@@ -85,6 +99,7 @@ namespace GPL.UI
             if (!IsOpen) return;
             IsOpen = false;
             if (freeze) Freeze.End();
+            RaiseOpenChanged(false);
             Debug.LogWarning("[GPL] Stop dialog destroyed without a choice (scene change?).");
         }
 
