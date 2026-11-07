@@ -34,6 +34,29 @@ namespace AcousticChamber.App
             var fade = eye.gameObject.AddComponent<OVRScreenFade>();
             fade.fadeTime = AppNav.FadeSec;
             fade.fadeOnStart = true;
+            eye.gameObject.AddComponent<StereoFadeShader>();
+        }
+
+        /// <summary>
+        /// OVRScreenFade creates its material in Start with Meta's fixed-function shader, which draws into the left eye only under
+        /// single-pass instanced rendering. Swaps the shader of that same material for GPL/ScreenFade (Resources) before the first
+        /// frame renders (LateUpdate runs after every Start), then switches itself off.
+        /// </summary>
+        sealed class StereoFadeShader : MonoBehaviour
+        {
+            const string ShaderResource = "GPLScreenFade";
+
+            void LateUpdate()
+            {
+                var r = GetComponent<MeshRenderer>();
+                if (r == null || r.sharedMaterial == null) return; // OVRScreenFade has not started yet
+                var shader = Resources.Load<Shader>(ShaderResource);
+                if (shader == null || !shader.isSupported)
+                    Debug.LogWarning("[GPL] SceneFade: shader " + ShaderResource + " missing or unsupported; the fade may show in one eye.");
+                else if (r.sharedMaterial.shader != shader)
+                    r.sharedMaterial.shader = shader;
+                enabled = false;
+            }
         }
     }
 }
