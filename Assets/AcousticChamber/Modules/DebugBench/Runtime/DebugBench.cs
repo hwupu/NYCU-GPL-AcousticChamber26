@@ -22,8 +22,8 @@ namespace GPL.DebugBench
     /// (confirms once, names the count).</item>
     /// </list>
     /// No DEBUG tag on these pages. The bench never runs anything itself: it raises <see cref="RunRequested"/> /
-    /// <see cref="PracticeRequested"/>; the chamber runs with <see cref="Work"/>.<c>Values</c> and logs
-    /// <see cref="WorkingCopy.ParamChanged"/> as <c>param_change</c>.
+    /// <see cref="PracticeRequested"/>; the chamber runs with <see cref="Work"/>.<c>Values</c>. <see cref="WorkingCopy.ParamChanged"/>
+    /// is for the host to report (the chamber menu writes it to the console; edits reach the CSV as the Debug run's preset and params_hash).
     /// </summary>
     public sealed partial class DebugBench
     {

@@ -6,11 +6,13 @@ Status: **accepted**.
 - Sessions are keyed by chamber + Study ID; several unfinished sessions may exist.
 - On launch, if the last used chamber has unfinished sessions, the app opens that **chamber's menu** (the experimenter is the user there), otherwise the Hall.
 - In the menu: Study ID + Start; an unfinished session for that ID offers Resume / Start new / Back. Start new closes the old session (`session_superseded`), never deletes it.
-- After Resume the headset is handed over and the protocol continues **silently** at the point given by the stage's `ResumeFrom` policy (`NextTrial`, `BlockStart`, `StageStart`, `SessionStart`, `NotResumable`); stage resume hooks may re-apply the condition or run homing.
+- After Resume the headset is handed over and the protocol continues **silently** at the point given by the stage's `ResumeFrom` policy (definitions: [GPL.Session README](../../Assets/AcousticChamber/Modules/Session/README.md#resume-policies-resumefrom)); stage resume hooks may re-apply the condition or run homing.
 - Partial blocks stay in the CSV (`attempt`); the analysis uses the highest complete attempt.
 
-**Stop dialog** (global action, default **Y** on the left controller), modal, session frozen: Keep going / Drop out (`participant_dropout`, not resumable; asks once more). Debug: Keep going / Back to the chamber menu. *Amended 2026-11-05 (PB-05b): the PO removed "Pause and back to the chamber menu"; an interrupted session is resumed from the chamber menu after an app quit or crash.*
+**Stop dialog** (global action, default **Y** on the left controller), modal, session frozen: Keep going / Drop out (`participant_dropout`, not resumable; asks once more). Debug: Keep going / Back to the chamber menu. There is no pause: an interrupted session is resumed from the chamber menu after an app quit or crash. Wording and look: [DesignSystem](../DesignSystem.md) section 7.
 
 **Bindings.** Global actions are reserved and identical across chambers by default; a chamber can remap one only by declaring it in its `ChamberDefinition`, and the menu shows the binding. Chamber actions are declared in the same table and read through `GPL.Input` (no direct `OVRInput` in chamber code). The Meta button stays with the system.
 
 **Text entry.** `ITextEntry` with `NumberPadEntry`, `KeypadEntry`, `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`), selectable per chamber. The HW2 system-keyboard failure gets its own ticket (PB-14). Meta's in-app Virtual Keyboard is not in the installed Core SDK 207.
+
+Amended 2026-11-05 (PB-05b: "Pause and back to the chamber menu" removed from the Stop dialog).

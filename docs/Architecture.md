@@ -1,6 +1,6 @@
 # Architecture — AcousticChamber26
 
-Status: **accepted in principle** (2026-11-05, PO answers in [Questions.md](Questions.md)); details are refined ticket by ticket. Decisions: [decisions/](decisions/).
+Status: **accepted in principle** (2026-11-05, PO answers in [archive/Questions-rounds-1-2.md](archive/Questions-rounds-1-2.md)); details are refined ticket by ticket. Decisions: [decisions/](decisions/).
 
 ## 1. Goals
 1. **Exploratory lab.** Independent chambers (individual studies, explorations, demos) in one app, chosen from a Main Hall. Each chamber has its own protocol, stimuli, assets, parameters, input bindings, log schema and resume rules. Chambers are added, removed and refined over time.
@@ -48,23 +48,23 @@ Each module:
   Tests/EditMode/  GPL.<Module>.Tests.asmdef
   Assets/          materials, prefabs, images owned by the module
 ```
-Rule: a module may reference `GPL.Core` and the external packages named in its README, nothing else. HW2 code is **refactored** into these modules: generic parts only; HW2-specific logic goes to the `HumPerHW2` chamber.
+Rule: a module may reference `GPL.Core`, the other GPL modules named in its README (no cycles) and the external packages named in its README; never the App or a chamber. HW2 code is **refactored** into these modules: generic parts only; HW2-specific logic goes to the `HumPerHW2` chamber.
 
 | Module | Core (pure, unit-tested) | Runtime (Unity) | From HW2 |
 |---|---|---|---|
 | **GPL.Core** | atomic file write, seeded RNG, CSV escaping, azimuth/pose math, ID sanitizing, `IClock` | console prefix, `HeadPose` (wait for valid height) | `Maths`, parts of `ExperimentLog` |
-| **GPL.Params** | `ParameterSchema` (name, type, default, min/max/step, label, group), `ParameterSet` (flat key/value, typed access, hash), `PresetStore` (default file = preset "Default", presets, active preset, Debug working copy) | `ParameterPanel` (generates Debug controls from the schema) | new (section 7) |
-| **GPL.Logging** | `LogSchema` (common + chamber columns), `EventLog` (flush per row, mirror), safe append on resume | `EventLogHost` (persistentDataPath, pause/resume events) | `ExperimentLog` generalized |
-| **GPL.Session** | `SessionRecord`, `SessionCursor`, `ResumePolicy`, `SessionStore` (atomic, list unfinished per chamber), `DataFiles` (pair each CSV with its session file, list, delete one / all) | `DataManagerPanel` (section 10.1) | `SessionProgress` / `ProgressStore` generalized |
-| **GPL.Protocol** | stage tree (stage > block > trial), `TrialPlan`, planners (seeded shuffle, Latin square, balanced repeats, forbidden values), resume resolution | `ProtocolRunner` (coroutine state machine), stock stages (Language, Onboarding slides, Handover, Practice, Block, Rest, Thanks) | `ExperimentFlow`, `TrialPlanner` split |
+| **GPL.Params** | `ParamDef`, `ParameterSchema`, `ParameterSet` (flat key/value, typed access, hash), `PresetStore` (default file = preset "Default", presets, active preset) | — (the Debug controls are in `GPL.DebugBench`) | new (section 7) |
+| **GPL.Logging** | `LogSchema` (common + chamber columns), `EventLog` (flush per row, mirror), safe append on resume | — (the chamber opens the `EventLog`) | `ExperimentLog` generalized |
+| **GPL.Session** | `SessionRecord` (cursor, attempts), `ResumeFrom`, `SessionStore` (atomic, list unfinished per chamber), `DataFiles` (pair each CSV with its session file, list, delete one / all) | — (the Log files page is in `GPL.DebugBench`, section 10.1) | `SessionProgress` / `ProgressStore` generalized |
+| **GPL.Protocol** | `ProtocolPlan` (stage > block > trial), `ProtocolWalker` (resume resolution), `ProtocolLog`, `SlideDeck`; planned: planners (seeded shuffle, Latin square, balanced repeats, forbidden values) | `ProtocolScreens` (stock screens: handover, language, recenter slide, instruction slides, dot check, messages, cue text), `SlideSet` | `ExperimentFlow`, `TrialPlanner` split |
 | **GPL.Input** | binding table (action -> button, controller), reserved actions | `ActionReader` over `OVRInput`, `GlobalActions` (Stop dialog trigger) | Y-button and A/trigger handling |
-| **GPL.UI** | localization table, slide navigation | overlay canvas, `UiPointer`, `PanelPlacer`, `Dialog`, `SlidePanel`, `LocalizedText`, HUD, **`ITextEntry`** (section 9) | `UiPointer`, `GuiPanelPlacer`, `ParticipantIdField`, `OnboardingPanel`, `LocalizedText` |
+| **GPL.UI** | localization table, number-pad model, motion curves, scroll model | `OverlayPanel`, `UiPointer`, `UiKit`, `UiButton`, `PageStack`, `Sheet`, `ModalDialog`, `StopDialog`, `ScrollList`, **`ITextEntry`** (section 9) | `UiPointer`, `GuiPanelPlacer`, `ParticipantIdField`, `OnboardingPanel`, `LocalizedText` |
 | **GPL.Homing** | gate math (tolerance, hold time) | `IHomingMethod` + methods (section 8), recenter listener, fixation cue | head gate, recenter handling |
 | **GPL.Acoustics** | `Rt60Estimator`, `Rt60Calibration` (measured table, V/S scaling), room math | `ShoeboxRoom`, `ReverbTuner`, `Rt60Meter`, `ClipLevels`; Editor: room dialog, Reflection mixer, audio build-settings guard | acoustics files |
 | **GPL.HearingLoss** | `ANSIS344`, presets, `HearingProfile` (left/right bands), peaking biquad | `OutputHearingLoss` on the final stereo output (section 11), optional spectrum view | new (HLSIM_GUIDELINES) |
 | **GPL.SpatialSources** | placement math, constrained random placement, trajectories | `PlacedSource` (room-fixed / head-relative / re-placed after recenter), `MovingSource`, `GrabbableSource`, `PulseTrain`, `BackgroundBed` | `StimulusController`, background code split |
 | **GPL.Responses** | response records (azimuth, elevation, distance, error) | rotate-with-triggers adjustment, pointing ray, place-a-marker, button choice | HW2 task |
-| **GPL.DebugBench** | — | panel framework: modules register controls; hosts the `ParameterPanel`; "Run experiment trials" | `DebugPanel` generalized |
+| **GPL.DebugBench** | `WorkingCopy` (the Playground: edits of the active preset) | `DebugBench` pages: Debug (Run experiment trials, rows Playground › / Presets › / Log files ›, chamber sections), Parameters (opened by Playground), Presets, Log files | `DebugPanel` generalized |
 
 Modules stay plain folders (copy the folder plus `GPL.Core`). Turning a stable module into a Unity package later is optional.
 
@@ -80,25 +80,26 @@ Modules stay plain folders (copy the folder plus `GPL.Core`). Turning a stable m
 ## 6. Chamber menu and session flow
 Every chamber starts at its **chamber menu** (generic, from `GPL.UI` + `GPL.Session`, HW2 style):
 - **Study ID** (number pad, up to 4 digits, stored and shown with leading zeros and prefix: `1` -> `S0001`), **Start**, **Debug**, **Back to Hall**. All chambers are equal: same menu, presets, Debug, sessions. A chamber that is still a demo or under development is simply used through Debug.
-- Status lines under Start and Debug (PO 2026-11-06): **"Preset: Pilot-A"** (section 7; nothing while the preset Default is active) and **"Unfinished: S0005, S0012"** (Study IDs with a resumable session; nothing when none). The sessions themselves are managed on Debug > Data files.
+- Status lines under Start and Debug (PO 2026-11-06, wording 2026-11-07): **"Audio level: 10 (target 8)"** (section 8), **"Preset: Custom"** (section 7; nothing while the preset Default is active) and **"Unfinished: S0005, S0012"** (Study IDs with a resumable session; nothing when none). The sessions themselves are managed on Debug > Log files.
 - **Start with a Study ID that has an unfinished session** -> Resume / Start new / Back. Several unfinished sessions can exist (one per Study ID).
 - **Resume** -> the experimenter hands the headset over; the participant continues **silently** at the point given by the resume policy (no welcome screen; homing still runs if the stage requires it).
 - **Start new** over an unfinished session: the old one is logged `session_superseded` and closed (never deleted).
 
 ### 6.1 Session record
-One key=value text file per session, `<base>.session`, **next to its CSV** `<base>.csv` in `persistentDataPath/<ChamberId>/` (atomic write; the base name `yyyyMMdd_HHmmss_<ChamberId>_<StudyId>` is the session ID). Real sessions only; Debug runs have a CSV and no session file. Implemented in `GPL.Session` (PB-04):
+One key=value text file per session, `<base>.session`, **next to its CSV** (atomic write; the base name is the session ID; names and paths in the [GPL.Session README](../Assets/AcousticChamber/Modules/Session/README.md#files-and-paths)). Real sessions only; Debug runs have a CSV and no session file. Implemented in `GPL.Session` (PB-04):
 `session_id, chamber, chamber_version, study_id, status (InProgress | Completed | DroppedOut | Superseded), seed, language, preset, params_hash, plan_hash, app_version, created, updated, cursor.{stage, block, trials_done, attempt}, resume_from, attempt.<stage>.<block>, param.<key> (full snapshot), custom.<key>`. The Stop dialog has no pause: a session stays `InProgress` until it completes, drops out or is superseded; quitting the app or taking the headset off leaves it resumable.
 
-**A resumed session uses its own parameter snapshot**, not the currently active preset (the menu warns if they differ).
+**A resumed session uses its own parameter snapshot**, not the currently active preset (no warning when they differ; a resume is refused only when the chamber's protocol plan changed, `plan_hash`).
 
 ### 6.2 Resume policy (per stage, overridable per block)
-| `ResumeFrom` | Meaning | Typical use |
-|---|---|---|
-| `NextTrial` | continue after the last finished trial | fixed trial lists (HW2) |
-| `BlockStart` | redo the interrupted block; `attempt` + 1 | staircases, continuous blocks, adaptation to a condition |
-| `StageStart` | redo the stage | practice, calibration, onboarding |
-| `SessionStart` | redo everything (same CSV, attempt + 1) | very short designs |
-| `NotResumable` | session closed; start a new one | designs where a break invalidates data |
+What each policy continues with and how it counts attempts: [GPL.Session README](../Assets/AcousticChamber/Modules/Session/README.md#resume-policies-resumefrom).
+| `ResumeFrom` | Typical use |
+|---|---|
+| `NextTrial` | fixed trial lists (HW2) |
+| `BlockStart` | staircases, continuous blocks, adaptation to a condition |
+| `StageStart` | practice, calibration, onboarding |
+| `SessionStart` | very short designs |
+| `NotResumable` | designs where a break invalidates data |
 
 Resume hooks per stage (`OnResume`): re-apply the condition, restart the background, re-run homing, an optional re-familiarization trial. The plan is rebuilt from the stored seed; a different `plan_hash` (chamber changed) blocks the resume with an explanation.
 
@@ -106,29 +107,30 @@ Resume hooks per stage (`OnResume`): re-apply the condition, restart the backgro
 
 ## 7. Parameters and presets (`GPL.Params`)
 Fixes the HW2 problem that Debug changes did not carry over to real trials.
-- Each chamber declares a **parameter schema** (e.g. `rt60_s`, `stim_radius_m`, `hl_left`, `trials_per_block`, `gate_yaw_tol_deg`) and ships a **default file** `Chambers/<Id>/Config/default.params` (key=value text, versioned in git). It appears as the preset **Default**, which is the active preset until another one is made active.
-- **Presets** are saved on the device (`persistentDataPath/<ChamberId>/presets/<name>.params`); one is **active**. Copy presets off the headset like data; useful ones can be committed back into `Config/`.
-- **Debug edits a working copy** of the active preset (generated controls from the schema, plus module controls). Actions: *Save as preset*, *Overwrite preset*, *Make active*, *Revert*, and **Run experiment trials** (the real protocol with the current working copy, logged as `_DEBUG`, no resume) to experience exactly what participants will get.
-- **Real runs always use the active preset** (never unsaved Debug values). The chamber menu shows a custom one under its buttons: "Preset: Pilot-A" (nothing for Default). Every real session stores the full snapshot, preset name and hash; the CSV gets `preset` and `params_hash` columns.
-- Debug-only switches (marker visibility, show error) are not part of presets.
+The decision (Default and Custom presets, Playground, Save as Custom, Make active, real runs on the active preset, snapshot per session) is [ADR-0002](decisions/ADR-0002-parameters-and-presets.md); the Debug pages are in the [GPL.DebugBench README](../Assets/AcousticChamber/Modules/DebugBench/README.md). Architecture-level points:
+- Each chamber declares a **parameter schema** (e.g. `rt60_s`, `trials_per_block`, `gate.yaw_tol_deg`) and ships `Chambers/<Id>/Config/default.params` (key=value text, in git) = the preset **Default**.
+- Presets live on the device (`persistentDataPath/<ChamberId>/presets/`); copy them off the headset like data; useful ones can be committed back into `Config/`.
+- **Run experiment trials** (Debug) runs the real protocol with the Playground values, logged as `_DEBUG`, no resume, to experience exactly what participants will get.
+- The CSV gets `preset` and `params_hash` columns.
 
 ## 8. Posture, handover and homing (`GPL.Homing`)
 - Each chamber declares a posture: `Seated`, `Standing` or `RoomScale`. Tracking origin is always floor level.
-- **Handover stage** (stock stage, used at session start and after resume): the experimenter sets up (often standing), hands over, and the participant confirms when ready; then the chamber's homing method sets the origin (and, if needed, measures eye height so stimuli are placed relative to the participant, not the experimenter).
+- **Handover** (stock stage, at session start and after a resume): the experimenter sets up (often standing) and hands the headset over; "forward" is then set by the participant's Meta-button recenter and checked by the head gate (steps 2, 4 and 6 below). A chamber that needs it also measures eye height there, so stimuli are placed relative to the participant, not the experimenter.
 - **Onboarding sequence** (PB-20b, PO 2026-11-07; stock stages in `GPL.Protocol`, order = the chamber's stage list, each stage switchable by a preset boolean `onboarding.<stage>`):
   1. Chamber menu: Study ID, Start. A status line shows the headset volume read from Android against the chamber's target (`volume.target_step`): "Audio level: 10 (target 8)" (red when they differ). The read value is logged on `session_start` / `session_resume`; no volume pad (kept in code, `ChamberMenu.AskVolumeStep`).
-  2. `handover` (experimenter): a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue. No recenter here (the A-button recenter is dropped).
+  2. `handover` (experimenter): title "Protocol", a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue. No recenter here (the A-button recenter is dropped).
   3. `language` (participant).
-  4. `recenter`: a slide in the instruction-slide layout (title, illustration or the text "Look straight ahead. Hold the Meta button until the view recenters.", Back = "Language" reopens the language choice, Next always active; `homing` row, method `system_recenter_user`, outcome `cancelled` when Next came without a recenter).
+  4. `recenter`: a slide in the instruction-slide layout (title, illustration or the text "Look straight ahead. Hold the Meta button until the view recenters.", Back "← Language" reopens the language choice, Next always active, no A button; `homing` row, method `system_recenter_user`, outcome `cancelled` when Next came without a recenter).
   5. `instructions`: the chamber's slides (`SlideSet`; none = nothing shown).
   6. `ready`: final check at the black dot (head gate), then a `volume_check` row with the final volume.
-  7. Practice and trials.
+  7. Practice and trials (A is used only as the Template's trial response), then thanks.
+  This list is the single description of the sequence; the slide layout is in [DesignSystem](DesignSystem.md) section 9, the screen API in the [GPL.Protocol README](../Assets/AcousticChamber/Modules/Protocol/README.md), a chamber's own stage table in its `Docs/Design.md`.
   The participant is not told about Y (Stop dialog): breaks and drop-outs are handled by the experimenter when the participant reports discomfort.
 - Homing methods implement `IHomingMethod` -> `HomingResult` (origin, yaw, eye height, method, duration, residual error), logged as `homing`:
 
 | Method | What happens |
 |---|---|
-| `HeadGate` | fixation cue ahead, head within yaw/pitch tolerance for a hold time (HW2, before every trial); defaults yaw ±10°, pitch ±15°, hold 0.5 s, hint after 4 s, tunable in presets (PO 2026-11-06) |
+| `HeadGate` | fixation cue ahead, head within yaw/pitch tolerance for a hold time (HW2, before every trial); defaults and preset keys in the [GPL.Homing README](../Assets/AcousticChamber/Modules/Homing/README.md) |
 | `SystemRecenterListener` | reacts to the Meta long-press recenter; re-places GUI and head-relative stimuli (always on) |
 | `SystemRecenter` | app-requested (not used by the onboarding since PB-20b; the participant holds the Meta button instead): the Meta system recenter makes the current head yaw/position forward/origin; head yaw measured before (the correction) and after (the residual). Replaces the planned `SoftwareRecenter` (PO 2026-11-06): the rig stays at identity, so raw tracking poses and logged values share one frame |
 | `AlignToTarget` | participant turns to a visible target; the room stays fixed |
@@ -139,29 +141,24 @@ Fixes the HW2 problem that Debug changes did not carry over to real trials.
 - **Global actions** are the same in every chamber where possible. Reserved: **Y (left controller) = Stop dialog**. The Meta button belongs to the system. A chamber may remap a global action only by declaring it in its `ChamberDefinition` (bindings table); its menu then shows the binding.
 - **Chamber actions** (confirm, adjust left/right, grab, ...) are declared per chamber in the same table and read through `GPL.Input`, never with direct `OVRInput` calls in chamber code.
 - **Standard chamber actions** (defaults; a chamber declares only those it uses): `confirm` = A, `back` = B, `trigger_left/right`, `grip_left/right`, `stick_left/right`; X is free. Y works only while a session (real or Debug run) is running; in the Hall and the menus it does nothing.
-- **Stop dialog (Y)**, modal, the session is frozen while open (time scale 0, audio paused):
-  - **Keep going**
-  - **Drop out** (participant withdraws; logged `participant_dropout`; not resumable; asks once more: "Drop out S0012?")
-  - In Debug: Keep going / Back to the chamber menu.
+- **Stop dialog (Y)**: modal, the session frozen while open (time scale 0, audio paused); Keep going / Drop out (`participant_dropout`, not resumable), in Debug Keep going / Back to the chamber menu. Behaviour: [ADR-0003](decisions/ADR-0003-sessions-resume-input.md); wording and look: [DesignSystem](DesignSystem.md) section 7.
 - **Text entry is swappable** (`ITextEntry`): `NumberPadEntry` (on-canvas, reliable, HW2), `KeypadEntry` (letters + digits), `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`, the Quest system keyboard). Selected per chamber or globally; the native keyboard problem from HW2 is investigated in its own ticket. (Meta's in-app Virtual Keyboard is not part of the installed Core SDK 207.)
 
 ## 10. Logging scheme
-Long format, one row per event. Common columns (every chamber):
-`event, timestamp_local, elapsed_s, session_id, chamber, chamber_version, study_id, mode, preset, params_hash, stage, block, condition, trial, attempt, note`
-then the chamber's columns, then `note` (always the last column) (declared in its `LogSchema`; writing an undeclared column fails a unit test). RM-ANOVA factors are **explicit columns** (e.g. `hl_side`, `hl_level`, `rt60_target_s`), never parsed from notes.
+Long format, one row per event: the common columns, then the chamber's columns (declared in its `LogSchema`), then `note` (always last). The column list and its rules are in the [GPL.Logging README](../Assets/AcousticChamber/Modules/Logging/README.md#columns). RM-ANOVA factors are **explicit columns** (e.g. `hl_side`, `hl_level`, `rt60_target_s`), never parsed from notes.
 
 Common events: `session_start` (app version, device, headset volume step read from the headset), `session_resume`, `stage_begin/end`, `block_begin/end`, `block_restart`, `trial`, `homing`, `recenter`, `handover`, `slide`, `volume_check`, `app_paused/app_resumed`, `participant_dropout`, `session_superseded`, `session_end`, `debug_*`, `param_change` (Debug).
 
-Files: `persistentDataPath/<ChamberId>/yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` (resume appends) and the `.session` file (the parameter snapshot lives there). Each chamber's `AnalysisPlan.md`: within factors, levels, DV, per-cell aggregation, exclusions (Debug, dropout, superseded, lower attempts). Each chamber also has `DataFormat.md` written for an analyst (human or AI): files, columns, units, events, how to rebuild the trial table and the per-cell means. No analysis scripts in the repo.
+Files: one CSV per session (a resume appends) plus its `.session` file (the parameter snapshot lives there); names and paths are in the [GPL.Session README](../Assets/AcousticChamber/Modules/Session/README.md#files-and-paths). Each chamber's `AnalysisPlan.md`: within factors, levels, DV, per-cell aggregation, exclusions (Debug, dropout, superseded, lower attempts). Each chamber also has `DataFormat.md` written for an analyst (human or AI): files, columns, units, events, how to rebuild the trial table and the per-cell means. No analysis scripts in the repo.
 
-### 10.1 Data manager (in each chamber's Debug menu)
+### 10.1 Data manager (Debug > Log files, in each chamber)
 MQDH does not list the per-app folder, so files are managed in the headset.
-- Shared component (`GPL.Session` `DataManagerPanel`), placed in every chamber's Debug menu; it only sees **that chamber's folder** (`persistentDataPath/<ChamberId>/`).
-- One entry per session = the **pair** CSV + session file (Debug runs: CSV only). Shows date/time, Study ID, mode (real / DEBUG), status (in progress, completed, paused, dropped out, superseded), size, number of trial rows.
+- Shared page (`GPL.DebugBench` Log files page over `GPL.Session` `DataFiles`), in every chamber's Debug menu; it only sees **that chamber's folder** (`persistentDataPath/<ChamberId>/`).
+- One entry per session = the **pair** CSV + session file (Debug runs: CSV only). `DataFiles` knows date/time, Study ID, mode (real / DEBUG), status (in progress, completed, dropped out, superseded), size and number of trial rows; the page shows one line per session (the file name).
 - **Delete** one entry (both files together) or **Delete all**; each asks for confirmation in a modal dialog ("Delete all" names the count; one confirmation, PO 2026-11-06). Deleting an unfinished session removes it from the resume list.
 - Presets are not touched by the data manager.
 - Deletions are not logged in any data file (the file is gone); the console mirror prints them.
-- Still valid for copying files off the headset: Windows Explorer (`Quest 3 > Internal shared storage > Android > data > com.nycu.AcousticChamber26 > files`) or `adb pull` on macOS (HW2 README).
+- Copying files off the headset: see the [GPL.Session README](../Assets/AcousticChamber/Modules/Session/README.md#files-and-paths).
 
 ## 11. Hearing loss on the device output (`GPL.HearingLoss`)
 - Applied to the **final left/right output channels** of the app, after the spatializer, the room and the mixer, just before the audio leaves for the device. Not on sources or files.
@@ -191,10 +188,11 @@ Planned chambers (independent; order is a backlog decision):
 
 ## 13. Scene setup, validation, tests
 - Menu **Magic**: `Magic > App > ...`, `Magic > <ChamberId> > Step 1..N, Hot Fix`, `Magic > Validate Setup` (all catalog scenes). Module Editor code provides reusable builders (`RoomBuilder`, `MixerSetup`, `OverlayCanvasBuilder`) that chamber steps call.
-- Headless entry point to run all steps + tests on the mirror project (see CLAUDE.md).
+- Headless entry point to run all steps + tests on the mirror project (`Tools/Verify-Headless.ps1`, see CLAUDE.md).
 - EditMode tests per module and per chamber; HLSim test vectors must match exactly.
 
 ## 14. Build order
+Steps 1–3 done (Sprint 1, plus `GPL.DebugBench` and `GPL.Protocol`); current state on the [SprintBoard](SprintBoard.md).
 1. `GPL.Core`, `GPL.Params`, `GPL.Logging`, `GPL.Session` (pure) + tests, ported and generalized from HW2.
 2. `GPL.Input`, `GPL.UI` (pointer, overlay, number pad behind `ITextEntry`, dialog), `GPL.Homing` runtime.
 3. Hall + catalog + routing + `_Template` chamber (chamber menu, Stop dialog, presets, resume variants). **PO headset test.**

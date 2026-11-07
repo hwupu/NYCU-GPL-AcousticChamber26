@@ -84,7 +84,7 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 | hover out | 350 | slower fade when the ray leaves |
 | press | 0 | instant |
 | release | 250 | scale and fill settle back |
-| sheet / page in, out | 450 | scale 0.94 → 1, blur → sharp, fade in (reverse to leave) |
+| sheet / page in, out | 450 | scale 0.94 → 1, fade in (reverse to leave); no blur, see below |
 | push back | 450 | the window behind scales to 94 % (88 % two levels down) and dims to 45 % black |
 
 - Curve **settle** = cubic-bezier(.16, 1, .3, 1): fast start, long soft landing, no overshoot.
@@ -100,10 +100,10 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - **‹ Back** at the top left of every pushed page (chamber menu → Hall, Debug → menu, Parameters → Debug, ...).
 - **× Close** at the same spot on sheets that may be left without a choice (unfinished session, preset actions). Back and close never appear together.
 - Sheets that need a decision (Stop dialog, delete confirmations, overwrite) have **Cancel**, not ×.
-- Participant screens have no back button (the participant only moves forward; Y stops).
+- Participant screens have no ‹ / × in a header. Onboarding slides (recenter, instructions) have Back / Next in their bottom bar (section 9); from the practice on the participant only moves forward (the experimenter stops with Y).
 
 ### Pages
-- A panel holds a stack of pages; pages change in place (fade + 98 % scale + slight blur, no slide).
+- A panel holds a stack of pages; pages change in place (fade + 98 % scale, no blur, no slide).
 
 ### Sheets
 - Appear in place, centered, 820 u wide, `surface`, radius 32: no slide. The window behind is pushed back and dimmed; a second sheet pushes both back. Only the top sheet takes the ray.
@@ -119,13 +119,13 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - 2-column grid of cards: a 16:9 cover (solid `cover` placeholder until a chamber has an image), the C-ID and an "N unfinished" pill on the cover, the title below; no description. The whole card is the target; the hover fill shows 4 u around the cover (card radius 40, cover 36).
 
 ### Chamber menu
-- Header: ‹ (Hall), title "C04 · HumPerHW2", DEBUG tag in Debug mode. Study ID number pad; **Start** (prominent), **Debug** (gray); under them, in `text2`, one line each only when needed: "Preset: <name>", "Unfinished: S0005, S0012" (one line, ends in … when long).
+- Header: ‹ (Hall), title "C04 · HumPerHW2", DEBUG tag in Debug mode. Study ID number pad; **Start** (prominent), **Debug** (gray); under them, in `text2`: "Audio level: 10 (target 8)" (red when off target), and only when needed "Preset: Custom", "Unfinished: S0005, S0012" (one line, ends in … when long).
 
 ### Stop dialog (Y)
 - Real session: **Drop out** (red text) · **Keep going** (prominent); Drop out asks once more: "Drop out S0012?" Cancel · Drop out (destructive). Debug run: Back to the chamber menu (borderless) · Keep going (prominent). The session is frozen while it is open.
 
 ### Debug bench
-- Pages: **Debug** (Run · Parameters · Presets · chamber groups · Data) → **Parameters** (playground: a copy of the active preset: − / +, Revert to the active preset, Save as Custom: creates or overwrites Custom and makes it active) → **Presets** (Default and Custom; ✓ active; tap → sheet: Make active, which also loads it into the working copy; Delete for Custom) → **Data files** (Delete → confirm; Delete all confirms once and names the count; one-line rows: the file name, no description).
+- Pages: **Debug** (Run · Playground · Presets · chamber groups · Log files) → **Parameters** (opened by the Playground row: a copy of the active preset: − / +, Revert to the active preset, Save as Custom) → **Presets** (Default and Custom; ✓ active; tap → sheet: Make active, Delete for Custom) → **Log files** (Delete → confirm; Delete all confirms once and names the count; one-line rows: the file name, no description). Preset rules: ADR-0002.
 - No DEBUG tag on the Debug pages. Playback tests (play stimulus, play background) and Debug-only display switches are **not saved** in presets (ADR-0002).
 
 ### Mode indicator
@@ -138,6 +138,6 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 
 ## 9. Language of the UI
 - **System screens are English only** (Main Hall, chamber menu, Debug, data manager, setup): they are used by us.
-- **Participant screens are English / 中文** (Language screen, onboarding, instructions, HUD hints, rest and thanks, the Stop dialog during a session). Before the participant has chosen, and in Debug runs, the Stop dialog is English.
-- The language is a **participant choice inside the chamber session** (Language stage after Start and the handover, before onboarding), stored in the session record (`language`); a resumed session keeps it. It applies only to the participant screens of the run (onboarding slides, cues, block breaks, thanks): the Hall, the chamber menu and Debug stay English, and the menu switches back to English when a run ends (PO 2026-11-07). The Stop dialog (Y) is bilingual and stays so. The recenter slide's Back ("Language") reopens the choice.
+- **Participant screens are English / 中文** (Language screen, onboarding, instructions, HUD hints, rest and thanks). The Stop dialog (Y) always shows English and 中文 together, whatever the participant chose, also in Debug runs.
+- The language is a **participant choice inside the chamber session** (Language stage after Start and the handover, before onboarding), stored in the session record (`language`); a resumed session keeps it. It applies only to the participant screens of the run (onboarding slides, cues, block breaks, thanks): the Hall, the chamber menu and Debug stay English, and the menu switches back to English when a run ends (PO 2026-11-07). The recenter slide's Back ("← Language") reopens the choice. Onboarding order: Architecture section 8.
 - **Slides** (PB-20): window 1000 x 700 u = top bar 120 u (title placed like a page title: 40 u top padding + 80 u row, PO 2026-11-07) + image 1000 x 468 u (full width) + bottom bar 112 u (Back borderless at the left, Next prominent at the right, 360 u each; they name where they lead: "← Recenter", "Slide 2 →" from the neighbouring slide's short title, "← Back" / "Next →" when it has none, "← Language" on the recenter slide, "Continue" without an arrow on the last instruction slide). Message screens (language choice, block break, thanks) share one layout: text centered in a 360 u box at y 80, buttons at y −180; no screen waits for A. Illustrations: **2000 x 936 px** (the overlay renders the 1000 u canvas into 2048 px, about 2 px per u); keep text and key details **96 px** (48 u) from every edge, i.e. inside 1808 x 744 px; caption text at least **72 px** high (36 u body), never under 48 px (24 u). Without an image the slide's caption text fills the gray area.

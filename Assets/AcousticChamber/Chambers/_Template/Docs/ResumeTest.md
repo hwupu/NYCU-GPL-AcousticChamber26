@@ -5,8 +5,8 @@ Proves every resume policy on the headset. The same cases run as an EditMode tes
 covers what only the app can show: real quits, the session file on disk, the chamber menu, the launch routing and the CSV.
 
 ## Setup (once per policy)
-1. Hall > Template > **Debug** > Parameters: set `resume_from`; Save as preset (e.g. `Resume-next`), Make active. Back to the
-   chamber menu: the line under the buttons reads "Running on custom preset: Resume-next". Defaults otherwise (2 practice trials, 2 blocks × 4 trials).
+1. Hall > Template > **Debug** > Playground: set `resume_from`; **Save as Custom** (it becomes active). Back to the
+   chamber menu: the line under the buttons reads "Preset: Custom". Defaults otherwise (2 practice trials, 2 blocks × 4 trials).
 2. Use a new Study ID per case (S0101, S0102, ...), so the cases do not mix.
 
 ## The kill
@@ -28,18 +28,18 @@ For every resumable policy:
 | `block_start` | block 2 from trial 1 | `block_restart` block 2 `attempt` 2, trials 1–4 `attempt` 2 |
 | `stage_start` | block 1 of the experiment | `block_restart` block 1 `attempt` 2, then block 2 `attempt` 2 (`block_restart`), 8 trials |
 | `session_start` | handover (language skipped) | handover, recenter, slides and ready (not marked "again"), practice `block_restart` `attempt` 2, both blocks `attempt` 2 |
-| `not_resumable` | — | the app opens at the **Hall** (nothing to resume); the ID is not listed; Start with it begins a **new** session (new CSV and session file). The old files stay (Debug > Data files) |
+| `not_resumable` | — | the app opens at the **Hall** (nothing to resume); the ID is not listed; Start with it begins a **new** session (new CSV and session file). The old files stay (Debug > Log files) |
 
 Also check once (any policy): quit **during the practice** → the practice starts again as `attempt` 2 (practice always uses
 `stage_start`).
 
 ## Checking the files
-Debug > Data files lists each session (Study ID, status, trial rows). For the CSV itself: Quest
-`/sdcard/Android/data/com.nycu.AcousticChamber26/files/Template/` (USB), Editor
-`%USERPROFILE%\AppData\LocalLow\NYCU\AcousticChamber26\Template\`. In the CSV:
+Debug > Log files lists each session (one line per session: the file name). For the CSV itself: the `Template/` folder
+(paths in the [GPL.Session README](../../../Modules/Session/README.md#files-and-paths)). In the CSV:
 - The rows before the kill are all there (nothing deleted); the interrupted trial 3 has **no** `trial` row from before the kill.
-- The `.session` file: `status=Completed`, `resume_from` = the policy, `attempt.3.1` = the last attempt of block 2
-  (stage 3 = experiment when the practice has trials).
+- The `.session` file: `status=Completed`, `resume_from` = the policy, `attempt.6.1` = the last attempt of block 2
+  (stage 6 = experiment with every `onboarding.*` switch on and practice trials; the index is the stage's position in the
+  plan, so it drops by one for each stage switched off).
 - DataFormat step 3 (highest complete attempt per block) gives exactly 4 trials per block.
 
 ## Result

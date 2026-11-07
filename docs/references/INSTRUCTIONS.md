@@ -1,5 +1,7 @@
 # Agent Instructions: VR Perception Study on Meta Quest 3 (Unity)
 
+> **In AcousticChamber26, CLAUDE.md, docs/Architecture.md and the ADRs (docs/decisions/) take precedence over this generic template** where they differ (e.g. parameters come from presets, not Inspector fields; the participant recenters with the Meta button; one CSV per session with a `.session` file).
+
 Reusable prompt for an AI coding agent. Copy this file into a new project (`docs/References/INSTRUCTIONS.md`), fill in the **Study Brief** (end of this file, or a separate `STUDY-BRIEF.md`), then tell the agent: "Follow Instructions.md and the Study Brief to set up this project." A filled example is in [_study-brief-example.md](_study-brief-example.md).
 
 Written from the lessons of the first project (HW2, ventriloquist effect). Its first build was written in one go from a long prompt and came out buggy; the rules below prevent that.

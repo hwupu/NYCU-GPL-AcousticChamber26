@@ -56,27 +56,26 @@ attempt 2 and later), `block_end`. Trial steps write no row; they set the `trial
 Built at run time on the chamber's overlay canvas (ADR-0004). Participant text in English and 中文 (`ProtocolStrings`; a
 chamber may override a key by registering its own table later).
 - `Language(chosen)`: "English" / "中文"; sets `Loc`.
-- `Handover()`: a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue (experimenter). No
-  recenter (PB-20b).
+- `Handover()`: title "Protocol", a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue
+  (experimenter). No recenter (PB-20b).
 - `MetaRecenter(listener, done, look, language, shown)`: the recenter slide in the slide layout: title (default "Recenter the
   view"), illustration from `look` (a `SlideSet.Slide`; without an image the text "Look straight ahead. Hold the Meta button
-  until the view recenters." fills the gray area), Back reading "Language" when `language` is given (runs it, then the slide
-  comes back), Next always active. The result goes to `done` (log it as
+  until the view recenters." fills the gray area), Back reading "← Language" when `language` is given (runs it, then the slide
+  comes back), Next always active (no A button). The result goes to `done` (log it as
   `homing`): the user recenter the `RecenterListener` reported, or outcome `cancelled` when Next came without one. Slide
   buttons (360 u, … when too long) name where they lead: "← <previous slide>" and "<next slide> →" (short title, else title;
   "← Back" / "Next →" when unknown); a final Continue has no arrow. Instruction slide 1 goes back to the recenter slide.
 - `DotCheck(rig, dot, gate, done)`: the final check before the trials: "Look at the dot to begin" and the head gate; the result
   goes to `done`. Log the final headset volume after it (`volume_check`, see the App's `HeadsetVolume`).
 - `Slides(set, start, resumed, shown)` (PB-20): instruction slides from a `SlideSet` asset (per slide: id, title English /
-  中文, image English / 中文; 中文 falls back to English). Layout on the 1000 x 700 u canvas: top bar 120 u (title, placed like a page title: 40 u top padding + 80 u row), image
-  1000 x 468 u full width (export 2000 x 936 px, keep text and key details 96 px = 48 u from the edges; import with
-  Non-Power of 2 = None, no mipmaps), bottom bar 112 u (Back borderless, hidden on the first slide; Next, Continue on the
-  last). Built once, changes in place. `shown(deck, slide, how)` runs for every slide on screen: store the index with
+  中文, image English / 中文; 中文 falls back to English). Layout and image size: DesignSystem section 9 (images: import with
+  Non-Power of 2 = None, no mipmaps). Back is hidden on the first slide unless a first Back is given; Continue on the
+  last. Built once, changes in place. `shown(deck, slide, how)` runs for every slide on screen: store the index with
   `SlideDeck.Store` and log `slide` with `deck.Note(slide.id, how)`; on a resume open on `SlideDeck.Restore`. An empty or
   missing set shows nothing. Navigation is the pure `SlideDeck` (Core). The general overload takes `SlidePage`s (title,
   image, caption text for the gray area while there is no image, `Ready` = Next active) plus an optional first Back
   (`firstBackKey`, `firstBack`) and the last Next label (`lastKey`).
-- `Message(text, pressA, buttonKey)`: waits for A or the button.
+- `Message(text, buttonKey, until)`: the Message layout; waits for the button or until `until()` is true. No screen waits for A.
 - `Cue(text, y)`: bare text without a panel while the world is visible (gate hint, "Press A"); `Cue(null)` hides it.
 - `PressedA()`: A this frame, ignored while the Stop dialog is open (`InputOpen`).
 

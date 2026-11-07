@@ -60,7 +60,7 @@ namespace AcousticChamber.App
         public EventLog Log { get; internal set; }
         public LogContext Context => Log.Context;
 
-        /// <summary>Headset volume step entered on Start / Resume (-1 in Debug runs).</summary>
+        /// <summary>Headset volume step read on Start / Resume (<see cref="HeadsetVolume"/>; -1 where not readable and in Debug runs).</summary>
         public int VolumeStep { get; internal set; } = -1;
 
         /// <summary>The overlay canvas of the chamber menu (build run screens on it; the menu window is hidden).</summary>

@@ -1,7 +1,8 @@
 # GPL.Homing
 
 Establishes "forward" and checks the participant's head before a trial (Architecture section 8): the head gate with a
-fixation dot, the system recenter at handover, and a listener for the recenters people do with the Meta button. Every
+fixation dot, an app-requested system recenter, and a listener for the recenters people do with the Meta button (the
+onboarding uses the listener: the participant holds the Meta button on the recenter slide, PB-20b). Every
 method returns a `HomingResult` that the chamber logs as a `homing` row (or a `recenter` row for the listener) with
 `HomingResult.Note()` in the note column. Generalized from HW2's `WaitForHeadAlignment`, `RecenterAndPlaceGui` and recenter
 handling in `ExperimentFlow`.
@@ -27,7 +28,7 @@ handling in `ExperimentFlow`.
 | `Runtime/HeadPose.cs` | yaw, pitch and eye height of the center eye relative to the rig; `RigAtIdentity`; `NotTrackedYet` (head at the floor in the first frames) |
 | `Runtime/IHomingMethod.cs` | `Name`, `Running`, `Run(done)` (a coroutine; `done` is called exactly once), `Cancel()` |
 | `Runtime/HeadGateMethod.cs` | shows the fixation dot, runs the gate on scaled time (the Stop dialog freezes it), raises `HintChanged(bool)`; the chamber shows the hint text ("Look at the dot", English / 中文) |
-| `Runtime/SystemRecenterMethod.cs` | handover / experimenter: measures the head (yaw before = the correction), `OVRManager.display.RecenterPose()`, waits for the event (at most 60 frames) and two more frames, measures again (the residual); `unavailable` without a headset |
+| `Runtime/SystemRecenterMethod.cs` | app-requested recenter (no longer used at the handover since PB-20b): measures the head (yaw before = the correction), `OVRManager.display.RecenterPose()`, waits for the event (at most 60 frames) and two more frames, measures again (the residual); `unavailable` without a headset |
 | `Runtime/RecenterListener.cs` | one per scene, always on: a Meta-button recenter raises `Recentered(result)` two frames later (method `system_recenter_user`; yaw before = the frame before the event); ignores the app's own recenter and the second event Quest raises for one recenter. Overlay panels re-place themselves (GPL.UI `OverlayPanel`) |
 | `Runtime/FixationCue.cs` | the dot: unlit sphere, 1.5° at 2 m (0.052 m), straight ahead at eye level; needs a URP Unlit material asset (`#262626`, DesignSystem section 8) |
 
@@ -41,7 +42,7 @@ var gate = new HeadGateMethod(rig, fixationCue, HomingParams.ReadGate(work.Value
 gate.HintChanged += on => hud.Show(on ? "gate.hint" : null);       // the chamber's localized hint
 yield return gate.Run(r => log.Write(LogEvents.Homing, r.Note()));
 
-// handover
+// app-requested recenter (optional; the onboarding uses the Meta-button listener instead, see GPL.Protocol MetaRecenter)
 yield return new SystemRecenterMethod(rig).Run(r => log.Write(LogEvents.Homing, r.Note()));
 
 // always on
@@ -49,6 +50,6 @@ recenterListener.Recentered += r => { stimuli.Replace(); log.Write(LogEvents.Rec
 ```
 
 ## Status
-PB-05c: head gate, system recenter, recenter listener, fixation dot; test panel `Magic > App > Homing Test Panel`.
+PB-05c: head gate, system recenter, recenter listener, fixation dot (PB-20b: the onboarding recenters with the listener); test panel `Magic > App > Homing Test Panel`.
 
-Provenance: HW2 `ExperimentFlow` (gate loop, recenter subscription with a two-frame wait, `RecenterPose` at handover).
+Provenance: HW2 `ExperimentFlow` (gate loop, recenter subscription with a two-frame wait, `RecenterPose` at handover in HW2).

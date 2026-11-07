@@ -14,7 +14,6 @@ namespace GPL.Protocol
     {
         public const string ChooseLanguage = "protocol.choose_language";
         public const string Handover = "protocol.handover";
-        public const string LookAheadPressA = "protocol.look_ahead_press_a";
         public const string BlockDone = "protocol.block_done";
         public const string Thanks = "protocol.thanks";
         public const string Finish = "protocol.finish";
@@ -36,7 +35,6 @@ namespace GPL.Protocol
             .Add(RecenterShort, "Recenter", "重新置中")
             .Add(HandoverTitle, "Protocol", "流程")
             .Add(LanguageButton, "Language", "語言")
-            .Add(LookAheadPressA, "Look straight ahead and press A.", "請直視前方，然後按 A。")
             .Add(HoldMeta, "Look straight ahead.\nHold the Meta button until the view recenters.", "請直視前方，\n長按 Meta 按鈕，直到畫面重新置中。")
             .Add(LookAtDotToBegin, "Look at the dot to begin", "請看圓點以開始")
             .Add(BlockDone, "Block {0} of {1} done.", "第 {0} 段（共 {1} 段）完成。")
@@ -56,7 +54,7 @@ namespace GPL.Protocol
 
     /// <summary>
     /// The stock screens of a protocol, built at run time on the chamber's overlay canvas (ADR-0004): language, handover
-    /// (with the system recenter), a message that waits for A or a button, and bare cue text without a panel (shown while
+    /// (no recenter), recenter slide, slides, final dot check, a message with a button, and bare cue text without a panel (shown while
     /// the world is visible, e.g. during the head gate). One screen at a time; <see cref="Hide"/> removes it. The A button
     /// and the buttons do nothing while the Stop dialog is open.
     /// </summary>
@@ -109,8 +107,8 @@ namespace GPL.Protocol
         }
 
         /// <summary>
-        /// A message; waits for A (<paramref name="pressA"/>) or for the button (<paramref name="buttonKey"/>, localized),
-        /// whichever is given, or until <paramref name="until"/> is true (checked every frame). The screen stays until
+        /// A message (Message layout); waits for the button (<paramref name="buttonKey"/>, localized) or until
+        /// <paramref name="until"/> is true (checked every frame). No screen waits for A. The screen stays until
         /// <see cref="Hide"/> or the next screen.
         /// </summary>
         public IEnumerator Message(string text, string buttonKey = null, Func<bool> until = null)

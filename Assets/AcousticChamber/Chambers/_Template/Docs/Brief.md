@@ -6,7 +6,8 @@ The minimal working chamber, to copy when starting a new one (PB-13 automates th
 part a real chamber uses:
 - the chamber menu (Study ID, Start, Debug, custom-preset and unfinished lines, Resume / Start new / Back),
 - a protocol of stages, blocks and trials (`GPL.Protocol`),
-- homing (system recenter at handover, head gate before every trial),
+- the onboarding sequence (handover, language, Meta-button recenter slide, instruction slides, final dot check; Architecture section 8),
+- homing (head gate before every trial),
 - a response (press A) with a reaction time,
 - the CSV log and the session file, the Stop dialog (Y), and resume.
 

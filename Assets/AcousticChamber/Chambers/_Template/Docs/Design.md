@@ -57,5 +57,5 @@ by the policy:
   ID begins a new session (new files).
 
 ## Debug
-Debug page: Run (the real protocol with the working copy, `_DEBUG` CSV, no session file, no resume), Parameters, Presets, Data.
+Debug page: Run (the real protocol with the Playground values, `_DEBUG` CSV, no session file, no resume), Playground, Presets, Log files.
 No chamber-specific Debug controls.
