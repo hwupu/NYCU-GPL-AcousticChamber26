@@ -252,7 +252,7 @@ namespace GPL.Protocol
         }
 
         /// <summary>
-        /// Slides (PB-20): title in the top bar, the illustration over the full width between the bars (2:1 on the 1000 x 700 u
+        /// Slides (PB-20): title in the top bar, the illustration over the full width between the bars (1000 x 468 u on the 1000 x 700 u
         /// canvas; without an image the page's caption text fills the gray area), Back (borderless) and Next in the bottom bar.
         /// Buttons name where they lead (accessibility, PO 2026-11-07): "← &lt;previous slide's short title&gt;" and
         /// "&lt;next slide's short title&gt; →", "← Back" / "Next →" when that slide has no title.

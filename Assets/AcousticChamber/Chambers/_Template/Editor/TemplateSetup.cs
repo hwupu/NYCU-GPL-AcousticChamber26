@@ -60,6 +60,8 @@ namespace AcousticChamber.Chambers.Template.Editor
         public const string SlidesFolder = Folder + "/Slides";
         public const string SlidesPath = SlidesFolder + "/Instructions.asset";
         const int SlideW = 2000, SlideH = 936, SafeMarginPx = 96;
+        const string Placeholder1 = "Placeholder-1.png", Placeholder2 = "Placeholder-2.png";
+        static readonly Color32 Fill1 = new Color32(0x3A, 0x3A, 0x40, 0xFF), Fill2 = new Color32(0x4A, 0x4A, 0x52, 0xFF);
 
         /// <summary>
         /// Step 3 (PB-20a): two gray placeholder slides (2000 x 936 px, a thin frame marks the 48 u safe margin) in
@@ -78,6 +80,9 @@ namespace AcousticChamber.Chambers.Template.Editor
             }
             if (!AssetDatabase.IsValidFolder(SlidesFolder)) AssetDatabase.CreateFolder(Folder, "Slides");
 
+            // existing placeholders of an older size are redrawn at 2000 x 936 (real illustrations have other names)
+            if (System.IO.File.Exists(SlidesFolder + "/" + Placeholder1)) Placeholder(Placeholder1, Fill1);
+            if (System.IO.File.Exists(SlidesFolder + "/" + Placeholder2)) Placeholder(Placeholder2, Fill2);
             var set = AssetDatabase.LoadAssetAtPath<GPL.Protocol.SlideSet>(SlidesPath);
             if (set == null)
             {
@@ -85,12 +90,12 @@ namespace AcousticChamber.Chambers.Template.Editor
                 set.slides.Add(new GPL.Protocol.SlideSet.Slide
                 {
                     id = "placeholder_1", titleEnglish = "Placeholder slide 1", titleChinese = "示範投影片 1", shortEnglish = "Slide 1", shortChinese = "投影片 1",
-                    imageEnglish = Placeholder("Placeholder-1.png", new Color32(0x3A, 0x3A, 0x40, 0xFF)),
+                    imageEnglish = Placeholder(Placeholder1, Fill1),
                 });
                 set.slides.Add(new GPL.Protocol.SlideSet.Slide
                 {
                     id = "placeholder_2", titleEnglish = "Placeholder slide 2", titleChinese = "示範投影片 2", shortEnglish = "Slide 2", shortChinese = "投影片 2",
-                    imageEnglish = Placeholder("Placeholder-2.png", new Color32(0x4A, 0x4A, 0x52, 0xFF)),
+                    imageEnglish = Placeholder(Placeholder2, Fill2),
                 });
                 AssetDatabase.CreateAsset(set, SlidesPath);
                 AssetDatabase.SaveAssets();
@@ -103,11 +108,28 @@ namespace AcousticChamber.Chambers.Template.Editor
             Debug.Log("[Chamber:Template] Step 3: instruction slides linked (" + set.Count + " slides). Save the scene.");
         }
 
-        /// <summary>A gray 2:1 PNG with a light frame at the safe margin; kept if it exists. Imported without NPOT scaling or mipmaps.</summary>
+        /// <summary>Width and height from a PNG header (IHDR), or (0, 0).</summary>
+        static (int w, int h) PngSize(string path)
+        {
+            try
+            {
+                var b = new byte[24];
+                using (var f = System.IO.File.OpenRead(path))
+                    if (f.Read(b, 0, 24) < 24) return (0, 0);
+                int Be(int o) => (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
+                return (Be(16), Be(20));
+            }
+            catch (System.IO.IOException) { return (0, 0); }
+        }
+
+        /// <summary>
+        /// A gray 2000 x 936 PNG with a light frame at the safe margin; kept if it exists with that size (an older placeholder of
+        /// another size is redrawn, its .meta and GUID stay). Imported without NPOT scaling or mipmaps.
+        /// </summary>
         static Texture2D Placeholder(string file, Color32 fill)
         {
             string path = SlidesFolder + "/" + file;
-            if (!System.IO.File.Exists(path))
+            if (!System.IO.File.Exists(path) || PngSize(path) != (SlideW, SlideH))
             {
                 var frame = new Color32(0x6E, 0x6E, 0x78, 0xFF);
                 var px = new Color32[SlideW * SlideH];

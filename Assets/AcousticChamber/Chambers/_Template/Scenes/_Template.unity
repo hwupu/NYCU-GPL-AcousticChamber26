@@ -9848,6 +9848,17 @@ MonoBehaviour:
   defaultParams: {fileID: 2811297602134710623, guid: 7529c0cd8ffafaa4cb5f1b8d454ae9d7, type: 3}
   cue: {fileID: 1574678999}
   listener: {fileID: 1574678998}
+  instructions: {fileID: 11400000, guid: bb288625cb13fc04f91591a6d27be75b, type: 2}
+  recenterSlide:
+    id: recenter
+    titleEnglish: 
+    titleChinese: 
+    imageEnglish: {fileID: 0}
+    imageChinese: {fileID: 0}
+    shortEnglish: 
+    shortChinese: 
+    captionEnglish: 
+    captionChinese: 
 --- !u!114 &1890000903
 MonoBehaviour:
   m_ObjectHideFlags: 0
