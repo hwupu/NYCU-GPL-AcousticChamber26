@@ -14,8 +14,8 @@ Product Owner: researcher. Status: Done / Open / Blocked (waiting for PO) / Clos
 | PB-08 | HumPerHW2 chamber (HW2 rebuilt) | Same protocol and trial data as HW2 on the modules; GPL.Acoustics, SpatialSources, Responses, DebugBench extracted | Open |
 | PB-09 | GPL.HearingLoss | ANSIS344 + test vectors; per-ear filter on the final output; per-ear test-tone check | Done (2026-11-07; headless tests; headset tone check: Sandbox + Magic > App > Hearing Loss Test Panel) |
 | PB-10 | HearingLoss chamber | Experience chamber (ADR-0006, PO 2026-11-07): own panel (sound, play / pause, ear, NIOSH presets), speaker dragged on the floor, dry, no logs; headset check | Built (2026-11-07; headless Steps + Validate; PO runs Magic > HearingLoss Steps 1-2, headset check open) |
-| PB-11 | MovingSource chamber | as above | Open |
-| PB-12 | HiddenSource chamber | as above | Open |
+| PB-11 | MovingSource chamber | as above | Blocked (Questions Q35-Q38, 2026-11-07) |
+| PB-12 | HiddenSource chamber | as above | Blocked (Questions Q39-Q43, 2026-11-07) |
 | PB-13 | New-chamber tooling | `Magic > App > New Chamber...` copies `_Template` and renames | Done (2026-11-07; headless: probe chamber created, compiled, its Magic steps ran) |
 | PB-14 | Native keyboard on Quest | Find why `TouchScreenKeyboard` did not show in the HW2 standalone build; `NativeKeyboardEntry` works or is documented as unusable | Blocked (2026-11-07: `NativeKeyboardEntry` + Keyboard Test Panel built; likely cause GameActivity, docs/references/Keyboard.md; PO headset test A/B/C) |
 | PB-15 | Data manager in Debug | Per chamber: list sessions (CSV + session file pair), delete one or all with confirmation; only that chamber's folder | Done (2026-11-07; core in PB-04, page in PB-19c) |
