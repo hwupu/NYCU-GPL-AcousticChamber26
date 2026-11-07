@@ -1,7 +1,7 @@
 {
     "name": "GPL.Protocol",
     "rootNamespace": "GPL.Protocol",
-    "references": ["GPL.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "GPL.UI.Core", "GPL.UI", "GPL.Input.Core", "GPL.Input", "GPL.Homing.Core", "GPL.Homing", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "GPL.UI.Core", "GPL.UI", "GPL.Input.Core", "GPL.Input", "GPL.Homing.Core", "GPL.Homing", "Unity.TextMeshPro", "UnityEngine.UI", "Oculus.VR"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

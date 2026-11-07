@@ -4,9 +4,9 @@ The stage tree of a study session (session > stage > block > trial), walked step
 so every resume policy of `GPL.Session` works without chamber code. Plus the stock participant screens (language, handover,
 messages, cue text). Generalized from HW2's `ExperimentFlow` loop (PB-07b).
 
-**Copy:** this folder + `Core/`, `Session/`, `Logging/`; for the screens also `UI/`, `Input/`, `Homing/`.
-**Dependencies:** `GPL.Protocol.Core`: GPL.Core, GPL.Session.Core, GPL.Logging.Core (pure C#). `GPL.Protocol`: GPL.UI,
-GPL.Input, GPL.Homing, Meta XR Core, TextMeshPro.
+**Copy:** this folder + `Core/`, `Params/`, `Session/`, `Logging/`; for the screens also `UI/`, `Input/`, `Homing/`.
+**Dependencies:** `GPL.Protocol.Core`: GPL.Core, GPL.Params.Core, GPL.Session.Core, GPL.Logging.Core (pure C#).
+`GPL.Protocol`: GPL.UI, GPL.Input, GPL.Homing, Meta XR Core, TextMeshPro.
 
 ## Plan (`ProtocolPlan`, Core)
 Built by the chamber from the session's parameter snapshot, so a resumed session gets the same plan.
@@ -79,7 +79,25 @@ chamber may override a key by registering its own table later).
 - `Cue(text, y)`: bare text without a panel while the world is visible (gate hint, "Press A"); `Cue(null)` hides it.
 - `PressedA()`: A this frame, ignored while the Stop dialog is open (`InputOpen`).
 
+## Onboarding (`OnboardingStages`, Core; `Onboarding`, Runtime; PB-21)
+The stock onboarding stages of Architecture section 8 in one place, so a chamber does not wire them itself.
+```
+schema: defs.AddRange(OnboardingStages.SwitchDefs());        // onboarding.handover ... onboarding.ready (all on)
+plan:   OnboardingStages.AddTo(new ProtocolPlan(), values)    // the switched-on stages with their resume flags
+            .Blocks("practice", ...).Blocks("experiment", ...).Stage(OnboardingStages.Thanks, StageFlags.CompletesSession);
+run:    var ob = new Onboarding(screens, record, log, values) { Save, Rig, Cue, Listener, Instructions, RecenterSlide,
+                                                                ReadVolume, VolumeTarget };
+        yield return ob.TryRun(step) ?? chamberStage(step);    // null = not an onboarding stage
+```
+`Onboarding` writes the stage rows (`handover`, `language`, `homing`, `slide`, `volume_check` with column
+`OnboardingStages.VolumeColumn` = `volume_step` when the log has it), stores the language and the slide index in the record,
+links Back on the recenter slide to the language choice and Back on instruction slide 1 to the recenter slide.
+`InRecenterStage` tells a recenter listener that the Meta recenter belongs to the recenter stage (no extra `recenter` row).
+A schema without a switch counts it as on. The App's `ProtocolChamber` uses all of this; a chamber deriving from it gets
+the onboarding for free.
+
 ## Tests
+`Tests/EditMode/OnboardingTests.cs`: stage order and flags, switched-off stages, a schema without switches.
 `Tests/EditMode/ProtocolTests.cs`: plan shape and hash, the full walk, each resume policy, a resume during the language, the
 `NotResumable` policy, and **a kill at every step for every policy** (resume from the saved file, finish, and check that the
 highest attempt of every block holds each trial exactly once). `Tests/EditMode/SlideDeckTests.cs`: Back / Next, the end of

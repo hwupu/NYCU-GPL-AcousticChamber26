@@ -1,7 +1,7 @@
 {
     "name": "GPL.Protocol.Core",
     "rootNamespace": "GPL.Protocol",
-    "references": ["GPL.Core", "GPL.Session.Core", "GPL.Logging.Core"],
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

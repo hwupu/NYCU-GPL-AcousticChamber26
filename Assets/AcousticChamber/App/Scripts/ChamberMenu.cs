@@ -24,7 +24,7 @@ namespace AcousticChamber.App
     public class ChamberMenu : MonoBehaviour
     {
         public static readonly Vector2 Size = new Vector2(1000f, 700f);
-        public const string VolumeColumn = "volume_step";
+        public const string VolumeColumn = GPL.Protocol.OnboardingStages.VolumeColumn;
         public const int MaxVolumeStep = 15;
         /// <summary>
         /// False (PB-20b): Start reads the headset volume (<see cref="HeadsetVolume"/>) and the menu shows it against the

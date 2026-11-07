@@ -116,7 +116,7 @@ The decision (Default and Custom presets, Playground, Save as Custom, Make activ
 ## 8. Posture, handover and homing (`GPL.Homing`)
 - Each chamber declares a posture: `Seated`, `Standing` or `RoomScale`. Tracking origin is always floor level.
 - **Handover** (stock stage, at session start and after a resume): the experimenter sets up (often standing) and hands the headset over; "forward" is then set by the participant's Meta-button recenter and checked by the head gate (steps 2, 4 and 6 below). A chamber that needs it also measures eye height there, so stimuli are placed relative to the participant, not the experimenter.
-- **Onboarding sequence** (PB-20b, PO 2026-11-07; stock stages in `GPL.Protocol`, order = the chamber's stage list, each stage switchable by a preset boolean `onboarding.<stage>`):
+- **Onboarding sequence** (PB-20b, PO 2026-11-07; stock stages in `GPL.Protocol`: names, switches and plan entries in `OnboardingStages`, screens and rows in `Onboarding` (PB-21); order = the chamber's stage list, each stage switchable by a preset boolean `onboarding.<stage>`):
   1. Chamber menu: Study ID, Start. A status line shows the headset volume read from Android against the chamber's target (`volume.target_step`): "Audio level: 10 (target 8)" (red when they differ). The read value is logged on `session_start` / `session_resume`; no volume pad (kept in code, `ChamberMenu.AskVolumeStep`).
   2. `handover` (experimenter): title "Protocol", a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue. No recenter here (the A-button recenter is dropped).
   3. `language` (participant).
@@ -176,6 +176,8 @@ MQDH does not list the per-app folder, so files are managed in the headset.
   Audio/ Images/ Materials/ Models/
   Docs/  Brief.md, Design.md, DataFormat.md, AnalysisPlan.md, SceneSetup.md, decisions/
 ```
+**Chamber logic** (PB-21): a chamber's MonoBehaviour derives from `ProtocolChamber` (App; itself a `ChamberBehaviour`), which owns the run loop (walker + structure rows), the onboarding stages (`GPL.Protocol.Onboarding`, section 8), the head gate before a trial, the block break, thanks, recenter rows, the plan hash check on resume and the cleanup after Stop. The chamber overrides `Schema`, `LogSchema`, `CreatePlan`, `RunTrial` and optionally `RunStage` / `BlockEnd` / `OnAbort`. A chamber without a staged protocol may derive from `ChamberBehaviour` directly.
+
 A chamber supplies a protocol (stages + resume policies), a trial runner (`ITrialRunner`), condition appliers (push parameter values into modules; shared by real runs and Debug), its log columns, parameter schema, bindings, posture and docs.
 
 Planned chambers (independent; order is a backlog decision):

@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.Template.Tests",
+    "rootNamespace": "AcousticChamber.Chambers.Template.Tests",
+    "references": ["AcousticChamber.Chambers.Template", "AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

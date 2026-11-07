@@ -26,5 +26,5 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 | Ticket | Status | Note |
 |---|---|---|
 | PB-20 Onboarding slides + sequence | Done | `4093c2e`, `c32b798`; 20a slide screen, 20b onboarding sequence; headset tests passed |
-| PB-21 Refactor before HumPerHW2 | Open | ProtocolChamber base, Onboarding helper, Debug sections + practice hooks, slide editor helpers |
+| PB-21 Refactor before HumPerHW2 | In progress | 21a ProtocolChamber + Onboarding (built, headset check pending); 21c slide editor helpers; 21b Debug sections + practice hooks |
 | PB-08 HumPerHW2 chamber | Open | planning first; Design / DataFormat / AnalysisPlan before code |
