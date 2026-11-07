@@ -1,0 +1,14 @@
+{
+    "name": "GPL.HearingLoss",
+    "rootNamespace": "GPL.HearingLoss",
+    "references": ["GPL.HearingLoss.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

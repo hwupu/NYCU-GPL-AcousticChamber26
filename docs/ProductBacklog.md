@@ -12,7 +12,7 @@ Product Owner: researcher. Status: Done / Open / Blocked (waiting for PO) / Clos
 | PB-06 | Main Hall + catalog + routing | Hall scene, chamber list, routing to the chamber menu of unfinished sessions | Done (2026-11-07) |
 | PB-07 | `_Template` chamber | Chamber menu (Study ID, Start, Debug, preset line, unfinished list), presets, all resume variants proven by a kill-the-app test | Done (2026-11-07) |
 | PB-08 | HumPerHW2 chamber (HW2 rebuilt) | Same protocol and trial data as HW2 on the modules; GPL.Acoustics, SpatialSources, Responses, DebugBench extracted | Open |
-| PB-09 | GPL.HearingLoss | ANSIS344 + test vectors; per-ear filter on the final output; per-ear test-tone check | Open |
+| PB-09 | GPL.HearingLoss | ANSIS344 + test vectors; per-ear filter on the final output; per-ear test-tone check | Done (2026-11-07; headless tests; test tone on the headset with PB-10) |
 | PB-10 | HearingLoss chamber | Brief, Design, DataFormat, AnalysisPlan approved, then built | Open |
 | PB-11 | MovingSource chamber | as above | Open |
 | PB-12 | HiddenSource chamber | as above | Open |

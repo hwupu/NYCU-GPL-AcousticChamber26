@@ -21,7 +21,7 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 | [SpatialSources](SpatialSources/README.md) | `GPL.SpatialSources.Core` + `GPL.SpatialSources` | sounds on a circle around an origin (azimuth, radius, re-placed or room-fixed), pulse train, background bed fixed in the room, Debug source marker | Core, Acoustics, Meta XR Audio |
 | [Responses](Responses/README.md) | `GPL.Responses.Core` + `GPL.Responses` | method-of-adjustment in azimuth with the triggers (rate, clamp, confirm guard, paused time excluded), result with signed error and a log note | Core, Input |
 
-Planned (Architecture section 4): HearingLoss.
+| [HearingLoss](HearingLoss/README.md) | `GPL.HearingLoss.Core` + `GPL.HearingLoss` | hearing loss on the final L/R output: ANSI S3.44 prediction (NIOSH HLSim port), presets, manual, per-ear 10-band peaking banks on the AudioListener, per-ear test tone | — (no Core dependency) |
 
 Conventions
 - Folder layout: `Core/` (pure, `noEngineReferences: true`), `Runtime/` (Unity), `Editor/`, `Tests/EditMode/`, `README.md`.
