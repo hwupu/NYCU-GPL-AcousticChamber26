@@ -65,6 +65,12 @@ namespace AcousticChamber.App
         /// may change a session or its log.
         /// </summary>
         public virtual void DebugSections(Column col, DebugBench bench) { }
+
+        /// <summary>
+        /// The experimenter went back from the Debug page to the chamber menu (PB-08e): undo what the chamber's Debug sections
+        /// left running (test sounds, displays). Default: nothing.
+        /// </summary>
+        public virtual void DebugLeft() { }
     }
 
     /// <summary>One run of a chamber, handed to <see cref="ChamberBehaviour.Run"/>.</summary>

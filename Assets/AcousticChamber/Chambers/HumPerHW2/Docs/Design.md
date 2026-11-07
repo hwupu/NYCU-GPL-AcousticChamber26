@@ -102,6 +102,16 @@ Besides Run / Playground / Presets / Log files / Practice trial:
 - **Acoustics:** 0.3 s Quiet, 0.7 s Noisy (starts the background), 2.2 s Reverb (background on), Preset (Meta Concrete, about 4 s);
   status shows the target, coefficient and calculated RT60.
 - **Playback:** Play stimulus (pulse train ahead at 2 m with the picture, current condition), Play / pause background.
-- **Measure RT60** (impulse at the stimulus source, Schroeder T20 / T30, about 5 s; `rt60_measured` row).
-- **Sound sphere:** Always visible / After confirm; Debug trials show the signed difference (audio − visual) until A.
-Leaving Debug returns to the Default acoustics.
+- **Measure RT60** (impulse at the stimulus source, Schroeder T20 / T30, about 5 s): result in the status line and the console only;
+  the Debug page writes no log rows (Q44). Logged measurements come from runs with `rt60.measure_at_block_start` (Q46).
+- **Sound sphere:** After confirm (default) / Always visible, a Debug-only display switch (not a preset key, not logged, Q45);
+  after each Debug trial the sphere stays at the answer and the cue reads "Sound ±x° from the picture (A: continue)" until A.
+  Real sessions never show it.
+Leaving Debug (‹ to the chamber menu) stops the test sound and the background and returns the room to Quiet (Q47).
+The sections use the Playground values. The buttons show their state (selected fill): the room in use (Quiet / Noisy / Reverb /
+Meta preset, one of four), Play stimulus and Background while they play (a paused background is off), Measure RT60 while it
+runs, and the sound-sphere mode (one of two). Headset checklist: [HeadsetTest.md](HeadsetTest.md).
+
+**Measure at block start (Q46):** with `rt60.measure_at_block_start = true`, before the first trial of each condition block (also
+after a resume) about 5 s of silence with the background paused, one `rt60_measured` row, and `rt60_measured_s` on that block's
+trial rows. Never in the practice.

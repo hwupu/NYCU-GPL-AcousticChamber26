@@ -55,8 +55,11 @@ Common (as the Template): `session_start`, `language`, `stage_begin/end`, `hando
   (`mode=custom rt60_target_s= reflection= rt60_expected_s=`) and the plugin status (`room_modeling=on late_reverb=on`).
 - `practice_choice`: after each practice trial, note `again` or `ready`.
 - `background`: note `on` / `off` and, on `on`, each source's listener-relative position (`bg1=x,y,z;...`) and `spatial=1`.
-- `rt60_measured`: note `target= t20= t30= depth_db= source=block_start|debug`.
-- `reverb` (Debug only): note target and coefficient, or `preset=Concrete`.
+- `rt60_measured` (only when `rt60.measure_at_block_start` is on, before a block's first trial; PB-08e, Q46): columns
+  `rt60_target_s`, `rt60_measured_s` (T20, empty when the measurement failed); note
+  `target=0.7 valid=1 t20=0.712 t30=0.698 depth_db=48 source=block_start` (or `valid=0 reason=...`).
+The Debug page's Measure RT60 and acoustics buttons write no rows (Q44): their results appear in the Debug status line and the
+console only.
 
 ## Rebuilding the trial table
 1. Keep `event == trial`, `mode == EXPERIMENT`, `stage == experiment`.

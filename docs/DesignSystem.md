@@ -71,6 +71,9 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - Switch 100 x 60 u: off = gray track, `text2` knob; on = prominent track, knob in the group color (`raised`, softer than black). The whole row is the target. While the row is hovered or pressed, the off track darkens to `raised` (the hovered row's fill is the track's own gray).
 - − / + steppers in a parameter row: borderless (in-group colors), fill on hover only, like every other control inside a group.
 - Segmented control: `surface` track inside a group, 4 u inset, selected segment `select`.
+- Toggle buttons and one-of button sets (PB-08e, e.g. Debug "Play stimulus", "0.7 s Noisy"): borderless buttons; the active one
+  (playing, chosen) has the `select` fill, hover a step lighter (`gray.pressed`); `UiButton.Selected`. Prominent and destructive
+  buttons have no selected state.
 
 ### Groups and rows (Debug, settings)
 - Group = `raised` container (radius 36, 8 u padding to the rows, rows 4 u apart), as wide as the page content (aligned with the header edges, 48 u from the window edge); rows 88 u high (radius 28): label (+ secondary line), value in `text2` (edited values in `text`), trailing control or `›`.

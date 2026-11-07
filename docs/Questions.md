@@ -1,6 +1,6 @@
 # Questions for the PO
 
-Open questions only. Answered rounds 1-5 (Q1-Q34): [archive/Questions-rounds-1-2.md](archive/Questions-rounds-1-2.md).
+Open questions only. Answered rounds 1-5 and 7 (Q1-Q34, Q44-Q48): [archive/Questions-rounds-1-2.md](archive/Questions-rounds-1-2.md).
 
 ## Open — round 6 (2026-11-07): PB-11 MovingSource, PB-12 HiddenSource
 Nothing is built for these two; the answers decide whether each one is an experience (ADR-0006, like HearingLoss) or a study

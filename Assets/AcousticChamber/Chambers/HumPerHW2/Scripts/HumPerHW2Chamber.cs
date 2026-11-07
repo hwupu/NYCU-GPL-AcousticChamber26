@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AcousticChamber.App;
 using GPL.Acoustics;
 using GPL.Core;
+using GPL.DebugBench;
 using GPL.Homing;
 using GPL.Input;
 using GPL.Logging;
@@ -180,12 +181,14 @@ namespace AcousticChamber.Chambers.HumPerHW2
             public const string Condition = "condition";
             public const string Background = "background";
             public const string PracticeChoice = "practice_choice";
+            public const string Rt60Measured = "rt60_measured";
         }
 
         // ---- run state ---------------------------------------------------------------------------------------
 
         string _applied;            // condition whose acoustics are on (null = none yet in this run)
         float _rt60Target;
+        float _rt60Measured = float.NaN; // T20 of the current block when measured at its start (Q46), else NaN
         readonly Dictionary<string, List<TrialSpec>> _lists = new Dictionary<string, List<TrialSpec>>();
         bool _inTrial;
         TrialSpec _spec;
@@ -193,7 +196,9 @@ namespace AcousticChamber.Chambers.HumPerHW2
         void StartRun()
         {
             Loc.Register(Strings.Table);
+            StopDebugPlayback(); // a Debug section may have left a test sound or the background on
             _applied = null;
+            _rt60Measured = float.NaN;
             _lists.Clear();
             _inTrial = false;
             if (listener != null) listener.Recentered += OnRecenter;
@@ -278,12 +283,51 @@ namespace AcousticChamber.Chambers.HumPerHW2
             if (s.Stage.Name == Stages.Practice)
             {
                 EnsureCondition(Conditions.Practice);
-                return DoTrial(PracticeSpec(s.Trial + 1), hints: true, iti: false);
+                yield return DoTrial(PracticeSpec(s.Trial + 1), hints: true, iti: false);
+                yield break;
             }
             string condition = ConditionOf(s.Block);
-            EnsureCondition(condition);
+            bool switched = EnsureCondition(condition);
+            if (switched && CurrentRun.Values.GetBool("rt60.measure_at_block_start")) yield return MeasureAtBlockStart();
             var list = ListOf(condition);
-            return DoTrial(list[Mathf.Clamp(s.Trial, 0, list.Count - 1)], hints: false, iti: s.Trial > 0);
+            yield return DoTrial(list[Mathf.Clamp(s.Trial, 0, list.Count - 1)], hints: false, iti: s.Trial > 0);
+        }
+
+        /// <summary>
+        /// Q46: the rendered RT60 before the block's first trial (also after a resume): about 5 s of silence with the background
+        /// paused, one <c>rt60_measured</c> row; its T20 goes into <c>rt60_measured_s</c> of the block's trial rows.
+        /// </summary>
+        IEnumerator MeasureAtBlockStart()
+        {
+            Rt60Result result = default;
+            yield return Measure(_rt60Target, r => result = r);
+            _rt60Measured = result.Valid ? (float)result.T20 : float.NaN;
+            CurrentRun.Log.Write(Events.Rt60Measured, new LogValues()
+                .Set("rt60_target_s", _rt60Target)
+                .Set("rt60_measured_s", result.Valid ? Fmt.F(result.T20, 3) : ""),
+                "target=" + Fmt.F(_rt60Target) + " " + result.Note() + " source=block_start");
+        }
+
+        /// <summary>One RT60 measurement through the stimulus source (GPL.Acoustics <see cref="Rt60Meter"/> on the AudioListener, added at run time).</summary>
+        IEnumerator Measure(float expectedRt60, System.Action<Rt60Result> done)
+        {
+            var meter = Meter();
+            if (meter == null || stimulus == null)
+            {
+                done(Rt60Result.Invalid(meter == null ? "no AudioListener" : "no stimulus source"));
+                yield break;
+            }
+            if (pulse != null) pulse.Stop();
+            yield return meter.Measure(stimulus.Source, Mathf.Max(0.3f, expectedRt60),
+                                       silence => { if (background != null) background.Pause(silence); }, done);
+        }
+
+        Rt60Meter Meter()
+        {
+            var listener = FindAnyObjectByType<AudioListener>();
+            if (listener == null) return null;
+            var meter = listener.GetComponent<Rt60Meter>();
+            return meter != null ? meter : listener.gameObject.AddComponent<Rt60Meter>();
         }
 
         List<TrialSpec> ListOf(string condition)
@@ -320,6 +364,8 @@ namespace AcousticChamber.Chambers.HumPerHW2
             _inTrial = true;
             if (pulse != null) pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
             if (hints) Screens.Cue(Loc.Get(Strings.Hint));
+            bool debug = run.IsDebug;
+            if (debug && SphereAlwaysVisible && marker != null) marker.Show(true); // Q45: Debug runs only
 
             var settings = new AdjustSettings
             {
@@ -333,6 +379,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
                                     az => { if (stimulus != null) stimulus.SetAzimuth(az); }, r => result = r);
 
             _inTrial = false;
+            Vector3 answer = stimulus != null ? stimulus.transform.position : Vector3.zero;
             StopStimuli();
             Screens.Cue(null);
 
@@ -345,14 +392,30 @@ namespace AcousticChamber.Chambers.HumPerHW2
                 .Set("duration_s", result.DurationS)
                 .Set("radius_m", spec.RadiusM)
                 .Set("rt60_target_s", _rt60Target)
-                .Set("rt60_measured_s", "")
+                .Set("rt60_measured_s", spec.Condition != Conditions.Practice && !float.IsNaN(_rt60Measured) ? Fmt.F(_rt60Measured, 3) : "")
                 .Set("background", bg)
                 .Set("stim_level_dbfs", stimulus != null ? Fmt.F(stimulus.LevelDbfs, 2) : "")
                 .Set("bg_level_dbfs", bg ? Fmt.F(background.LevelDbfs, 2) : "")
                 .Set("gate_s", gate != null ? Fmt.F(gate.DurationSec, 3) : "")
                 .Set("stop_dialog", StopDialog.OpenCount != stops);
             run.Log.Write(LogEvents.Trial, values, result.Note());
+
+            // Q45, Debug runs only (after the row, so a real session's trial still ends with its row): the sphere at the answer
+            // and the signed difference until A
+            if (debug)
+            {
+                if (marker != null) marker.ShowAt(answer);
+                double diff = result.SignedErrorDeg;
+                Screens.Cue("Sound " + (diff >= 0 ? "+" : "−") + Fmt.F(System.Math.Abs(diff), 1) + "° from the picture   (A: continue)");
+                yield return null; // the confirming press is not the continue press
+                while (!Screens.PressedA()) yield return null;
+                Screens.Cue(null);
+                if (marker != null) marker.Show(false);
+            }
         }
+
+        /// <summary>Q45: Debug display switch (not a preset key, not logged): the sphere on the sound during Debug trials, or only after the answer.</summary>
+        public static bool SphereAlwaysVisible { get; set; }
 
         /// <summary>Picture and sound of the current trial on the circle around <paramref name="origin"/> (at the head's height).</summary>
         void Place(Vector3 origin, Quaternion yaw)
@@ -396,8 +459,205 @@ namespace AcousticChamber.Chambers.HumPerHW2
             if (marker != null) marker.Show(false);
         }
 
-        Vector3 HeadOrigin() => Rig != null && Rig.centerEyeAnchor != null ? Rig.centerEyeAnchor.position : new Vector3(0f, 1.2f, 0f);
-        Quaternion Yaw() => Rig != null ? Ring.YawOf(Rig.transform.forward) : Quaternion.identity;
+        OVRCameraRig _rigOutsideRun;
+
+        /// <summary>The run's rig, or (Debug sections, outside a run) the scene's.</summary>
+        OVRCameraRig AnyRig => Rig != null ? Rig : _rigOutsideRun != null ? _rigOutsideRun : (_rigOutsideRun = HeadPose.FindRig());
+
+        Vector3 HeadOrigin() => AnyRig != null && AnyRig.centerEyeAnchor != null ? AnyRig.centerEyeAnchor.position : new Vector3(0f, 1.2f, 0f);
+        Quaternion Yaw() => AnyRig != null ? Ring.YawOf(AnyRig.transform.forward) : Quaternion.identity;
+
+        // ---- Debug sections (Design.md "Debug", PB-08e, Q44-Q47) -----------------------------------------------
+
+        DebugBench _bench;
+        bool _measuring;
+        const string PresetMode = "preset";
+        string _debugRoom;          // quiet / noisy / reverb / preset set from the Debug page; null = not set there
+        UiButton[] _roomButtons, _measureButtons, _playButtons, _sphereButtons;
+
+        /// <summary>
+        /// Acoustics, playback, RT60 measurement and the sound sphere, on the Playground values. Nothing here writes a log row.
+        /// The buttons show their state (UiButton.Selected): the room in use (one of four), the playing sounds, a running
+        /// measurement and the sphere mode (one of two).
+        /// </summary>
+        public override void DebugSections(Column col, DebugBench bench)
+        {
+            _bench = bench;
+            col.Label("Acoustics");
+            var conditions = col.Buttons("Conditions",
+                ("0.3 s Quiet", UiStyle.Borderless, () => DebugCondition(Conditions.Quiet)),
+                ("0.7 s Noisy", UiStyle.Borderless, () => DebugCondition(Conditions.Noisy)),
+                ("2.2 s Reverb", UiStyle.Borderless, () => DebugCondition(Conditions.Reverb)));
+            var room = col.Buttons("Room",
+                ("Meta preset", UiStyle.Borderless, DebugPreset),
+                ("Measure RT60", UiStyle.Borderless, DebugMeasure));
+            _roomButtons = new[] { conditions[0], conditions[1], conditions[2], room[0] };
+            _measureButtons = new[] { room[1] };
+            col.Label("Playback");
+            _playButtons = col.Buttons("Playback",
+                ("Play stimulus", UiStyle.Borderless, DebugToggleStimulus),
+                ("Background", UiStyle.Borderless, DebugToggleBackground));
+            col.Label("Sound sphere");
+            _sphereButtons = col.Buttons("Sound sphere",
+                ("After confirm", UiStyle.Borderless, () => DebugSphere(false)),
+                ("Always visible", UiStyle.Borderless, () => DebugSphere(true)));
+            RefreshDebugButtons();
+        }
+
+        /// <summary>Selected = on: the room in use, stimulus / background playing (a paused background is off), measuring, the sphere mode.</summary>
+        void RefreshDebugButtons()
+        {
+            string[] rooms = { Conditions.Quiet, Conditions.Noisy, Conditions.Reverb, PresetMode };
+            Select(_roomButtons, i => _debugRoom == rooms[i]);
+            Select(_measureButtons, _ => _measuring);
+            Select(_playButtons, i => i == 0 ? pulse != null && pulse.Playing : background != null && background.Playing && !background.Paused);
+            Select(_sphereButtons, i => (i == 1) == SphereAlwaysVisible);
+        }
+
+        static void Select(UiButton[] buttons, System.Func<int, bool> on)
+        {
+            if (buttons == null) return;
+            for (int i = 0; i < buttons.Length; i++)
+                if (buttons[i] != null) buttons[i].Selected = on(i); // destroyed with the page: Unity null
+        }
+
+        /// <summary>Q47: back to the chamber menu stops the test sound and the background and returns the room to Quiet.</summary>
+        public override void DebugLeft()
+        {
+            if (CurrentRun != null) return;
+            StopDebugPlayback();
+            var values = _bench != null ? _bench.Work.Values : CreateDefaults();
+            if (reverb != null && !_measuring)
+            {
+                reverb.SetRt60(values.GetFloat(Conditions.Rt60Key(Conditions.Quiet)));
+                _debugRoom = Conditions.Quiet;
+            }
+            RefreshDebugButtons();
+        }
+
+        void StopDebugPlayback()
+        {
+            StopStimuli();
+            if (background != null) background.End();
+            _debugRoom = null; // a run sets its own acoustics
+            RefreshDebugButtons();
+        }
+
+        ParameterSet DebugValues => _bench != null ? _bench.Work.Values : CreateDefaults();
+
+        void Status(string text)
+        {
+            if (_bench != null) _bench.SetStatus(text);
+            else Debug.Log("[Chamber:" + Id + "] " + text);
+        }
+
+        bool DebugBusy()
+        {
+            if (CurrentRun != null) { Status("A run is active."); return true; }
+            if (_measuring) { Status("Measuring RT60, wait about 5 s."); return true; }
+            return false;
+        }
+
+        void DebugCondition(string condition)
+        {
+            if (DebugBusy()) return;
+            var v = DebugValues;
+            float rt = v.GetFloat(Conditions.Rt60Key(condition));
+            if (reverb != null) reverb.SetRt60(rt);
+            if (background != null)
+            {
+                if (Conditions.HasBackground(condition))
+                {
+                    if (!background.Playing) background.Begin(HeadOrigin(), Yaw(), v.GetFloat("bg.radius_m"), ParseAzimuths(v.GetText("bg.azimuths_deg")));
+                    else background.Pause(false);
+                }
+                else background.End();
+            }
+            _debugRoom = condition;
+            RefreshDebugButtons();
+            Status(char.ToUpperInvariant(condition[0]) + condition.Substring(1) + ": " + (reverb != null ? reverb.Describe() : "no reverb tuner") +
+                   (background != null && background.Playing ? ", background on (" + Fmt.F(background.LevelDbfs, 1) + " dBFS)" : ", no background"));
+        }
+
+        void DebugPreset()
+        {
+            if (DebugBusy()) return;
+            if (reverb == null) { Status("No reverb tuner (Step 4)."); return; }
+            reverb.UsePreset();
+            _debugRoom = PresetMode;
+            RefreshDebugButtons();
+            Status(reverb.Describe());
+        }
+
+        void DebugToggleStimulus()
+        {
+            if (DebugBusy()) return;
+            if (pulse != null && pulse.Playing)
+            {
+                StopStimuli();
+                RefreshDebugButtons();
+                Status("Stimulus stopped.");
+                return;
+            }
+            var v = DebugValues;
+            _spec = new TrialSpec { Condition = "debug", Index = 0, VisualAzDeg = 0f, AudioStartAzDeg = 0f, RadiusM = v.GetFloat("radius_m") };
+            Place(HeadOrigin(), Yaw());
+            if (pulse != null) pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
+            if (SphereAlwaysVisible && marker != null) marker.Show(true);
+            RefreshDebugButtons();
+            Status("Stimulus ahead at " + Fmt.F(_spec.RadiusM, 1) + " m with the picture (" + (reverb != null ? reverb.Describe() : "no reverb") + "). Press again to stop.");
+        }
+
+        void DebugToggleBackground()
+        {
+            if (DebugBusy()) return;
+            if (background == null) { Status("No background (Step 4)."); return; }
+            var v = DebugValues;
+            if (!background.Playing)
+            {
+                background.Begin(HeadOrigin(), Yaw(), v.GetFloat("bg.radius_m"), ParseAzimuths(v.GetText("bg.azimuths_deg")));
+                Status("Background playing (" + Fmt.F(background.LevelDbfs, 1) + " dBFS), fixed in the room.");
+            }
+            else
+            {
+                background.Pause(!background.Paused);
+                Status(background.Paused ? "Background paused." : "Background playing.");
+            }
+            RefreshDebugButtons();
+        }
+
+        void DebugSphere(bool always)
+        {
+            SphereAlwaysVisible = always;
+            if (marker != null && pulse != null && pulse.Playing) marker.Show(always);
+            RefreshDebugButtons();
+            Status(always ? "Sound sphere: always visible in Debug trials." : "Sound sphere: shown after confirm in Debug trials.");
+        }
+
+        void DebugMeasure()
+        {
+            if (DebugBusy()) return;
+            if (reverb == null) { Status("No reverb tuner (Step 4)."); return; }
+            float expected = reverb.Custom ? reverb.ExpectedRt60() : reverb.PresetRt60();
+            StopStimuli();
+            StartCoroutine(DebugMeasureRun(expected));
+        }
+
+        IEnumerator DebugMeasureRun(float expected)
+        {
+            _measuring = true;
+            RefreshDebugButtons();
+            Status("Measuring RT60 (" + reverb.Describe() + "): about 5 s of silence, then an impulse…");
+            Rt60Result result = default;
+            yield return Measure(expected, r => result = r);
+            _measuring = false;
+            RefreshDebugButtons();
+            // Q44: status line and console only, no log row
+            Status(result.Valid
+                ? "RT60 T20 " + Fmt.F(result.T20, 2) + " s, T30 " + (double.IsNaN(result.T30) ? "n/a" : Fmt.F(result.T30, 2) + " s") +
+                  ", depth " + Fmt.F(result.DepthDb, 0) + " dB (expected " + Fmt.F(expected, 2) + " s)"
+                : "RT60 measurement failed: " + result.Reason);
+        }
 
         // ---- acoustics per condition (Design.md "Conditions") -----------------------------------------------
 
@@ -406,10 +666,11 @@ namespace AcousticChamber.Chambers.HumPerHW2
         /// background on (placed around the head, then fixed in the room) or off. Writes a <c>condition</c> row and, when the
         /// background starts or stops, a <c>background</c> row. Called before a block's first trial and again after a resume.
         /// </summary>
-        void EnsureCondition(string condition)
+        bool EnsureCondition(string condition)
         {
-            if (_applied == condition) return;
+            if (_applied == condition) return false;
             _applied = condition;
+            _rt60Measured = float.NaN;
             var run = CurrentRun;
             var v = run.Values;
             _rt60Target = v.GetFloat(Conditions.Rt60Key(condition));
@@ -436,6 +697,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
                 .Set("background", bg)
                 .Set("bg_level_dbfs", bg ? Fmt.F(background.LevelDbfs, 2) : ""),
                 (reverb != null ? reverb.Note() : "reverb=none") + " " + (reverb != null ? reverb.RoomModelingStatus : ""));
+            return true;
         }
 
         static float[] ParseAzimuths(string text)

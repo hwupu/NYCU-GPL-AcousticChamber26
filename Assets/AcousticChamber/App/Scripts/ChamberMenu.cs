@@ -107,6 +107,7 @@ namespace AcousticChamber.App
             var menu = _pages.Push(chamber.MenuTitle);
             BuildMenu(menu.Rect);
             menu.Returned += Refresh;
+            menu.Returned += logic.DebugLeft; // only the Debug pages lie above the menu page
             Refresh();
             if (AppNav.TakeRoutedAtLaunch())
                 SetStatus("Opened at launch: this chamber has unfinished sessions. Enter the Study ID, then Start.");

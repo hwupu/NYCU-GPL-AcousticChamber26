@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.Chambers.HumPerHW2",
     "rootNamespace": "AcousticChamber.Chambers.HumPerHW2",
-    "references": ["AcousticChamber.Chambers.HumPerHW2.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol.Core", "GPL.Protocol", "GPL.DebugBench", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.SpatialSources.Core", "GPL.SpatialSources", "GPL.Responses.Core", "GPL.Responses", "Meta.XR.Audio", "Unity.TextMeshPro", "Oculus.VR"],
+    "references": ["AcousticChamber.Chambers.HumPerHW2.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol.Core", "GPL.Protocol", "GPL.DebugBench.Core", "GPL.DebugBench","GPL.Acoustics.Core", "GPL.Acoustics", "GPL.SpatialSources.Core", "GPL.SpatialSources", "GPL.Responses.Core", "GPL.Responses", "Meta.XR.Audio", "Unity.TextMeshPro", "Oculus.VR"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

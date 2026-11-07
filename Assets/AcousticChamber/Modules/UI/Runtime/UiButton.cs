@@ -38,6 +38,18 @@ namespace GPL.UI
             set { inGroup = value; Restyle(); }
         }
 
+        /// <summary>
+        /// The active state of a toggle or of the chosen button in a set (DesignSystem section 4, segmented controls): the fill
+        /// is the theme's <c>select</c> colour, hover a step lighter. Not for Prominent or Destructive buttons.
+        /// </summary>
+        public bool Selected
+        {
+            get => _selected;
+            set { if (_selected == value) return; _selected = value; Restyle(); }
+        }
+
+        bool _selected;
+
         /// <summary>True while the trigger holds this button down (set by <see cref="UiPointer"/>).</summary>
         public bool IsPressedVisual => _pressed;
 
@@ -138,6 +150,12 @@ namespace GPL.UI
                 c.normal = Theme.borderlessInGroup.normal;
                 c.hover = Theme.borderlessInGroup.hover;
                 c.pressed = Theme.borderlessInGroup.pressed;
+            }
+            if (_selected && style != UiStyle.Prominent && style != UiStyle.Destructive)
+            {
+                c.normal = Theme.select;
+                c.hover = Theme.gray.pressed;
+                c.pressed = Theme.gray.pressed;
             }
             label = c.label;
             scale = 1f;

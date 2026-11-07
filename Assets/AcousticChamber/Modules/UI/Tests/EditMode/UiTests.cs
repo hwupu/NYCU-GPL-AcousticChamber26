@@ -397,6 +397,27 @@ namespace GPL.UI.Tests
         }
 
         [Test]
+        public void SelectedButtonUsesTheSelectColour()
+        {
+            var th = UiKit.Theme;
+            var b = UiKit.Button(_canvas.transform, "B", "Play", UiStyle.Borderless, Vector2.zero, Vector2.zero);
+            b.InGroup = true;
+            b.FinishTransition();
+            Assert.AreEqual(th.borderlessInGroup.normal, b.CurrentFill);
+            b.Selected = true;
+            b.FinishTransition();
+            Assert.AreEqual(th.select, b.CurrentFill, "selected = segmented-control select colour");
+            b.Selected = false;
+            b.FinishTransition();
+            Assert.AreEqual(0f, b.CurrentFill.a, 1e-6f, "back to no fill (the fade keeps the tint at alpha 0)");
+
+            var p = UiKit.Button(_canvas.transform, "P", "Run", UiStyle.Prominent, Vector2.zero, Vector2.zero);
+            p.Selected = true;
+            p.FinishTransition();
+            Assert.AreEqual(th.prominent.normal, p.CurrentFill, "prominent ignores Selected");
+        }
+
+        [Test]
         public void ButtonIsCapsuleWithMinimumSizeAndStyleColors()
         {
             var th = UiKit.Theme;
