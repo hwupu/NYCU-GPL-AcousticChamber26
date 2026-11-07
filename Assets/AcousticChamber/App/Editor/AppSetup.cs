@@ -28,6 +28,7 @@ namespace AcousticChamber.App.Editor
         const string BenchTestPanelName = "Debug Bench Test Panel";
         const string HomingTestPanelName = "Homing Test Panel";
         const string HearingLossTestPanelName = "Hearing Loss Test Panel";
+        const string KeyboardTestPanelName = "Keyboard Test Panel";
         const string GroupExperiment = "Experiment";
         const string HomingName = "Homing";
         const string FixationMatPath = "Assets/AcousticChamber/Settings/Materials/Fixation.mat";
@@ -192,6 +193,40 @@ namespace AcousticChamber.App.Editor
             EditorSceneManager.SaveOpenScenes();
         }
 
+        /// <summary>
+        /// Adds the system keyboard test panel (KeyboardTestPanel + NativeKeyboardEntry); it replaces the other test panels. Headset
+        /// check for PB-14 (build to the headset; the keyboard does not exist over Link). Test matrix: docs/references/Keyboard.md.
+        /// </summary>
+        [MenuItem("Magic/App/Keyboard Test Panel (open scene)", priority = 55)]
+        public static void AddKeyboardTestPanel()
+        {
+            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
+            {
+                Debug.LogError("[GPL] Add the Camera Rig building block first.");
+                return;
+            }
+            var theme = EnsureUiAssets();
+            EnsureGlobalActions();
+            var ui = UiSetup.EnsureGroup(GroupUI);
+            UiSetup.EnsureUiRoot(ui, theme);
+            RemoveTestPanels(ui);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, KeyboardTestPanelName, KeyboardTestPanel.Size);
+            canvas.AddComponent<NativeKeyboardEntry>();
+            canvas.AddComponent<KeyboardTestPanel>();
+            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
+            UiSetup.MarkSceneDirty();
+            Debug.Log("[GPL] Keyboard test panel added under '" + GroupUI + "'. Save the scene, then build to the headset (see docs/references/Keyboard.md).");
+        }
+
+        /// <summary>Headless (mirror project): the keyboard test panel in the Sandbox scene, saved.</summary>
+        public static void BatchKeyboardTestPanel()
+        {
+            HallSetup.CreateSandbox();
+            EditorSceneManager.OpenScene(HallSetup.SandboxScene, OpenSceneMode.Single);
+            AddKeyboardTestPanel();
+            EditorSceneManager.SaveOpenScenes();
+        }
+
         /// <summary>One Homing object (group Experiment) with a FixationCue (URP Unlit #262626 material) and a RecenterListener.</summary>
         public static (FixationCue, RecenterListener) EnsureHoming()
         {
@@ -217,7 +252,7 @@ namespace AcousticChamber.App.Editor
 
         internal static void RemoveTestPanels(Transform ui)
         {
-            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName }) RemoveChild(ui, n);
+            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName, KeyboardTestPanelName }) RemoveChild(ui, n);
         }
 
         static void RemoveChild(Transform parent, string childName)

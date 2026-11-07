@@ -31,3 +31,4 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 | PB-09 GPL.HearingLoss | Done | ANSIS344 (20 vectors exact), presets, state, per-ear banks on the AudioListener, test tone + Hearing Loss Test Panel; headset tone check open |
 | PB-10 HearingLoss chamber | Built | experience chamber (ADR-0006): panel, floor-drag speaker (`FloorDragSource`, pointer `IRayTarget`), dry; 257 pass; PO: run Magic > HearingLoss 1-2, headset check |
 | PB-13 New-chamber tooling | Done | `Magic > App > New Chamber...` (ChamberCopy rules + NewChamber window); probe chamber compiled and ran its Steps headless; 262 pass |
+| PB-14 Native keyboard on Quest | Blocked (PO headset test) | `NativeKeyboardEntry` + Keyboard Test Panel; likely cause GameActivity entry point; test matrix in docs/references/Keyboard.md |
