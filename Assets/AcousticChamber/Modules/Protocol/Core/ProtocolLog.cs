@@ -43,6 +43,7 @@ namespace GPL.Protocol
                     break;
                 case StepKind.StageEnd:
                     c.Block = "";
+                    c.Condition = ""; // stage rows carry no position (a chamber may have set it for the stage's blocks)
                     c.Attempt = null;
                     c.Trial = null;
                     log.Write(LogEvents.StageEnd, step.Replay ? "again after resume" : "");

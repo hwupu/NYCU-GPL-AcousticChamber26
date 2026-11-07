@@ -27,7 +27,7 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 |---|---|---|
 | PB-20 Onboarding slides + sequence | Done | `4093c2e`, `c32b798`; 20a slide screen, 20b onboarding sequence; headset tests passed |
 | PB-21 Refactor before HumPerHW2 | Done | 21a `1b14b55`, 21c `22bba33`, 21b Debug sections + Practice trial; headset check passed |
-| PB-08 HumPerHW2 chamber | Done | 08a docs; 08b `a373286`; 08c `32813cb`; 08d-1 `d107cbc`; 08d-2 `0345c8e`; 08d-3 `d6bce62`; 08e `fa1ce9d`. Closed by the PO 2026-11-08 after an editor session (S0003, 18 trials, order reverb-quiet-noisy, data correct); not run: Quest checklist (Docs/HeadsetTest.md), Android RT60, HW2 CSV comparison; known: `condition` also on stage_end rows |
+| PB-08 HumPerHW2 chamber | Done | 08a docs; 08b `a373286`; 08c `32813cb`; 08d-1 `d107cbc`; 08d-2 `0345c8e`; 08d-3 `d6bce62`; 08e `fa1ce9d`. Closed by the PO 2026-11-08 after an editor session (S0003, 18 trials, order reverb-quiet-noisy, data correct); not run: Quest checklist (Docs/HeadsetTest.md), Android RT60, HW2 CSV comparison; fixed after closing: `condition` on stage_end rows (ProtocolLog clears it) |
 | PB-09 GPL.HearingLoss | Done | ANSIS344 (20 vectors exact), presets, state, per-ear banks on the AudioListener, test tone + Hearing Loss Test Panel; PO verified 2026-11-08 |
 | PB-10 HearingLoss chamber | Done | experience chamber (ADR-0006): panel, floor-drag speaker, dry; PO verified 2026-11-08; panel fix: Normal hearing + auto levels |
 | PB-13 New-chamber tooling | Done | `Magic > App > New Chamber...` (ChamberCopy rules + NewChamber window); PO verified 2026-11-08 |

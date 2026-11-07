@@ -209,6 +209,27 @@ namespace GPL.Protocol.Tests
         }
 
         [Test]
+        public void Log_StageEndClearsTheCondition()
+        {
+            var sw = new StringWriter();
+            var ctx = new LogContext { SessionId = "s", Chamber = "HumPerHW2" };
+            var log = new EventLog(sw, new ManualClock(new DateTime(2026, 11, 8, 10, 0, 0)), new LogSchema("rt_s"), ctx);
+            var w = new ProtocolWalker(ProtocolPlan.SingleTrial("practice"), NewRecord(), false);
+            while (w.Next())
+            {
+                if (w.Current.Kind != StepKind.StageBegin && w.Current.Kind != StepKind.StageEnd) ctx.Condition = "noisy"; // as a chamber's BeforeRow
+                ProtocolLog.Write(log, w.Current);
+            }
+            var lines = sw.ToString().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(l => l.TrimEnd('\r')).ToList();
+            var header = Csv.SplitLine(lines[0]).ToArray();
+            int ev = Array.IndexOf(header, "event"), cond = Array.IndexOf(header, "condition");
+            var rows = lines.Skip(1).Select(l => Csv.SplitLine(l).ToArray()).ToList();
+            Assert.AreEqual(new[] { "", "noisy", "noisy", "" }, rows.Select(r => r[cond]).ToArray(),
+                            string.Join(",", rows.Select(r => r[ev])));
+            Assert.AreEqual("", ctx.Condition, "cleared for the next stage");
+        }
+
+        [Test]
         public void Log_WritesStructureRows_AndPositionColumns()
         {
             var sw = new StringWriter();
