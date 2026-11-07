@@ -36,3 +36,12 @@ Answered questions moved out of [../Questions.md](../Questions.md) on 2026-11-07
 | # | Topic | PO answer | Where |
 |---|---|---|---|
 | Q18 | Visual design | Agent proposal accepted. | DesignSystem.md |
+
+## Round 4 (2026-11-07, PB-08 HumPerHW2): answered
+| # | Topic | PO answer | Where |
+|---|---|---|---|
+| Q19 | Condition order | **Counterbalanced by default** (not HW2's fixed Quiet, Noisy, Reverb); preset key `condition_order`, `fixed` kept as an option. | HumPerHW2 Design |
+| Q20 | Practice | Repeatable as in HW2 (Practice again / I'm ready). | HumPerHW2 Design |
+| Q21 | Resume | Experiment `next_trial` (RT60 and background re-applied), practice `stage_start`. | HumPerHW2 Design |
+| Q29 | Counterbalancing | 3-row Latin square (QNR, NRQ, RQN by (Study ID − 1) mod 3), not all 6 orders; carry-over not balanced. | HumPerHW2 Design |
+| Q22-Q28 | Slides, columns, gate, RT60 measurement, block break, label, split | Agent defaults accepted: HW2 slides 3-5 as instructions; HW2 columns + factor columns; gate ±5° / ±10° / 1 s; measurement off; stock block break, background continues; label `C01`; PB-08a-e. | HumPerHW2 Docs, SprintBoard |

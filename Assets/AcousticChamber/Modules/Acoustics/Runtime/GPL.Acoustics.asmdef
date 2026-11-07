@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Acoustics",
+    "rootNamespace": "GPL.Acoustics",
+    "references": ["GPL.Core", "GPL.Acoustics.Core", "Meta.XR.Audio"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -16,7 +16,9 @@ assembly definitions and tests. **To reuse a module in another project, copy its
 | [Homing](Homing/README.md) | `GPL.Homing.Core` + `GPL.Homing` | head gate with a fixation dot, app-requested system recenter (not used by the onboarding), Meta-button recenter listener; results as `homing` / `recenter` notes; gate as preset parameters | Core, Params, Meta XR Core |
 | [Protocol](Protocol/README.md) | `GPL.Protocol.Core` + `GPL.Protocol` | stage tree (stage > block > trial) walked with the session cursor: resume policies, attempts, replayed handover, structure log rows; stock screens (handover, language, recenter slide, instruction slides, dot check, messages, cue text) | Core, Session, Logging; screens: UI, Input, Homing, Meta XR Core |
 
-Planned (Architecture section 4): Acoustics, HearingLoss, SpatialSources, Responses.
+| [Acoustics](Acoustics/README.md) | `GPL.Acoustics.Core` + `GPL.Acoustics` | Meta XR Audio shoebox: RT60 target via a measured coefficient table, RT60 measurement of the rendered output (Schroeder T20/T30), clip levels; Editor: Reflection mixer, room builder, audio build-settings guard | Core, Meta XR Audio, URP |
+
+Planned (Architecture section 4): HearingLoss, SpatialSources, Responses.
 
 Conventions
 - Folder layout: `Core/` (pure, `noEngineReferences: true`), `Runtime/` (Unity), `Editor/`, `Tests/EditMode/`, `README.md`.

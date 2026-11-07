@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Acoustics.Editor",
+    "rootNamespace": "GPL.Acoustics.Editor",
+    "references": ["GPL.Core", "GPL.Acoustics.Core", "GPL.Acoustics", "Meta.XR.Audio"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
