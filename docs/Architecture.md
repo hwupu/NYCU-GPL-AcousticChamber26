@@ -186,7 +186,7 @@ Planned chambers (independent; order is a backlog decision):
 - **MovingSource** — move a source (grab / scripted) to experience spatial audio.
 - **HiddenSource** — locate an invisible source placed at random.
 - Realistic room, outdoor (later).
-- **_Template** — minimal working chamber to copy.
+- **_Template** — minimal working chamber to copy: `Magic > App > New Chamber...` (PB-13) copies it to `Chambers/<Id>` with new GUIDs and renamed code, menus and paths; docs become skeletons.
 
 ## 13. Scene setup, validation, tests
 - Menu **Magic**: `Magic > App > ...`, `Magic > <ChamberId> > Step 1..N, Hot Fix`, `Magic > Validate Setup` (all catalog scenes). Module Editor code provides reusable builders (`RoomBuilder`, `MixerSetup`, `OverlayCanvasBuilder`) that chamber steps call.

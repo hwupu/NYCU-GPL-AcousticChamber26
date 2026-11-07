@@ -16,7 +16,7 @@ Product Owner: researcher. Status: Done / Open / Blocked (waiting for PO) / Clos
 | PB-10 | HearingLoss chamber | Experience chamber (ADR-0006, PO 2026-11-07): own panel (sound, play / pause, ear, NIOSH presets), speaker dragged on the floor, dry, no logs; headset check | Built (2026-11-07; headless Steps + Validate; PO runs Magic > HearingLoss Steps 1-2, headset check open) |
 | PB-11 | MovingSource chamber | as above | Open |
 | PB-12 | HiddenSource chamber | as above | Open |
-| PB-13 | New-chamber tooling | `Magic > App > New Chamber...` copies `_Template` and renames | Open |
+| PB-13 | New-chamber tooling | `Magic > App > New Chamber...` copies `_Template` and renames | Done (2026-11-07; headless: probe chamber created, compiled, its Magic steps ran) |
 | PB-14 | Native keyboard on Quest | Find why `TouchScreenKeyboard` did not show in the HW2 standalone build; `NativeKeyboardEntry` works or is documented as unusable | Open |
 | PB-15 | Data manager in Debug | Per chamber: list sessions (CSV + session file pair), delete one or all with confirmation; only that chamber's folder | Done (2026-11-07; core in PB-04, page in PB-19c) |
 | PB-16 | Visual design system | Colors, font (Noto Sans TC for English + 中文), text sizes for VR, panel and button styles agreed before UI code; written to `docs/DesignSystem.md` | Done (v1 applied in PB-05; v2 accepted 2026-11-05 via `docs/design/components.html`, ADR-0005) |
