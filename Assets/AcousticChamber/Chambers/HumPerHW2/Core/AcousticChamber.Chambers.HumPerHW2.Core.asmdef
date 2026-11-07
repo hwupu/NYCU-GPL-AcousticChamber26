@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HumPerHW2.Core",
+    "rootNamespace": "AcousticChamber.Chambers.HumPerHW2",
+    "references": ["GPL.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

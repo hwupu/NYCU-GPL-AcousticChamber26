@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HumPerHW2.Editor",
+    "rootNamespace": "AcousticChamber.Chambers.HumPerHW2.Editor",
+    "references": ["AcousticChamber.Chambers.HumPerHW2", "AcousticChamber.Chambers.HumPerHW2.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.Params.Core", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol", "GPL.Protocol.Editor", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "GPL.SpatialSources", "Meta.XR.Audio", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

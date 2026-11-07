@@ -71,7 +71,6 @@ left, right; each side's three azimuths once per condition, shuffled with seed `
 | Key | Default | Range | Group |
 |---|---|---|---|
 | `condition_order` | `latin_square` | `latin_square`, `fixed` | Procedure |
-| `trials_per_condition` | 6 | fixed by the plan (6) | Procedure |
 | `iti_s` | 0.6 | 0-5, step 0.1 | Procedure |
 | `radius_m`, `practice.radius_m` | 2.0, 1.2 | 0.5-5, step 0.1 | Stimuli |
 | `audio_start_deg`, `practice.audio_start_deg`, `practice.visual_deg` | 60, 30, 0 | -90..90 | Stimuli |
@@ -81,11 +80,13 @@ left, right; each side's three azimuths once per condition, shuffled with seed `
 | `rt60.quiet_s`, `rt60.noisy_s`, `rt60.reverb_s` | 0.3, 0.7, 2.2 | 0.3-6 (table range) | Acoustics |
 | `bg.radius_m`, `bg.azimuths_deg` | 2, `-90,90,180` | | Acoustics |
 | `rt60.measure_at_block_start` | false (Q25) | switch | Acoustics |
-| `room.width_m`, `room.depth_m`, `room.height_m` | 8.72, 15, 3.5 | read-only at run time (scene) | Acoustics |
 | `resume_from` | `next_trial` | as Template | Resume |
 | `gate.yaw_tol_deg`, `gate.pitch_tol_deg`, `gate.hold_s`, `gate.hint_after_s` | 5, 10, 1, 4 | GPL.Homing | Head gate |
 | `volume.target_step` | 8 | 0-15 | Audio |
 | `onboarding.*` | true | switch | Onboarding |
+
+Not preset keys (PB-08d-1): the 6 trials per condition are fixed by HW2's sequence (`TrialPlanner`); the room size
+(8.72 × 15 × 3.5 m) belongs to the scene (`ShoeboxRoom`, built by the setup step).
 
 ## Stop dialog (Y)
 As the Template: Keep going / Drop out (`participant_dropout`, not resumable; replaces HW2's cancel). The trial is frozen while open
