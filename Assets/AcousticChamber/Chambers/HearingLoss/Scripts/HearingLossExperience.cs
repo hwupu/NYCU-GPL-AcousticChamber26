@@ -108,7 +108,7 @@ namespace AcousticChamber.Chambers.HearingLoss
             }
             _play = UiKit.Button(_window, "Play", "Play", UiStyle.Prominent, new Vector2(left + 150f, 130f), new Vector2(300f, 0f), TogglePlay);
 
-            Section("Ear", 40f);
+            Section("Loss on", 40f);
             _earButtons.Clear();
             for (int i = 0; i < ExperienceState.Ears.Length; i++)
             {

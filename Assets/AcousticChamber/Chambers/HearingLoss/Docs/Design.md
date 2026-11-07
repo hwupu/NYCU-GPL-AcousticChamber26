@@ -24,20 +24,20 @@
 | Item | Value |
 |---|---|
 | Where | `GPL.HearingLoss` `OutputHearingLoss` on the AudioListener: the final left/right output, after the spatializer |
-| Levels | Normal (None), -20 dB = Mild, -30 dB = Moderate, -40 dB = Severe (HLSim presets; the label is the deepest band, at 4 kHz) |
+| Levels | 0 dB (None, no adjustment), -20 dB = Mild, -30 dB = Moderate, -40 dB = Severe (HLSim presets; the label is the deepest band, at 4 kHz) |
 | Bands (dB) | 125, 250, 500, 1k, 1.5k, 2k, 3k, 4k, 6k, 8k Hz — Mild 0, 0, 0, 0, -5, -10, -10, -20, -10, 0; Moderate 0, 0, -10, -10, -15, -20, -20, -30, -20, -10; Severe 0, 0, -10, -20, -25, -30, -30, -40, -30, -20 |
-| Ears | Both ears / Left ear / Right ear; the other ear stays normal (Left + -20 dB = left Mild, right normal) |
+| Loss on | Normal hearing / Left ear / Right ear / Both ears; the other ear stays at 0 dB, no adjustment (Right + -20 dB = left 0 dB, right Mild). PO 2026-11-08: choosing an ear while at 0 dB sets -20 dB; choosing Normal hearing sets 0 dB; choosing 0 dB selects Normal hearing; choosing a loss while on Normal hearing selects Both ears |
 | Filters | 10 peaking biquads per ear, Q 24 at 125 Hz and 12 elsewhere (the original's effective values), instant changes |
-| Start | Normal, both ears |
+| Start | Normal hearing, 0 dB on both ears |
 
 ## Panel (English only)
 ```
 C02 · Hearing Loss
 Sound          [White noise] [Podcast 1] [Podcast 2] [Street market]
                [Play / Pause]
-Ear            [Both ears] [Left ear] [Right ear]
-Hearing loss   [Normal] [-20 dB] [-30 dB] [-40 dB]
-Left ear: Mild, -20 dB at 4 kHz. Right ear: normal.
+Loss on        [Normal hearing] [Left ear] [Right ear] [Both ears]
+Hearing loss   [0 dB] [-20 dB] [-30 dB] [-40 dB]
+Left ear 0 dB, right ear -20 dB (at 4 kHz).
 Point at the speaker and hold the trigger to move it.
 [Reset speaker]                                  [Back to Hall]
 ```
