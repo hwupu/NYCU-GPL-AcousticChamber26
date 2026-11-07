@@ -146,7 +146,7 @@ namespace GPL.DebugBench.Tests
                 float gap = ((RectTransform)practice.transform).anchoredPosition.x - run.anchoredPosition.x - run.sizeDelta.x;
                 Assert.AreEqual(UiKit.Theme.groupPadding, gap, 1e-3f, "buttons in a group are 8 u apart");
 
-                Find(debug, "Working copy").onClick.Invoke();
+                Find(debug, "Playground").onClick.Invoke();
                 var parameters = pages.Top;
                 Assert.AreEqual("Parameters", parameters.Title);
                 var row = parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials");
@@ -232,7 +232,7 @@ namespace GPL.DebugBench.Tests
                 UiButton RowOf(string name) => Named(pages.Top, "Row " + name);
                 Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowText(RowOf("Custom").transform, "Value").text);
                 Assert.IsNull(UiKit.RowText(RowOf("Default").transform, "Value"), "not active: no mark");
-                StringAssert.Contains("working copy", UiKit.RowText(RowOf("Custom").transform, "Sub").text);
+                StringAssert.Contains("playground", UiKit.RowText(RowOf("Custom").transform, "Sub").text);
                 RowOf("Default").onClick.Invoke();
                 var sheet = Sheet.Top(canvas.transform);
                 var actions = sheet.GetComponentsInChildren<UiButton>(true).Where(b => b.name.StartsWith("Row ")).Select(b => b.name).ToArray();
@@ -301,15 +301,17 @@ namespace GPL.DebugBench.Tests
                 TextMeshProUGUI DialogText(string name) => ModalDialog.Current.GetComponentsInChildren<TextMeshProUGUI>(true).First(t => t.name == name);
 
                 var debug = bench.OpenDebugPage();
-                var dataRow = debug.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Data files");
+                var dataRow = debug.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Log files");
                 Assert.AreEqual("4 files  ›", UiKit.RowText(dataRow.transform, "Value").text);
                 dataRow.onClick.Invoke();
                 var page = pages.Top;
-                Assert.AreEqual("Data files", page.Title);
+                Assert.AreEqual("Log files", page.Title);
                 string s2 = DataFileNames.BaseName(t0.AddMinutes(10), "C00", "S0002", false);
                 Assert.AreEqual(s2, UiKit.RowText(RowOf(s2), "Label").text, "the file name is the row title");
                 Assert.IsNull(UiKit.RowText(RowOf(s2), "Sub"), "one line: no description");
-                Assert.AreEqual(0f, UiKit.RowText(RowOf(s2), "Label").rectTransform.offsetMin.y, "the file name is vertically centered");
+                var label = UiKit.RowText(RowOf(s2), "Label");
+                Assert.AreEqual(UiKit.OpticalLift * label.fontSize, label.rectTransform.offsetMin.y, 0.01f,
+                                "the file name is vertically centered (one line: optical lift only)");
                 string dbg = DataFileNames.BaseName(t0.AddMinutes(30), "C00", "", true);
                 Assert.AreEqual(dbg, UiKit.RowText(RowOf(dbg), "Label").text);
 

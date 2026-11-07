@@ -10,7 +10,7 @@ covers what only the app can show: real quits, the session file on disk, the cha
 2. Use a new Study ID per case (S0101, S0102, ...), so the cases do not mix.
 
 ## The kill
-Start the session (volume step any), choose a language, hand over, do the practice, block 1, then **2 trials of block 2**.
+Start the session, hand over, choose a language, recenter with the Meta button, go through the slides, pass the dot, do the practice, block 1, then **2 trials of block 2**.
 During trial 3 of block 2 (dot or "Press A" showing): **quit the app**, Quest: Meta button > Quit; Editor over Link: stop Play.
 Start the app again.
 
@@ -18,16 +18,16 @@ Start the app again.
 For every resumable policy:
 - The app opens at the **Template chamber menu**, not the Hall (launch routing), status "Opened at launch: …".
 - The line under the buttons reads "Unfinished: S0101" (with the other unfinished IDs).
-- Enter 101, Start: dialog "S0101 has an unfinished session" > **Resume** > volume step.
-- No language screen; the handover runs again (Continue, look ahead, A).
+- Enter 101, Start: dialog "S0101 has an unfinished session" > **Resume** (the volume is read, no pad).
+- No language screen; the handover (Continue), the Meta-button recenter and the dot check run again; no slides (already done).
 - After the run: thanks, the menu no longer lists the ID; the Hall pill count drops.
 
 | `resume_from` | Continues with | CSV rows after `session_resume` |
 |---|---|---|
-| `next_trial` | trial 3 of block 2 | `stage_begin handover` (again after resume), `stage_begin experiment` (resumed), `block_begin` block 2 "continued at trial 3", trials 3–4 with `attempt` 1 |
+| `next_trial` | trial 3 of block 2 | `stage_begin` handover, recenter and ready (again after resume), `stage_begin experiment` (resumed), `block_begin` block 2 "continued at trial 3", trials 3–4 with `attempt` 1 |
 | `block_start` | block 2 from trial 1 | `block_restart` block 2 `attempt` 2, trials 1–4 `attempt` 2 |
 | `stage_start` | block 1 of the experiment | `block_restart` block 1 `attempt` 2, then block 2 `attempt` 2 (`block_restart`), 8 trials |
-| `session_start` | practice (language skipped) | handover (not marked "again"), practice `block_restart` `attempt` 2, both blocks `attempt` 2 |
+| `session_start` | handover (language skipped) | handover, recenter, slides and ready (not marked "again"), practice `block_restart` `attempt` 2, both blocks `attempt` 2 |
 | `not_resumable` | — | the app opens at the **Hall** (nothing to resume); the ID is not listed; Start with it begins a **new** session (new CSV and session file). The old files stay (Debug > Data files) |
 
 Also check once (any policy): quit **during the practice** → the practice starts again as `attempt` 2 (practice always uses

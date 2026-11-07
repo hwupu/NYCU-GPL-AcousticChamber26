@@ -80,7 +80,7 @@ Modules stay plain folders (copy the folder plus `GPL.Core`). Turning a stable m
 ## 6. Chamber menu and session flow
 Every chamber starts at its **chamber menu** (generic, from `GPL.UI` + `GPL.Session`, HW2 style):
 - **Study ID** (number pad, up to 4 digits, stored and shown with leading zeros and prefix: `1` -> `S0001`), **Start**, **Debug**, **Back to Hall**. All chambers are equal: same menu, presets, Debug, sessions. A chamber that is still a demo or under development is simply used through Debug.
-- Status lines under Start and Debug (PO 2026-11-06): **"Running on custom preset: Pilot-A"** (section 7; nothing while the preset Default is active) and **"Unfinished: S0005, S0012"** (Study IDs with a resumable session; nothing when none). The sessions themselves are managed on Debug > Data files.
+- Status lines under Start and Debug (PO 2026-11-06): **"Preset: Pilot-A"** (section 7; nothing while the preset Default is active) and **"Unfinished: S0005, S0012"** (Study IDs with a resumable session; nothing when none). The sessions themselves are managed on Debug > Data files.
 - **Start with a Study ID that has an unfinished session** -> Resume / Start new / Back. Several unfinished sessions can exist (one per Study ID).
 - **Resume** -> the experimenter hands the headset over; the participant continues **silently** at the point given by the resume policy (no welcome screen; homing still runs if the stage requires it).
 - **Start new** over an unfinished session: the old one is logged `session_superseded` and closed (never deleted).
@@ -109,19 +109,28 @@ Fixes the HW2 problem that Debug changes did not carry over to real trials.
 - Each chamber declares a **parameter schema** (e.g. `rt60_s`, `stim_radius_m`, `hl_left`, `trials_per_block`, `gate_yaw_tol_deg`) and ships a **default file** `Chambers/<Id>/Config/default.params` (key=value text, versioned in git). It appears as the preset **Default**, which is the active preset until another one is made active.
 - **Presets** are saved on the device (`persistentDataPath/<ChamberId>/presets/<name>.params`); one is **active**. Copy presets off the headset like data; useful ones can be committed back into `Config/`.
 - **Debug edits a working copy** of the active preset (generated controls from the schema, plus module controls). Actions: *Save as preset*, *Overwrite preset*, *Make active*, *Revert*, and **Run experiment trials** (the real protocol with the current working copy, logged as `_DEBUG`, no resume) to experience exactly what participants will get.
-- **Real runs always use the active preset** (never unsaved Debug values). The chamber menu shows a custom one under its buttons: "Running on custom preset: Pilot-A" (nothing for Default). Every real session stores the full snapshot, preset name and hash; the CSV gets `preset` and `params_hash` columns.
+- **Real runs always use the active preset** (never unsaved Debug values). The chamber menu shows a custom one under its buttons: "Preset: Pilot-A" (nothing for Default). Every real session stores the full snapshot, preset name and hash; the CSV gets `preset` and `params_hash` columns.
 - Debug-only switches (marker visibility, show error) are not part of presets.
 
 ## 8. Posture, handover and homing (`GPL.Homing`)
 - Each chamber declares a posture: `Seated`, `Standing` or `RoomScale`. Tracking origin is always floor level.
 - **Handover stage** (stock stage, used at session start and after resume): the experimenter sets up (often standing), hands over, and the participant confirms when ready; then the chamber's homing method sets the origin (and, if needed, measures eye height so stimuli are placed relative to the participant, not the experimenter).
+- **Onboarding sequence** (PB-20b, PO 2026-11-07; stock stages in `GPL.Protocol`, order = the chamber's stage list, each stage switchable by a preset boolean `onboarding.<stage>`):
+  1. Chamber menu: Study ID, Start. A status line shows the headset volume read from Android against the chamber's target (`volume.target_step`): "Audio level: 10 (target 8)" (red when they differ). The read value is logged on `session_start` / `session_resume`; no volume pad (kept in code, `ChamberMenu.AskVolumeStep`).
+  2. `handover` (experimenter): a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue. No recenter here (the A-button recenter is dropped).
+  3. `language` (participant).
+  4. `recenter`: a slide in the instruction-slide layout (title, illustration or the text "Look straight ahead. Hold the Meta button until the view recenters.", Back = "Language" reopens the language choice, Next always active; `homing` row, method `system_recenter_user`, outcome `cancelled` when Next came without a recenter).
+  5. `instructions`: the chamber's slides (`SlideSet`; none = nothing shown).
+  6. `ready`: final check at the black dot (head gate), then a `volume_check` row with the final volume.
+  7. Practice and trials.
+  The participant is not told about Y (Stop dialog): breaks and drop-outs are handled by the experimenter when the participant reports discomfort.
 - Homing methods implement `IHomingMethod` -> `HomingResult` (origin, yaw, eye height, method, duration, residual error), logged as `homing`:
 
 | Method | What happens |
 |---|---|
 | `HeadGate` | fixation cue ahead, head within yaw/pitch tolerance for a hold time (HW2, before every trial); defaults yaw ±10°, pitch ±15°, hold 0.5 s, hint after 4 s, tunable in presets (PO 2026-11-06) |
 | `SystemRecenterListener` | reacts to the Meta long-press recenter; re-places GUI and head-relative stimuli (always on) |
-| `SystemRecenter` | handover, experimenter button: the Meta system recenter makes the current head yaw/position forward/origin; head yaw measured before (the correction) and after (the residual). Replaces the planned `SoftwareRecenter` (PO 2026-11-06): the rig stays at identity, so raw tracking poses and logged values share one frame |
+| `SystemRecenter` | app-requested (not used by the onboarding since PB-20b; the participant holds the Meta button instead): the Meta system recenter makes the current head yaw/position forward/origin; head yaw measured before (the correction) and after (the residual). Replaces the planned `SoftwareRecenter` (PO 2026-11-06): the rig stays at identity, so raw tracking poses and logged values share one frame |
 | `AlignToTarget` | participant turns to a visible target; the room stays fixed |
 | `AudioHoming` | a sound straight ahead; face it and confirm (designs without visuals) |
 | `RoomAnchor` | room-scale: no re-centering of position; the virtual room is aligned once to the physical room (setup-time) |
@@ -141,7 +150,7 @@ Long format, one row per event. Common columns (every chamber):
 `event, timestamp_local, elapsed_s, session_id, chamber, chamber_version, study_id, mode, preset, params_hash, stage, block, condition, trial, attempt, note`
 then the chamber's columns, then `note` (always the last column) (declared in its `LogSchema`; writing an undeclared column fails a unit test). RM-ANOVA factors are **explicit columns** (e.g. `hl_side`, `hl_level`, `rt60_target_s`), never parsed from notes.
 
-Common events: `session_start` (app version, device, headset volume step entered by the experimenter), `session_resume`, `stage_begin/end`, `block_begin/end`, `block_restart`, `trial`, `homing`, `recenter`, `handover`, `app_paused/app_resumed`, `participant_dropout`, `session_superseded`, `session_end`, `debug_*`, `param_change` (Debug).
+Common events: `session_start` (app version, device, headset volume step read from the headset), `session_resume`, `stage_begin/end`, `block_begin/end`, `block_restart`, `trial`, `homing`, `recenter`, `handover`, `slide`, `volume_check`, `app_paused/app_resumed`, `participant_dropout`, `session_superseded`, `session_end`, `debug_*`, `param_change` (Debug).
 
 Files: `persistentDataPath/<ChamberId>/yyyyMMdd_HHmmss_<ChamberId>[_<StudyId>][_DEBUG].csv` (resume appends) and the `.session` file (the parameter snapshot lives there). Each chamber's `AnalysisPlan.md`: within factors, levels, DV, per-cell aggregation, exclusions (Debug, dropout, superseded, lower attempts). Each chamber also has `DataFormat.md` written for an analyst (human or AI): files, columns, units, events, how to rebuild the trial table and the per-cell means. No analysis scripts in the repo.
 

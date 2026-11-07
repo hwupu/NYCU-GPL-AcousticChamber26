@@ -195,8 +195,10 @@ body.showinset .container > *, body.showinset .group > *, body.showinset .card >
 /* ===== v3 additions: built layout + GameObject names ===== */
 .fill { position:absolute; inset:0; }
 .mhdr { display:flex; align-items:center; gap:calc(var(--u)*8); padding:calc(var(--u)*40) calc(var(--u)*48) 0; height:calc(var(--u)*120); }
-.mbody { display:flex; gap:calc(var(--u)*40); padding:calc(var(--u)*20) calc(var(--u)*48) 0; }
-.mcol { flex:1; display:flex; flex-direction:column; gap:calc(var(--u)*20); }
+/* the pad + button column group (the pad's height) is centered between the 120 u header and the 54 u status band */
+.mbody { position:absolute; left:0; right:0; top:calc(var(--u)*120); bottom:calc(var(--u)*54); display:flex; align-items:center; padding:0 calc(var(--u)*48); }
+.mgroup { flex:1; display:flex; gap:calc(var(--u)*40); align-items:flex-start; }
+.mcol { flex:1; display:flex; flex-direction:column; gap:calc(var(--u)*20); max-height:0; overflow:visible; } /* does not add to the group's height */
 .mline { font-size:calc(var(--u)*28); color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:calc(var(--u)*40); }
 .mline:empty { display:none; }
 .mstatus { position:absolute; left:calc(var(--u)*48); right:calc(var(--u)*48); bottom:calc(var(--u)*14); text-align:center; font-size:calc(var(--u)*28); color:var(--text2); min-height:calc(var(--u)*40); }
@@ -205,6 +207,13 @@ body.showinset .container > *, body.showinset .group > *, body.showinset .card >
 .grow.one .lbl { align-self:stretch; display:flex; align-items:center; }
 .cue { position:absolute; left:0; right:0; text-align:center; font-weight:700; font-size:calc(var(--u)*56); color:var(--text); text-shadow:0 0 calc(var(--u)*8) #0008; }
 .pscreen .ptext { position:absolute; left:calc(var(--u)*48); right:calc(var(--u)*48); text-align:center; font-weight:700; font-size:calc(var(--u)*44); white-space:pre-line; }
+/* Message layout: the text box (360 u, center 80 u above the window center); the text is centered in it */
+.pscreen .pmsg { top:calc(var(--u)*90); height:calc(var(--u)*360); display:flex; align-items:center; justify-content:center; }
+/* Slide layout: title row like a page title, full-width image, buttons in the bottom bar */
+.stitle { position:absolute; left:calc(var(--u)*48); right:calc(var(--u)*48); top:calc(var(--u)*40); height:calc(var(--u)*80); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:calc(var(--u)*44); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.simage { position:absolute; left:0; right:0; top:calc(var(--u)*120); height:calc(var(--u)*468); background:var(--raised); display:flex; align-items:center; justify-content:center; }
+.scap { width:calc(var(--u)*808); text-align:center; font-weight:700; font-size:calc(var(--u)*44); white-space:pre-line; }
+.sbtn { position:absolute; top:calc(var(--u)*604); }
 .picker { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
 table.vocab { border-collapse:collapse; font-size:12px; background:#fff; max-width:1180px; }
 table.vocab td, table.vocab th { border:1px solid #ddd; padding:3px 8px; text-align:left; vertical-align:top; }
@@ -224,9 +233,9 @@ body.names-hover [data-n].nhov { outline:2px solid #0a6ccf; outline-offset:-2px;
 </head>
 <body class="names-hover">
 <h1>UI components — as built, with Unity names (v3, PB-07c)</h1>
-<p class="note">This page mirrors the screens the code builds at run time (scheme B; 1 u = 1 pt, at 2 m 1 u = 2 mm). The hover tag reads <b>code that builds it · GameObject name</b> (e.g. <code>UiKit.Row · Row Working copy</code>: a list row made by <code>UiKit.Row</code> whose label is "Working copy"); the bar at the bottom adds what the component is. Every element carries
+<p class="note">This page mirrors the screens the code builds at run time (scheme B; 1 u = 1 pt, at 2 m 1 u = 2 mm). The hover tag reads <b>code that builds it · GameObject name</b> (e.g. <code>UiKit.Row · Row Playground</code>: a list row made by <code>UiKit.Row</code> whose label is "Playground"); the bar at the bottom adds what the component is. Every element carries
 the <b>GameObject name</b> the runtime gives it: hover an element and the bar at the bottom shows its path as it appears in the
-Unity <b>Hierarchy during Play</b> (Ctrl+click copies the path). Use these names when we talk about a part ("Row Working copy ›
+Unity <b>Hierarchy during Play</b> (Ctrl+click copies the path). Use these names when we talk about a part ("Row Playground ›
 Sub"). Sizes and positions are close, not exact; the code is the reference. Section 0 lists the vocabulary.</p>
 
 <div class="toolbar">
@@ -264,6 +273,8 @@ Sub"). Sizes and positions are close, not exact; the code is the reference. Sect
 <tr><td>Dialog (sheet without ×)</td><td><code>ModalDialog.Show</code></td><td><code>Dialog</code></td><td><code>Title</code>, <code>Message</code>, <code>Button &lt;label&gt;</code></td></tr>
 <tr><td>Number pad</td><td><code>NumberPadEntry.Create</code></td><td><code>Number Pad</code></td><td><code>Display</code> › <code>Text</code>, <code>Keys</code> › <code>Key 0</code>…<code>Key 9</code>, <code>Key Clear</code>, <code>Key Backspace</code></td></tr>
 <tr><td>Hall card</td><td><code>HallMenu.Card</code></td><td><code>Card &lt;chamber id&gt;</code></td><td><code>Label</code>, <code>Cover</code> › <code>Thumbnail</code>, <code>C-ID</code>, <code>Unfinished</code> › <code>Label</code></td></tr>
+<tr><td><b>Slide layout</b></td><td><code>ProtocolScreens.Slides</code> (also <code>MetaRecenter</code>)</td><td><code>Slides Screen</code></td><td><code>Title</code> (row 40–120 u, like a page title), <code>Image</code> › <code>Caption</code> (1000 x 468 u), <code>Back</code>, <code>Next</code> (bottom bar 112 u, 360 u each)</td></tr>
+<tr><td><b>Message layout</b></td><td><code>ProtocolScreens.Message</code>, <code>Language</code>, <code>Handover</code></td><td><code>Message Screen</code>, <code>Language Screen</code>, <code>Handover Screen</code></td><td><code>Text</code> / <code>Title</code> / <code>Steps</code> (centered in a 360 u box, center y +80), <code>Button</code> or <code>English</code> + <code>Chinese</code> (center y −180); the Handover screen adds the slide <code>Title</code> row</td></tr>
 <tr><td>Cue text (no panel)</td><td><code>ProtocolScreens.Cue</code></td><td><code>Protocol Cue</code></td><td>—</td></tr>
 <tr><td colspan="4"><b>Row layouts.</b> <b>One-line row</b>: <code>Label</code> fills the row's height and is centered in it. <b>Two-line row</b>:
 <code>Label</code> in the upper 62 % of the row, <code>Sub</code> (24 u, secondary color) in the lower 38 %. In both, <code>Value</code> is centered
@@ -294,14 +305,16 @@ confirmation; elsewhere red text. Normal → hover → pressed get brighter. Eve
 
 <!-- ============================================================================================================ -->
 <h2>2. Chamber menu (canvas <code>Chamber Menu</code>)</h2>
-<p class="note">As built after PB-07c: Study ID pad at the left; <b>Start</b> and <b>Debug</b> at the right; under them one line each, only
-when needed: <code>Preset</code> ("Running on custom preset: Custom") and <code>Unfinished</code> ("Unfinished: S0005"). <code>Status</code> at
-the bottom. Start: an ID with an unfinished session asks Resume / Start new / Back (<code>Dialog</code>), then the <code>Volume Step</code>
-sheet. Y opens the Stop dialog while a run is going (try the buttons below).</p>
+<p class="note">As built after PB-20: Study ID pad at the left; <b>Start</b> and <b>Debug</b> at the right, sharing the pad's top edge; the
+group is centered vertically between the header and the status band. Under the buttons, one line each when needed: <code>Volume</code>
+("Audio level: 10 (target 8)", red when off target), <code>Preset</code> ("Preset: Custom"), <code>Unfinished</code> ("Unfinished: S0005").
+<code>Status</code> at the bottom. Start: an ID with an unfinished session asks Resume / Start new / Back (<code>Dialog</code>); the volume
+is read from the headset (the <code>Volume Step</code> sheet stays in code, off). Y opens the Stop dialog while a run is going.</p>
 <div class="row">
   <div>
     <div class="room"><div class="stage ui" id="menu" data-n="UI / Chamber Menu"></div></div>
     <div class="picker">
+      <label><input type="checkbox" id="mVolOff" checked> audio level off target</label>
       <label><input type="checkbox" id="mCustom"> custom preset active</label>
       <label><input type="checkbox" id="mUnf" checked> S0005 unfinished</label>
       <button onclick="openStop('menu', false)">Y (real session)</button><button onclick="openStop('menu', true)">Y (Debug run)</button>
@@ -333,17 +346,17 @@ sheet. Y opens the Stop dialog while a run is going (try the buttons below).</p>
 
 <!-- ============================================================================================================ -->
 <h2>4. Debug pages (GPL.DebugBench, on the chamber menu's <code>Window</code>)</h2>
-<p class="note">Debug opens <code>Page Debug</code> on the same page stack; Parameters, Presets and Data files push their pages on top.
+<p class="note">Debug opens <code>Page Debug</code> on the same page stack; Parameters, Presets and Log files push their pages on top.
 The Template's parameters are shown. Both row layouts appear here: one-line rows (Practice trials, Blocks, …) and two-line rows
 (Response timeout with its description; any edited value shows "Default: …" as its <code>Sub</code>).</p>
 <div class="row">
   <div class="room"><div class="stage ui" id="dbg" data-n="UI / Chamber Menu"></div></div>
   <div class="flowmap">
     <b>Pages</b> (all children of <code>Window</code>)<br>
-    <code>Page Debug</code>: Run (Run experiment trials · Practice trial) · Parameters (Working copy ›, Presets ›) · Data (Data files ›) · Status<br>
+    <code>Page Debug</code>: Run (Run experiment trials · Practice trial) · Parameters (Playground ›, Presets ›) · Data (Log files ›) · Status<br>
     <code>Page Parameters</code>: Action Revert · one group per parameter group · Save (Save as Custom)<br>
     <code>Page Presets</code>: Default, Custom (✓ = active) → sheet <code>Preset &lt;name&gt;</code>: Make active · Delete<br>
-    <code>Page Data files</code>: Action Delete all · Files (Row &lt;file&gt; with Delete) → <code>Dialog</code><br><br>
+    <code>Page Log files</code>: Action Delete all · Files (Row &lt;file&gt; with Delete) → <code>Dialog</code><br><br>
     <span id="dbgstate"></span>
   </div>
 </div>
@@ -352,7 +365,10 @@ The Template's parameters are shown. Both row layouts appear here: one-line rows
 <h2>5. Participant screens (GPL.Protocol, Template order)</h2>
 <p class="note">Built on the same canvas while a session runs (the menu window is hidden). Each screen is its own window named after
 it; the cue text <code>Protocol Cue</code> has no panel, so the world (fixation dot) stays visible. Text follows the participant
-language (toolbar).</p>
+language (toolbar). Two layouts: the <b>Slide layout</b> (recenter and instruction slides: title row, image, ← Back / Next →, where the
+buttons name the slide they lead to, and the last instruction slide says Continue) and the <b>Message layout</b> (language choice,
+block break, thanks; the Protocol screen for the experimenter adds the slide title row). No screen waits for A; A is only the trial
+response.</p>
 <div class="row">
   <div>
     <div class="room"><div class="stage ui" id="part" data-n="UI / Chamber Menu"></div></div>
@@ -369,13 +385,17 @@ const S = {
   en: { stopTitle:"Stop the session?", stopMsg:"Everything is paused. Keep going continues where you left off. Drop out ends the session for good.",
         stopMsgDbg:"Debug run, paused. Back to the chamber menu ends this run.", keep:"Keep going", drop:"Drop out", backMenu:"Back to the chamber menu",
         confTitle:"Drop out S0005?", confMsg:"This session cannot be resumed.", cancel:"Cancel",
-        choose:"Choose a language", handover:"Please hand the headset to the participant.", cont:"Continue", look:"Look straight ahead and press A.",
-        block:"Block 1 of 2 done.\nPress A to continue.", thanks:"Thank you.\nPlease return the headset.", finish:"Finish", dot:"Look at the dot", pressA:"Press A" },
+        choose:"Choose a language", protocol:"Protocol", handover:"1. Set the IPD.\n2. Hand the headset to the participant.", cont:"Continue",
+        recTitle:"Recenter the view", recShort:"Recenter", hold:"Look straight ahead.\nHold the Meta button until the view recenters.", langBtn:"Language",
+        s1:"Placeholder slide 1", s1s:"Slide 1", s2:"Placeholder slide 2", s2s:"Slide 2", back:"Back", next:"Next",
+        block:"Block 1 of 2 done.", thanks:"Thank you.\nPlease return the headset.", finish:"Finish", dot:"Look at the dot", dotBegin:"Look at the dot to begin", pressA:"Press A" },
   zh: { stopTitle:"要停止嗎？", stopMsg:"目前已暫停。「繼續」會從剛才的地方接著進行；「退出實驗」會結束本次實驗，之後無法再繼續。",
         stopMsgDbg:"除錯模式，已暫停。「回到選單」會結束這次執行。", keep:"繼續", drop:"退出實驗", backMenu:"回到選單",
         confTitle:"確定要讓 S0005 退出實驗嗎？", confMsg:"本次實驗結束後無法再繼續。", cancel:"取消",
-        choose:"請選擇語言", handover:"請將頭戴裝置交給受試者。", cont:"繼續", look:"請直視前方，然後按 A。",
-        block:"第 1 段（共 2 段）完成。\n請按 A 繼續。", thanks:"謝謝您的參與。\n請將頭戴裝置交還給實驗人員。", finish:"完成", dot:"請看圓點", pressA:"請按 A" }
+        choose:"請選擇語言", protocol:"流程", handover:"1. 調整瞳距（IPD）。\n2. 將頭戴裝置交給受試者。", cont:"繼續",
+        recTitle:"重新置中畫面", recShort:"重新置中", hold:"請直視前方，\n長按 Meta 按鈕，直到畫面重新置中。", langBtn:"語言",
+        s1:"示範投影片 1", s1s:"投影片 1", s2:"示範投影片 2", s2s:"投影片 2", back:"上一頁", next:"下一頁",
+        block:"第 1 段（共 2 段）完成。", thanks:"謝謝您的參與。\n請將頭戴裝置交還給實驗人員。", finish:"完成", dot:"請看圓點", dotBegin:"請看圓點以開始", pressA:"請按 A" }
 };
 let lang = "en";
 const t = k => S[lang][k];
@@ -391,7 +411,15 @@ function kindOf(el) {
   const isBtn = el.tagName === "BUTTON";
   if (n.startsWith("UI / ")) return ["UiSetup.CreateOverlayCanvas", "the overlay canvas (scene object under the UI group)"];
   if (n === "Window") return ["UiKit.Window", "the canvas's main panel: background + content, pushed back by sheets"];
-  if (n.endsWith(" Screen")) return [n.startsWith("Language") ? "ProtocolScreens.Language → UiKit.Window" : "ProtocolScreens.Message → UiKit.Window", "a participant screen (its own window)"];
+  if (n.endsWith(" Screen")) return ({
+      "Language Screen": ["ProtocolScreens.Language → UiKit.Window", "Message layout: the language choice"],
+      "Message Screen": ["ProtocolScreens.Message → UiKit.Window", "Message layout: text centered in its 360 u box, buttons below (block break, thanks)"],
+      "Handover Screen": ["ProtocolScreens.Handover → UiKit.Window", "Message layout with the slide title row (experimenter)"],
+      "Slides Screen": ["ProtocolScreens.Slides → UiKit.Window", "Slide layout: title row, image, Back / Next (recenter and instruction slides)"],
+    })[n] || ["UiKit.Window", "a participant screen (its own window)"];
+  if (n === "Image") return ["RawImage \"Image\"", "slide illustration, 1000 x 468 u (2000 x 936 px); gray while there is none"];
+  if (n === "Caption") return ["UiKit.Text \"Caption\"", "text on the gray image area while the slide has no image"];
+  if (n === "Steps") return ["UiKit.Text \"Steps\"", "numbered list, left-aligned in a centered 720 u column"];
   if (n === "Background") return ["UiKit.Background", "panel fill of a window"];
   if (n.startsWith("Page ")) return ["PageStack.Push → Page", "one page of the window's page stack (header + body)"];
   if (n === "Back") return ["PageStack header → UiKit.IconButton", "‹ back to the previous page (or to the Hall)"];
@@ -425,7 +453,7 @@ function kindOf(el) {
   if (n === "C-ID") return ["UiKit.Text \"C-ID\"", "chamber label on the cover"];
   if (n === "Unfinished" && pn === "Cover") return ["UiKit.Box \"Unfinished\"", "pill: unfinished sessions of the chamber"];
   if (n === "Protocol Cue") return ["ProtocolScreens.Cue → UiKit.Text", "bare cue text, no panel (gate hint, Press A)"];
-  if (n === "Preset" || n === "Unfinished") return ["ChamberMenu.Line → UiKit.Text", "status line under Start / Debug (empty = hidden)"];
+  if (n === "Volume" || n === "Preset" || n === "Unfinished") return ["ChamberMenu.Line → UiKit.Text", "status line under Start / Debug (empty = hidden)"];
   if (n === "Status") return ["UiKit.Text \"Status\"", "status line at the bottom of the page"];
   if (isBtn) return ["UiKit.Button", "button (Label child)"];
   return ["UiKit.Text \"" + n + "\"", "text"];
@@ -569,13 +597,14 @@ document.addEventListener("keydown", e => { if (e.key === "y" || e.key === "Y") 
 /* ---------- 2. chamber menu ---------- */
 const M = { digits:"", status:"", vol:"" };
 function menuRender() {
-  const custom = $("#mCustom").checked, unf = $("#mUnf").checked;
+  const custom = $("#mCustom").checked, unf = $("#mUnf").checked, volOff = $("#mVolOff").checked;
   $("#menu").innerHTML = `<div class="layer panel" ${N("Window")}><div class="fill" ${N("Page C00 · Template")}>
     <div class="mhdr">${icon("Back", "‹", "hall")}<div class="t-title" ${N("Title")}>C00 · Template</div></div>
-    <div class="mbody">${pad("m", M.digits, "Study ID", studyFmt)}
+    <div class="mbody"><div class="mgroup">${pad("m", M.digits, "Study ID", studyFmt)}
       <div class="mcol">${btn("Start", "Start", "prominent", "mstart")}${btn("Debug", "Debug", "", "mdebug")}
-        <div class="mline" ${N("Preset")}>${custom ? "Running on custom preset: Custom" : ""}</div>
-        <div class="mline" ${N("Unfinished")}>${unf ? "Unfinished: S0005" : ""}</div></div></div>
+        <div class="mline" ${N("Volume")} style="${volOff ? "color:var(--red-text)" : ""}">Audio level: ${volOff ? 10 : 8} (target 8)</div>
+        <div class="mline" ${N("Preset")}>${custom ? "Preset: Custom" : ""}</div>
+        <div class="mline" ${N("Unfinished")}>${unf ? "Unfinished: S0005" : ""}</div></div></div></div>
     <div class="mstatus" ${N("Status")}>${M.status}</div></div><div class="dimmer" ${N("Push Dim")}></div></div>`;
 }
 function volumeSheet(stage, then) {
@@ -607,7 +636,8 @@ function menuClick(e) {
     case "mstart": {
       if (!M.digits) { setStatus("Enter a Study ID (1 to 4 digits)."); break; }
       const id = studyFmt(M.digits); M.vol = "";
-      const ask = how => volumeSheet(stage, v => setStatus((how === "resume" ? "Resumed " : "Started ") + "20261107_101500_Template_" + id + " (volume step " + v + ")"));
+      // the volume is read from the headset (volumeSheet stays for ChamberMenu.AskVolumeStep = true)
+      const ask = how => setStatus((how === "resume" ? "Resumed " : "Started ") + "20261107_101500_Template_" + id);
       if (id === "S0005" && $("#mUnf").checked)
         pushSheet(stage, { title: id + " has an unfinished session", msg:"Block 2 of 2 · 2 trials done, started 2026-11-06 14:03.\nResume continues it. Start new closes it (its data are kept) and starts again.",
           buttons:[ { label:"Back", cls:"borderless", do:()=>popSheet(stage) }, { label:"Start new", cls:"", do:()=>{ popSheet(stage); ask("new"); } },
@@ -618,7 +648,7 @@ function menuClick(e) {
   }
 }
 $("#menu").addEventListener("click", menuClick);
-$("#mCustom").onchange = $("#mUnf").onchange = menuRender;
+$("#mCustom").onchange = $("#mUnf").onchange = $("#mVolOff").onchange = menuRender;
 menuRender();
 $("#trial").innerHTML = `<div class="layer" style="border-radius:calc(var(--u)*8)"><div class="scene"><div class="dot"></div></div><div class="dimmer"></div></div>`;
 
@@ -668,15 +698,15 @@ const PAGES = {
   debug: () => pageHdr("Debug", "back") + body(
       colLabel("Run") + btnGroup("Run", [btn("Button Run experiment trials", "Run experiment trials", "prominent", "run"), btn("Button Practice trial", "Practice trial", "borderless inbox", "practice")]) +
       colLabel("Parameters") + group("Parameters", [
-        row({ label:"Working copy", sub:"used by Debug runs", value:workLabel(), chev:true, act:"push:params" }),
+        row({ label:"Playground", sub:"used by Debug runs", value:workLabel(), chev:true, act:"push:params" }),
         row({ label:"Presets", sub:"real sessions use the active one", value:"Active: " + D.active, chev:true, act:"push:presets" }) ]) +
-      colLabel("Data") + group("Data", [ row({ label:"Data files", sub:"this chamber's CSV and session files", value:D.files.length + " files", chev:true, act:"push:data" }) ]))
+      colLabel("Data") + group("Data", [ row({ label:"Log files", sub:"this chamber's CSV and session files", value:D.files.length + " files", chev:true, act:"push:data" }) ]))
     + `<div class="statusline" ${N("Status")}>${D.status}</div>`,
   params: () => {
     const groups = [...new Set(SCHEMA.map(s => s.g))];
     const action = btn("Action Revert", "Revert", "borderless small", "revert", edited().length ? "" : "disabled");
     return pageHdr("Parameters", "back", action) + body(
-      colLabel(`Working copy of the active preset, ${workLabel()}. Debug runs use it; real sessions use ${D.source} as saved. Revert goes back to it.`) +
+      colLabel(`Playground: a copy of the active preset, ${workLabel()}. Debug runs use it; real sessions use ${D.source} as saved. Revert goes back to it.`) +
       groups.map(g => colLabel(g) + group("Group " + g, SCHEMA.filter(s => s.g === g).map(s => {
         const i = SCHEMA.indexOf(s), ed = D.work[s.k] !== srcVals()[s.k];
         const controls = `<span class="step">${btn("Minus", "−", "borderless inbox", "dec:" + i)}${btn("Plus", "+", "borderless inbox", "inc:" + i)}</span>`;
@@ -693,14 +723,14 @@ const PAGES = {
         return row({ label:n, sub, value: n === D.active ? "✓" : "", valueBright:true, act:"preset:" + n });
       })) +
       colLabel("Saved on this device in …/Template/presets. Copy them off with the data.")),
-  data: () => pageHdr("Data files", "back", btn("Action Delete all", "Delete all", "borderless red small", "delall", D.files.length ? "" : "disabled")) + body(
+  data: () => pageHdr("Log files", "back", btn("Action Delete all", "Delete all", "borderless red small", "delall", D.files.length ? "" : "disabled")) + body(
       colLabel(D.files.length ? D.files.length + " files on this device, newest first. Copy them off before deleting: deleting cannot be undone." : "No data files of this chamber on this device.") +
       (D.files.length ? group("Files", D.files.map((f, i) => row({ label:f, controls: btn("Delete", "Delete", "borderless red small inbox", "del:" + i) }))) : "") +
       colLabel("Folder: …/Template. Presets (presets/) are not data files and stay.")),
 };
 function dbgRender(direction) {
   const host = $("#dbg .pages"), olds = [...host.children], old = olds[olds.length - 1];
-  const top = D.stack[D.stack.length - 1], title = { debug:"Debug", params:"Parameters", presets:"Presets", data:"Data files" }[top];
+  const top = D.stack[D.stack.length - 1], title = { debug:"Debug", params:"Parameters", presets:"Presets", data:"Log files" }[top];
   const pg = document.createElement("div"); pg.className = "page hidden"; pg.dataset.n = "Page " + title; pg.innerHTML = PAGES[top]();
   host.appendChild(pg);
   pg.querySelectorAll(".scroll-wrap").forEach(initScroll);
@@ -711,7 +741,7 @@ function dbgRender(direction) {
     requestAnimationFrame(() => requestAnimationFrame(() => pg.classList.remove("hidden")));
     olds.forEach(o => { o.classList.add("hidden"); o.style.pointerEvents = "none"; setTimeout(() => o.remove(), document.body.classList.contains("reduce") ? 0 : 450); });
   }
-  $("#dbgstate").textContent = "Stack: Page C00 · Template › " + D.stack.map(s => "Page " + { debug:"Debug", params:"Parameters", presets:"Presets", data:"Data files" }[s]).join(" › ") + " · active: " + D.active + " · working copy: " + workLabel();
+  $("#dbgstate").textContent = "Stack: Page C00 · Template › " + D.stack.map(s => "Page " + { debug:"Debug", params:"Parameters", presets:"Presets", data:"Log files" }[s]).join(" › ") + " · active: " + D.active + " · working copy: " + workLabel();
 }
 function dbgClick(e) {
   const el = e.target.closest("[data-act]"); if (!el || el.closest(".sheet") || el.disabled) return;
@@ -751,30 +781,43 @@ dbgRender();
 
 /* ---------- 5. participant screens ---------- */
 const PART = [
-  ["Language", "language"], ["Handover 1", "handover"], ["Handover 2", "look"], ["Head gate", "gate"], ["Head gate + hint", "hint"],
-  ["Go cue", "press"], ["Block break", "block"], ["Thanks", "thanks"] ];
-let partSel = "language";
+  ["Handover (Protocol)", "handover"], ["Language", "language"], ["Recenter slide", "recenter"], ["Slide 1", "slide1"], ["Slide 2 (last)", "slide2"],
+  ["Final check", "ready"], ["Head gate", "gate"], ["Head gate + hint", "hint"], ["Go cue", "press"], ["Block break", "block"], ["Thanks", "thanks"] ];
+let partSel = "handover";
 $("#partPick").innerHTML = PART.map(([l, k]) => `<button data-k="${k}">${l}</button>`).join("");
 $("#partPick").onclick = e => { const b = e.target.closest("button"); if (b) { partSel = b.dataset.k; partRender(); } };
 function partRender() {
-  const scene = `<div class="scene" style="border-radius:calc(var(--u)*8)">${partSel === "gate" || partSel === "hint" ? '<div class="dot"></div>' : ""}</div>`;
+  const scene = `<div class="scene" style="border-radius:calc(var(--u)*8)">${partSel === "gate" || partSel === "hint" || partSel === "ready" ? '<div class="dot"></div>' : ""}</div>`;
   const win = (name, inner) => `<div class="layer panel pscreen" ${N(name)} style="position:absolute;inset:0"><div class="fill" ${N("Background")}></div>${inner}</div>`;
-  const msg = (text, button) => win("Message Screen", `<div class="ptext" ${N("Text")} style="top:calc(var(--u)*${button ? 170 : 250})">${text}</div>` +
-      (button ? `<div style="position:absolute;left:0;right:0;bottom:calc(var(--u)*120);display:flex;justify-content:center">${btn("Button", button, "prominent", "", 'style="min-width:calc(var(--u)*360)"')}</div>` : ""));
+  /* Message layout (ProtocolScreens.Message; MessageTextY 80 / MessageTextH 360 / MessageButtonY -180): the text is vertically
+     centered in a 360 u box whose center is 80 u above the window center; the buttons' center is 180 u below it. */
+  const buttons = html => `<div style="position:absolute;left:0;right:0;top:calc(var(--u)*490);display:flex;justify-content:center;gap:calc(var(--u)*40)">${html}</div>`;
+  const message = (name, textName, text, buttonsHtml, extra = "", textStyle = "") => win(name, extra +
+      `<div class="ptext pmsg" ${N(textName)} style="${textStyle}">${text}</div>` + buttons(buttonsHtml));
+  const one = label => btn("Button", label, "prominent", "", 'style="min-width:calc(var(--u)*360)"');
+  /* Slide layout (ProtocolScreens.Slides): title bar 120 u (40 u top padding + 80 u row, like a page title), image 1000 x 468 u
+     (gray with the Caption while there is no image), bottom bar 112 u: Back (borderless) and Next (prominent), 360 u each. */
+  const title = text => `<div class="stitle" ${N("Title")}>${text}</div>`;
+  const slide = (titleText, caption, back, next) => win("Slides Screen", title(titleText) +
+      `<div class="simage" ${N("Image")}><div class="scap" ${N("Caption")}>${caption}</div></div>` +
+      (back ? `<div class="sbtn" style="left:calc(var(--u)*48)">${btn("Back", "← " + back, "borderless", "", 'style="width:calc(var(--u)*360)"')}</div>` : "") +
+      `<div class="sbtn" style="right:calc(var(--u)*48)">${btn("Next", next, "prominent", "", 'style="width:calc(var(--u)*360)"')}</div>`);
   let html = "";
   switch (partSel) {
-    case "language": html = win("Language Screen", `<div class="ptext" ${N("Title")} style="top:calc(var(--u)*150)">${S.en.choose}\n${S.zh.choose}</div>
-        <div style="position:absolute;left:0;right:0;top:calc(var(--u)*390);display:flex;justify-content:center;gap:calc(var(--u)*40)">
-        ${btn("English", "English", "prominent", "", 'style="min-width:calc(var(--u)*300)"')}${btn("Chinese", "中文", "prominent", "", 'style="min-width:calc(var(--u)*300)"')}</div>`); break;
-    case "handover": html = msg(t("handover"), t("cont")); break;
-    case "look": html = msg(t("look")); break;
+    case "handover": html = message("Handover Screen", "Steps", t("handover"), one(t("cont")), title(t("protocol")),
+        "left:calc(var(--u)*140);right:calc(var(--u)*140);justify-content:flex-start;text-align:left;line-height:1.9"); break;
+    case "language": html = message("Language Screen", "Title", S.en.choose + "\n" + S.zh.choose,
+        btn("English", "English", "prominent", "", 'style="min-width:calc(var(--u)*300)"') + btn("Chinese", "中文", "prominent", "", 'style="min-width:calc(var(--u)*300)"')); break;
+    case "recenter": html = slide(t("recTitle"), t("hold"), t("langBtn"), t("s1s") + " →"); break;
+    case "slide1": html = slide(t("s1"), "", t("recShort"), t("s2s") + " →"); break;
+    case "slide2": html = slide(t("s2"), "", t("s1s"), t("cont")); break;
+    case "ready": html = `<div class="cue" ${N("Protocol Cue")} style="top:calc(var(--u)*570)">${t("dotBegin")}</div>`; break;
     case "gate": html = ""; break;
     case "hint": html = `<div class="cue" ${N("Protocol Cue")} style="top:calc(var(--u)*570)">${t("dot")}</div>`; break;
     case "press": html = `<div class="cue" ${N("Protocol Cue")} style="top:calc(var(--u)*310)">${t("pressA")}</div>`; break;
-    case "block": html = msg(t("block")); break;
-    case "thanks": html = msg(t("thanks"), t("finish")); break;
-  }
-  $("#part").innerHTML = `<div class="layer">${scene}${html}<div class="dimmer"></div></div>`;
+    case "block": html = message("Message Screen", "Text", t("block"), one(t("cont"))); break;
+    case "thanks": html = message("Message Screen", "Text", t("thanks"), one(t("finish"))); break;
+  }  $("#part").innerHTML = `<div class="layer">${scene}${html}<div class="dimmer"></div></div>`;
   $("#partPick").querySelectorAll("button").forEach(b => b.style.fontWeight = b.dataset.k === partSel ? "700" : "400");
 }
 partRender();

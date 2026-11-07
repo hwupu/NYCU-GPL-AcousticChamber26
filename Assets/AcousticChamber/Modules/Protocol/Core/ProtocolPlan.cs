@@ -62,6 +62,13 @@ namespace GPL.Protocol
         public ProtocolPlan Stage(string name, StageFlags flags = StageFlags.None, ResumeFrom policy = ResumeFrom.StageStart) =>
             Add(new StageSpec(name, null, policy, flags));
 
+        /// <summary>
+        /// A plain stage only when <paramref name="on"/> (PB-20b: onboarding stages switched by preset booleans such as
+        /// <c>onboarding.language</c>). The order of the calls is the order of the stages.
+        /// </summary>
+        public ProtocolPlan StageIf(bool on, string name, StageFlags flags = StageFlags.None, ResumeFrom policy = ResumeFrom.StageStart) =>
+            on ? Stage(name, flags, policy) : this;
+
         /// <summary>A stage of <paramref name="blocks"/> blocks of <paramref name="trialsPerBlock"/> trials. Zero blocks or trials: left out.</summary>
         public ProtocolPlan Blocks(string name, int blocks, int trialsPerBlock, ResumeFrom policy, StageFlags flags = StageFlags.None)
         {

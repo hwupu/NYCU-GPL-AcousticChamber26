@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4087e31171e87bf47b58877535bd6dc0, type: 3}
+  m_Name: Instructions
+  m_EditorClassIdentifier: GPL.Protocol::GPL.Protocol.SlideSet
+  slides:
+  - id: placeholder_1
+    titleEnglish: Placeholder slide 1
+    titleChinese: "\u793A\u7BC4\u6295\u5F71\u7247 1"
+    imageEnglish: {fileID: 2800000, guid: 6c811d739cd42bd4592992182bbf4d80, type: 3}
+    imageChinese: {fileID: 0}
+  - id: placeholder_2
+    titleEnglish: Placeholder slide 2
+    titleChinese: "\u793A\u7BC4\u6295\u5F71\u7247 2"
+    imageEnglish: {fileID: 2800000, guid: 9ab10ac3740890c4d9c6196541de2611, type: 3}
+    imageChinese: {fileID: 0}

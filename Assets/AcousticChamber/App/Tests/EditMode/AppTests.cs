@@ -116,5 +116,17 @@ namespace AcousticChamber.App.Tests
             Assert.IsNull(SessionRouter.Route("", ids, counts), "no last chamber");
             Assert.IsNull(SessionRouter.Route("Template", ids, _ => throw new IOException("unreadable")), "unreadable = 0");
         }
+
+        [Test]
+        public void VolumeStatus_LineNamesCurrentAndTarget()
+        {
+            Assert.AreEqual("Audio level: 10 (target 8)", VolumeStatus.Line(10, 8));
+            Assert.AreEqual("Audio level: 10", VolumeStatus.Line(10, -1));
+            Assert.AreEqual("Audio level: not readable (target 8)", VolumeStatus.Line(-1, 8));
+            Assert.IsTrue(VolumeStatus.Off(10, 8));
+            Assert.IsFalse(VolumeStatus.Off(8, 8));
+            Assert.IsFalse(VolumeStatus.Off(-1, 8), "unknown volume: no warning color");
+            Assert.IsFalse(VolumeStatus.Off(10, -1), "no target: no warning color");
+        }
     }
 }

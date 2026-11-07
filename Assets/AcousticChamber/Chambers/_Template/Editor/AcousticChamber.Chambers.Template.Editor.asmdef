@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.Chambers.Template.Editor",
     "rootNamespace": "AcousticChamber.Chambers.Template.Editor",
-    "references": ["AcousticChamber.Chambers.Template", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.Params.Core", "GPL.Homing.Core", "GPL.Homing", "GPL.UI", "GPL.UI.Editor", "Oculus.VR"],
+    "references": ["AcousticChamber.Chambers.Template", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.Params.Core", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "Oculus.VR"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

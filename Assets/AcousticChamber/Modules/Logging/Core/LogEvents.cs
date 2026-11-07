@@ -22,6 +22,10 @@ namespace GPL.Logging
         public const string AppPaused = "app_paused";
         public const string AppResumed = "app_resumed";
         public const string Language = "language";
+        /// <summary>An instruction slide came on screen; note <c>&lt;id&gt; &lt;n&gt;/&lt;N&gt; first|next|back|resume</c>.</summary>
+        public const string Slide = "slide";
+        /// <summary>Headset volume read at the final check before the trials; note <c>target=8 match=1</c>.</summary>
+        public const string VolumeCheck = "volume_check";
         public const string ParamChange = "param_change";
         public const string DebugBegin = "debug_begin";
         public const string DebugEnd = "debug_end";

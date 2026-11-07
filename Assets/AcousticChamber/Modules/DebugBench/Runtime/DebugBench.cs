@@ -11,10 +11,10 @@ namespace GPL.DebugBench
     /// The Debug bench of a chamber (ADR-0002, DesignSystem section 7): pages pushed onto the chamber's
     /// <see cref="PageStack"/>.
     /// <list type="bullet">
-    /// <item><b>Debug</b>: Run (Run experiment trials with the working copy, Practice trial), Parameters (working copy ›,
+    /// <item><b>Debug</b>: Run (Run experiment trials with the playground, Practice trial), Parameters (working copy ›,
     /// Presets ›), the chamber's own sections (<see cref="ChamberSections"/>: test playback, display switches, room ...),
     /// Data files ›, and a status line.</item>
-    /// <item><b>Parameters</b>: the working copy of the active preset, one row per parameter (− / +, switches for Bool),
+    /// <item><b>Parameters</b>: the playground of the active preset, one row per parameter (− / +, switches for Bool),
     /// Revert in the header (back to the active preset), Save as Custom (creates Custom, or overwrites it after a
     /// confirmation; Custom becomes active).</item>
     /// <item><b>Presets</b> (DebugBench.Presets.cs): ✓ active; tap → sheet: Make active (loads it), Delete (Custom).</item>
@@ -72,7 +72,7 @@ namespace GPL.DebugBench
 
             col.Label("Parameters");
             var g = col.Group("Parameters", 2);
-            var work = UiKit.Row(g, 0, "Working copy", Work.Label, () => OpenParametersPage(), sub: "used by Debug runs");
+            var work = UiKit.Row(g, 0, "Playground", Work.Label, () => OpenParametersPage(), sub: "used by Debug runs");
             _workValue = UiKit.RowText(work.transform, "Value");
             var presets = UiKit.Row(g, 1, "Presets", "Active: " + Work.Store.ActiveName, () => OpenPresetsPage(), sub: "real sessions use the active one");
             _presetsValue = UiKit.RowText(presets.transform, "Value");
@@ -81,7 +81,7 @@ namespace GPL.DebugBench
 
             col.Label("Data");
             var d = col.Group("Data", 1);
-            var data = UiKit.Row(d, 0, "Data files", DataSummary(), () => OpenDataPage(), sub: "this chamber's CSV and session files");
+            var data = UiKit.Row(d, 0, "Log files", DataSummary(), () => OpenDataPage(), sub: "this chamber's CSV and session files");
             data.interactable = Files != null;
             _dataValue = UiKit.RowText(data.transform, "Value");
             col.Finish();
@@ -211,7 +211,7 @@ namespace GPL.DebugBench
         }
 
         string IntroText() =>
-            "Working copy of the active preset, " + Work.Source + (Work.IsEdited ? " · " + Work.EditedKeys.Count + " edited" : "") +
+            "Playground: a copy of the active preset, " + Work.Source + (Work.IsEdited ? " · " + Work.EditedKeys.Count + " edited" : "") +
             ". Debug runs use it; real sessions use " + Work.Source + " as saved. Revert goes back to it.";
 
         public static readonly string SaveAsLabel = "Save as " + WorkingCopy.CustomName;
@@ -236,7 +236,7 @@ namespace GPL.DebugBench
                 return;
             }
             ModalDialog.Show(_canvas, "Overwrite Custom?",
-                "Custom gets the working copy's values and " + (Work.Source == WorkingCopy.CustomName ? "stays" : "becomes") +
+                "Custom gets the playground's values and " + (Work.Source == WorkingCopy.CustomName ? "stays" : "becomes") +
                 " active: new real sessions use them. Unfinished sessions keep their own snapshot.",
                 new DialogButton("Cancel", UiStyle.Borderless),
                 new DialogButton("Overwrite", UiStyle.Prominent, Save));

@@ -32,7 +32,7 @@ namespace GPL.DebugBench
         public Page OpenDataPage()
         {
             if (Files == null) throw new InvalidOperationException("DebugBench.Files is not set.");
-            var page = _pages.Push("Data files");
+            var page = _pages.Push("Log files");
             Column col = null;
             UiButton deleteAll = null;
             deleteAll = page.AddHeaderAction("Delete all", UiStyle.DestructiveText, () => ConfirmDeleteAll(Build));
@@ -52,7 +52,7 @@ namespace GPL.DebugBench
 
                 col = Column.In(page);
                 col.Label(entries.Count == 0
-                    ? "No data files of this chamber on this device."
+                    ? "No log files of this chamber on this device."
                     : CountText(entries.Count) + " on this device, newest first. Copy them off before deleting: deleting cannot be undone.");
                 if (entries.Count > 0)
                 {
@@ -74,7 +74,7 @@ namespace GPL.DebugBench
                         del.InGroup = true;
                     }
                 }
-                col.Label("Folder: " + Files.Folder + ". Presets (presets/) are not data files and stay.");
+                col.Label("Folder: " + Files.Folder + ". Presets (presets/) are not log files and stay.");
                 col.Finish();
                 RefreshDebugPage();
             }

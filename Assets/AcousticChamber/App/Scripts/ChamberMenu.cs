@@ -16,7 +16,7 @@ namespace AcousticChamber.App
 {
     /// <summary>
     /// The chamber menu every chamber starts at (Architecture section 6, DesignSystem section 7): ‹ back to the Hall, the Study
-    /// ID number pad, Start, Debug (the Debug bench), and under them "Running on custom preset: X" (not for Default) and
+    /// ID number pad, Start, Debug (the Debug bench), and under them "Audio level: 10 (target 8)", "Preset: X" (not for Default) and
     /// "Unfinished: S0005, ..." (managed on Debug > Data files). Start with an ID that has an unfinished session asks Resume / Start new / Back; then the headset volume
     /// step; then the chamber's <see cref="ChamberBehaviour.Run"/>. The menu owns the session files, the start and end rows
     /// and the Stop dialog (Y): Drop out ends a real session, Back to the chamber menu ends a Debug run.
@@ -26,12 +26,23 @@ namespace AcousticChamber.App
         public static readonly Vector2 Size = new Vector2(1000f, 700f);
         public const string VolumeColumn = "volume_step";
         public const int MaxVolumeStep = 15;
+        /// <summary>
+        /// False (PB-20b): Start reads the headset volume (<see cref="HeadsetVolume"/>) and the menu shows it against the
+        /// chamber's target. True: Start asks for the step on a number pad first (the PB-07a sheet, kept for setups where the
+        /// volume cannot be read).
+        /// </summary>
+        public static bool AskVolumeStep = false;
+        const float LineStep = 48f, VolumePollSec = 0.25f;
+        /// <summary>Height of the status line band at the bottom of the menu (status text centered 34 u above the edge).</summary>
+        const float StatusBand = 54f;
 
         public ChamberDefinition chamber;
         public ChamberBehaviour logic;
 
         RectTransform _canvas, _window;
-        TextMeshProUGUI _preset, _unfinished, _status;
+        TextMeshProUGUI _volume, _preset, _unfinished, _status;
+        float _linesY, _volumePoll;
+        int _target = -1, _shownVolume = int.MinValue;
         NumberPadEntry _pad;
         PageStack _pages;
         PresetStore _presets;
@@ -49,6 +60,7 @@ namespace AcousticChamber.App
         public void Build()
         {
             UiStrings.EnsureRegistered();
+            Loc.Set(UiLanguage.English); // menus are English; only a run switches to the participant's language
             if (chamber == null || logic == null)
             {
                 Debug.LogError("[GPL] ChamberMenu: chamber definition or chamber logic missing; run the chamber's setup step.");
@@ -99,25 +111,30 @@ namespace AcousticChamber.App
         void BuildMenu(RectTransform r)
         {
             var th = UiKit.Theme;
-            float top = Size.y / 2f - Page.HeaderHeight;
+            // the number pad and the button column share one top edge; that group (the pad's height) is centered
+            // vertically between the header and the status band at the bottom (PO 2026-11-07)
+            float header = Size.y / 2f - Page.HeaderHeight, statusTop = -Size.y / 2f + StatusBand;
+            float top = Mathf.Min(header - th.gap, (header + statusTop) / 2f + NumberPadEntry.Height / 2f);
             float left = -Size.x / 2f + Page.EdgePad;
             float padX = left + NumberPadEntry.Width / 2f;
-            float padY = top - th.gap - NumberPadEntry.Height / 2f;
+            float padY = top - NumberPadEntry.Height / 2f;
             _pad = NumberPadEntry.Create(r, new Vector2(padX, padY), StudyId.MaxDigits,
                                          d => StudyId.IsValidDigits(d) ? StudyId.FromDigits(d) : d, "Study ID");
 
             float colLeft = left + NumberPadEntry.Width + 2f * th.gap;
             float colRight = Size.x / 2f - Page.EdgePad;
             float colW = colRight - colLeft, colX = (colLeft + colRight) / 2f;
-            float y = top - th.gap;
+            float y = top;
             UiKit.Button(r, "Start", "Start", UiStyle.Prominent, new Vector2(colX, y - th.buttonHeight / 2f), new Vector2(colW, 0f), OnStart);
             y -= th.buttonHeight + th.gap;
             UiKit.Button(r, "Debug", "Debug", UiStyle.Gray, new Vector2(colX, y - th.buttonHeight / 2f), new Vector2(colW, 0f),
                          () => _bench.OpenDebugPage());
             y -= th.buttonHeight + 2f * th.gap;
-            // status lines under the buttons; empty (hidden) when there is nothing to say
-            _preset = Line(r, "Preset", colX, y - 20f, colW);
-            _unfinished = Line(r, "Unfinished", colX, y - 20f - 48f, colW);
+            // status lines under the buttons, stacked; an empty line takes no space
+            _linesY = y - 20f;
+            _volume = Line(r, "Volume", colX, _linesY, colW);
+            _preset = Line(r, "Preset", colX, _linesY, colW);
+            _unfinished = Line(r, "Unfinished", colX, _linesY, colW);
 
             _status = UiKit.Text(r, "Status", "", th.smallSize, new Vector2(0f, -Size.y / 2f + 34f), new Vector2(Page.ContentWidth(Size.x), 40f),
                                  color: th.text2);
@@ -132,23 +149,57 @@ namespace AcousticChamber.App
         }
 
         /// <summary>
-        /// The two lines under the buttons: "Running on custom preset: X" (nothing for the preset Default) and "Unfinished: S0005,
-        /// S0012" (nothing when none). Unfinished sessions are managed on Debug > Data files.
+        /// The lines under the buttons: "Audio level: 10 (target 8)" (PB-20b; red when they
+        /// differ; the target is the active preset's <c>volume.target_step</c>, if the chamber has one), "Preset:
+        /// X" (nothing for the preset Default) and "Unfinished: S0005, S0012" (nothing when none). Unfinished sessions
+        /// are managed on Debug > Data files.
         /// </summary>
         void Refresh()
         {
             if (_preset == null) return;
             string active = _presets.ActiveName;
             bool custom = !string.Equals(active, PresetStore.DefaultName, StringComparison.OrdinalIgnoreCase);
-            _preset.text = custom ? "Running on custom preset: " + active : "";
+            _preset.text = custom ? "Preset: " + active : "";
             var ids = new List<string>();
             foreach (var rec in _sessions.ListUnfinished())
                 if (!ids.Contains(rec.StudyId)) ids.Add(rec.StudyId);
             ids.Sort(StringComparer.Ordinal);
             _unfinished.text = ids.Count > 0 ? "Unfinished: " + string.Join(", ", ids) : "";
-            // no gap when the preset line is empty
-            var p = _unfinished.rectTransform.anchoredPosition;
-            _unfinished.rectTransform.anchoredPosition = new Vector2(p.x, _preset.rectTransform.anchoredPosition.y - (custom ? 48f : 0f));
+            _target = logic.Schema.Contains(HeadsetVolume.TargetKey) ? _presets.LoadActive(new List<string>()).GetInt(HeadsetVolume.TargetKey) : -1;
+            _shownVolume = int.MinValue;
+            ShowVolume();
+            StackLines();
+        }
+
+        void StackLines()
+        {
+            float y = _linesY;
+            foreach (var t in new[] { _volume, _preset, _unfinished })
+            {
+                var p = t.rectTransform.anchoredPosition;
+                t.rectTransform.anchoredPosition = new Vector2(p.x, y);
+                if (!string.IsNullOrEmpty(t.text)) y -= LineStep;
+            }
+        }
+
+        /// <summary>Reads the volume and updates the line when it changed.</summary>
+        void ShowVolume()
+        {
+            if (_volume == null) return;
+            int v = HeadsetVolume.ReadOrUnknown();
+            if (v == _shownVolume) return;
+            _shownVolume = v;
+            _volume.text = VolumeStatus.Line(v, _target);
+            _volume.color = VolumeStatus.Off(v, _target) ? UiKit.Theme.redText : UiKit.Theme.text2;
+        }
+
+        void Update()
+        {
+            if (_volume == null || _run != null) return;
+            _volumePoll -= Time.unscaledDeltaTime;
+            if (_volumePoll > 0f) return;
+            _volumePoll = VolumePollSec;
+            ShowVolume();
         }
 
         void SetStatus(string s)
@@ -184,14 +235,21 @@ namespace AcousticChamber.App
             var old = _sessions.FindUnfinished(id);
             if (old == null)
             {
-                AskVolume(v => BeginNew(id, v, null));
+                WithVolume(v => BeginNew(id, v, null));
                 return;
             }
             ModalDialog.Show(_canvas, id + " has an unfinished session",
                              logic.Describe(old) + ", started " + old.Created.ToString("yyyy-MM-dd HH:mm") + ".\nResume continues it. Start new closes it (its data are kept) and starts again.",
                              new DialogButton("Back", UiStyle.Borderless),
-                             new DialogButton("Start new", UiStyle.Gray, () => AskVolume(v => BeginNew(id, v, old))),
-                             new DialogButton("Resume", UiStyle.Prominent, () => AskVolume(v => BeginResume(old, v))));
+                             new DialogButton("Start new", UiStyle.Gray, () => WithVolume(v => BeginNew(id, v, old))),
+                             new DialogButton("Resume", UiStyle.Prominent, () => WithVolume(v => BeginResume(old, v))));
+        }
+
+        /// <summary>The volume step for the start row: read from the headset (-1 where it cannot be read), or asked (<see cref="AskVolumeStep"/>).</summary>
+        void WithVolume(Action<int> then)
+        {
+            if (AskVolumeStep) AskVolume(then);
+            else then(HeadsetVolume.ReadOrUnknown());
         }
 
         /// <summary>A sheet with a number pad for the headset volume step (0..15); OK calls <paramref name="then"/>.</summary>
@@ -292,12 +350,13 @@ namespace AcousticChamber.App
             EventLog.Open(path, SystemClock.Instance, logic.LogSchema, ctx, line => Debug.Log("[Chamber:" + chamber.id + "] " + line));
 
         static LogValues VolumeValues(EventLog log, int volume) =>
-            log.Schema.Has(VolumeColumn) ? new LogValues().Set(VolumeColumn, volume) : null;
+            log.Schema.Has(VolumeColumn) ? new LogValues().Set(VolumeColumn, volume >= 0 ? Fmt.I(volume) : "") : null;
 
         static string StartNote(int volume, EventLog log, bool continued = false)
         {
             string s = (continued ? " " : "") + "app " + Application.version + ", " + SystemInfo.deviceModel;
-            return log.Schema.Has(VolumeColumn) ? s : s + ", volume step " + volume;
+            if (volume < 0) s += ", volume not readable";
+            return log.Schema.Has(VolumeColumn) || volume < 0 ? s : s + ", volume step " + volume;
         }
 
         void Fail(string what, Exception e)
@@ -366,6 +425,8 @@ namespace AcousticChamber.App
             catch (Exception e) { Debug.LogException(e); }
             finally { run.Log.Dispose(); }
             SetStatus(run.Record.SessionId + (run.IsDebug ? " Debug run ended." : stopped.HasValue ? ": dropped out." : ": completed."));
+            // the participant's language belongs to the run (onboarding, slides, thanks); menus are English (PB-20b)
+            Loc.Set(UiLanguage.English);
             if (!run.IsDebug) _pad.Clear();
             Refresh();
             _bench.RefreshDebugPage();

@@ -12,8 +12,11 @@ GPL.Input, GPL.Homing, Meta XR Core, TextMeshPro.
 Built by the chamber from the session's parameter snapshot, so a resumed session gets the same plan.
 ```
 var plan = new ProtocolPlan()
-    .Stage("language", StageFlags.Once)                 // plain stage: the chamber runs its body
-    .Stage("handover", StageFlags.RepeatOnResume)
+    .StageIf(on("handover"), "handover", StageFlags.RepeatOnResume)   // plain stage: the chamber runs its body
+    .StageIf(on("language"), "language", StageFlags.Once)             // StageIf: switched by a preset boolean
+    .StageIf(on("recenter"), "recenter", StageFlags.RepeatOnResume)
+    .StageIf(on("instructions"), "instructions")
+    .StageIf(on("ready"), "ready", StageFlags.RepeatOnResume)
     .Blocks("practice", 1, practiceTrials, ResumeFrom.StageStart)   // 0 trials: left out
     .Blocks("experiment", blocks, trialsPerBlock, policy)
     .Stage("thanks", StageFlags.CompletesSession);
@@ -53,8 +56,26 @@ attempt 2 and later), `block_end`. Trial steps write no row; they set the `trial
 Built at run time on the chamber's overlay canvas (ADR-0004). Participant text in English and 中文 (`ProtocolStrings`; a
 chamber may override a key by registering its own table later).
 - `Language(chosen)`: "English" / "中文"; sets `Loc`.
-- `Handover(rig, done)`: "Please hand the headset to the participant." + Continue (experimenter), then "Look straight ahead
-  and press A." (participant); A runs `SystemRecenterMethod`, the result goes to `done` (log it as `homing`).
+- `Handover()`: a numbered list "1. Set the IPD. 2. Hand the headset to the participant." + Continue (experimenter). No
+  recenter (PB-20b).
+- `MetaRecenter(listener, done, look, language, shown)`: the recenter slide in the slide layout: title (default "Recenter the
+  view"), illustration from `look` (a `SlideSet.Slide`; without an image the text "Look straight ahead. Hold the Meta button
+  until the view recenters." fills the gray area), Back reading "Language" when `language` is given (runs it, then the slide
+  comes back), Next always active. The result goes to `done` (log it as
+  `homing`): the user recenter the `RecenterListener` reported, or outcome `cancelled` when Next came without one. Slide
+  buttons (360 u, … when too long) name where they lead: "← <previous slide>" and "<next slide> →" (short title, else title;
+  "← Back" / "Next →" when unknown); a final Continue has no arrow. Instruction slide 1 goes back to the recenter slide.
+- `DotCheck(rig, dot, gate, done)`: the final check before the trials: "Look at the dot to begin" and the head gate; the result
+  goes to `done`. Log the final headset volume after it (`volume_check`, see the App's `HeadsetVolume`).
+- `Slides(set, start, resumed, shown)` (PB-20): instruction slides from a `SlideSet` asset (per slide: id, title English /
+  中文, image English / 中文; 中文 falls back to English). Layout on the 1000 x 700 u canvas: top bar 120 u (title, placed like a page title: 40 u top padding + 80 u row), image
+  1000 x 468 u full width (export 2000 x 936 px, keep text and key details 96 px = 48 u from the edges; import with
+  Non-Power of 2 = None, no mipmaps), bottom bar 112 u (Back borderless, hidden on the first slide; Next, Continue on the
+  last). Built once, changes in place. `shown(deck, slide, how)` runs for every slide on screen: store the index with
+  `SlideDeck.Store` and log `slide` with `deck.Note(slide.id, how)`; on a resume open on `SlideDeck.Restore`. An empty or
+  missing set shows nothing. Navigation is the pure `SlideDeck` (Core). The general overload takes `SlidePage`s (title,
+  image, caption text for the gray area while there is no image, `Ready` = Next active) plus an optional first Back
+  (`firstBackKey`, `firstBack`) and the last Next label (`lastKey`).
 - `Message(text, pressA, buttonKey)`: waits for A or the button.
 - `Cue(text, y)`: bare text without a panel while the world is visible (gate hint, "Press A"); `Cue(null)` hides it.
 - `PressedA()`: A this frame, ignored while the Stop dialog is open (`InputOpen`).
@@ -62,4 +83,5 @@ chamber may override a key by registering its own table later).
 ## Tests
 `Tests/EditMode/ProtocolTests.cs`: plan shape and hash, the full walk, each resume policy, a resume during the language, the
 `NotResumable` policy, and **a kill at every step for every policy** (resume from the saved file, finish, and check that the
-highest attempt of every block holds each trial exactly once).
+highest attempt of every block holds each trial exactly once). `Tests/EditMode/SlideDeckTests.cs`: Back / Next, the end of
+the deck, an empty deck, the stored slide (clamped, per stage, through the session file), the row note.
