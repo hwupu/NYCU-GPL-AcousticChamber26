@@ -1,7 +1,6 @@
 using System.IO;
 using AcousticChamber.App;
 using AcousticChamber.App.Editor;
-using GPL.Acoustics.Editor;
 using GPL.SpatialSources;
 using GPL.UI;
 using GPL.UI.Editor;
@@ -21,18 +20,23 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         public const string ScenePath = Folder + "/Scenes/HearingLoss.unity";
         public const string DefinitionPath = Folder + "/HearingLoss.ChamberDefinition.asset";
         public const string MaterialsDir = Folder + "/Materials";
-        public const string AudioDir = Folder + "/Audio";
+        /// <summary>
+        /// The sounds are HW2's clips in the HumPerHW2 folder, used in place (PO 2026-11-07: not copied, the audio will change).
+        /// A temporary asset link between two chambers (no code link); replace with the chamber's own Audio/ folder later.
+        /// </summary>
+        public const string AudioDir = "Assets/AcousticChamber/Chambers/HumPerHW2/Audio";
         const string PanelName = "Experience Panel";
         const string LaserPath = "Assets/AcousticChamber/Settings/Materials/Laser.mat";
         const string Log = "[Chamber:HearingLoss] ";
 
-        /// <summary>The sounds on the panel (HW2 clips for now, PO 2026-11-07): file, button label, load type.</summary>
-        static readonly (string file, string label, AudioClipLoadType load)[] Sounds =
+        /// <summary>The sounds on the panel (HW2 clips for now, PO 2026-11-07): file, button label. Their import settings belong to
+        /// HumPerHW2 (01 Decompress On Load, 02-04 Streaming) and are not changed here.</summary>
+        static readonly (string file, string label)[] Sounds =
         {
-            ("SFX-C-01-normalized.wav", "White noise", AudioClipLoadType.DecompressOnLoad),
-            ("SFX-C-02-normalized.wav", "Podcast 1", AudioClipLoadType.Streaming),
-            ("SFX-C-03-normalized.wav", "Podcast 2", AudioClipLoadType.Streaming),
-            ("SFX-C-04-normalized.wav", "Street market", AudioClipLoadType.DecompressOnLoad),
+            ("SFX-C-01-normalized.wav", "White noise"),
+            ("SFX-C-02-normalized.wav", "Podcast 1"),
+            ("SFX-C-03-normalized.wav", "Podcast 2"),
+            ("SFX-C-04-normalized.wav", "Street market"),
         };
 
         public const float FloorSizeM = 30f;
@@ -104,7 +108,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         /// <summary>
         /// Step 2: Environment/Floor (30 × 30 m, URP Lit with a 1 m grid, no walls: dry, no reverb), Stimuli/Speaker (a box speaker
         /// standing on the floor 2 m ahead, FloorDragSource; child Emitter at 0.3 m with AudioSource + MetaXRAudioSource:
-        /// spatialized, acoustics off, no mixer, volume 1, flat rolloff, loop), the four sounds (import settings), links to the panel.
+        /// spatialized, acoustics off, no mixer, volume 1, flat rolloff, loop), the four sounds (HW2 clips in Chambers/HumPerHW2/Audio, import settings untouched), links to the panel.
         /// </summary>
         [MenuItem("Magic/HearingLoss/Step 2 - Floor, speaker and sounds", priority = 121)]
         public static void SpeakerStep()
@@ -159,8 +163,6 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
                 string path = AudioDir + "/" + Sounds[i].file;
                 clips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
                 if (clips[i] == null) { Debug.LogError(Log + "Missing " + path); return; }
-                ClipImport.SetLoadType(clips[i], Sounds[i].load);
-                clips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
                 names[i] = Sounds[i].label;
             }
             var source = Spatial(emitter, clips[0]);

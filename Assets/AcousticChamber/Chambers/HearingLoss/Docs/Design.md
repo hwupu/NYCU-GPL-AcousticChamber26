@@ -16,7 +16,7 @@
 ## Sound
 | Item | Value |
 |---|---|
-| Clips | `SFX-C-01` white noise, `SFX-C-02` podcast 1, `SFX-C-03` podcast 2, `SFX-C-04` street market (HW2 clips, mono, -23 LUFS; PO: "can use the audio from HW2 for now") |
+| Clips | `SFX-C-01` white noise, `SFX-C-02` podcast 1, `SFX-C-03` podcast 2, `SFX-C-04` street market (HW2 clips, mono, -23 LUFS; PO: "can use the audio from HW2 for now"). Used in place from `Chambers/HumPerHW2/Audio`, not copied (PO: the audio will likely change); a temporary asset link between chambers, no code link |
 | Playback | looped; starts **paused** on the first clip *(default)*; Play resumes where it paused; another clip starts from the beginning (and keeps playing if it was playing) |
 | Spatialization | Meta XR Audio (AudioSource + MetaXRAudioSource, spatialized, acoustics off), volume 1, flat rolloff (no distance attenuation, the lab rule), gain boost 0; loudness = headset volume *(default)* |
 
