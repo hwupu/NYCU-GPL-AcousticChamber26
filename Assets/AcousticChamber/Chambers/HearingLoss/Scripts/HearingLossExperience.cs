@@ -12,10 +12,11 @@ using UnityEngine;
 namespace AcousticChamber.Chambers.HearingLoss
 {
     /// <summary>
-    /// The HearingLoss experience chamber (Docs/Design.md, ADR-0006): no Study ID, no session, no log. A custom panel picks the
-    /// sound, plays / pauses it, and sets a NIOSH notch preset on both ears, the left or the right ear (GPL.HearingLoss on the final
-    /// output). The speaker stands on the floor 2 m ahead and is dragged with the controller ray (trigger held). Y opens a
-    /// Keep going / Back to Hall dialog. Lives on the panel's overlay canvas; English only.
+    /// The HearingLoss experience chamber (Docs/Design.md, ADR-0006): no Study ID, no session, no log. A custom panel, laid out like
+    /// the Hearing Loss Test Panel: hearing condition (both ears / left / right), hearing loss (HLSim presets, GPL.HearingLoss on the
+    /// final output), pure tones and recordings, all played from the speaker (click to play, click again to pause). The speaker
+    /// stands on the floor 2 m ahead and is dragged with the controller ray (trigger held). Y opens a Keep going / Back to Hall
+    /// dialog. Lives on the panel's overlay canvas; English only.
     /// </summary>
     public class HearingLossExperience : MonoBehaviour
     {
@@ -23,8 +24,11 @@ namespace AcousticChamber.Chambers.HearingLoss
         public const string Title = "C02 · Hearing Loss";
         const string Log = "[Chamber:HearingLoss] ";
 
-        public static readonly Vector2 Size = new Vector2(1000f, 860f);
+        public static readonly Vector2 Size = new Vector2(1100f, 900f);
         public const float StartDistanceM = 2f;
+
+        /// <summary>Pure-tone peak level: -20 dBFS (RMS -23 dBFS, about the -23 LUFS of the recordings at 1 kHz).</summary>
+        public const float TonePeakDbfs = -20f;
 
         [Header("Set by Magic > HearingLoss steps")]
         public FloorDragSource speaker;
@@ -37,9 +41,9 @@ namespace AcousticChamber.Chambers.HearingLoss
         OutputHearingLoss _output;
         GlobalActions _actions;
         RectTransform _window;
-        UiButton _play;
         TextMeshProUGUI _status;
-        readonly List<UiButton> _clipButtons = new List<UiButton>();
+        AudioClip[] _tones;
+        readonly List<UiButton> _soundButtons = new List<UiButton>(); // tones, then recordings
         readonly List<UiButton> _earButtons = new List<UiButton>();
         readonly List<UiButton> _levelButtons = new List<UiButton>();
         bool _leaving;
@@ -64,7 +68,8 @@ namespace AcousticChamber.Chambers.HearingLoss
                 _actions.StopRequested += OpenLeaveDialog;
             }
 
-            source.clip = clips[0];
+            _tones = new AudioClip[ExperienceState.ToneHz.Length];
+            for (int i = 0; i < _tones.Length; i++) _tones[i] = MakeTone(ExperienceState.ToneHz[i]);
             source.loop = true;
             BuildPanel();
             Apply();
@@ -85,6 +90,22 @@ namespace AcousticChamber.Chambers.HearingLoss
                 _actions.StopEnabled = false;
             }
             if (_output != null) _output.SetProfile(HearingProfile.Normal);
+            if (_tones != null) foreach (var t in _tones) if (t != null) Destroy(t);
+        }
+
+        /// <summary>
+        /// One second of sine at <paramref name="hz"/> (whole cycles, so the loop is seamless), mono, peak <see cref="TonePeakDbfs"/>,
+        /// at the output sample rate.
+        /// </summary>
+        static AudioClip MakeTone(int hz)
+        {
+            int rate = AudioSettings.outputSampleRate > 0 ? AudioSettings.outputSampleRate : 48000;
+            float amp = Mathf.Pow(10f, TonePeakDbfs / 20f);
+            var data = new float[rate];
+            for (int i = 0; i < data.Length; i++) data[i] = (float)(amp * System.Math.Sin(2.0 * System.Math.PI * ((long)hz * i % rate) / rate));
+            var clip = AudioClip.Create("Tone " + ExperienceState.ToneButton(hz), rate, 1, rate, false);
+            clip.SetData(data, 0);
+            return clip;
         }
 
         // ---- panel ---------------------------------------------------------------------------------------------------
@@ -92,43 +113,50 @@ namespace AcousticChamber.Chambers.HearingLoss
         void BuildPanel()
         {
             var th = UiKit.Theme;
+            ((RectTransform)transform).sizeDelta = Size; // scenes made before the 2026-11-08 layout have the old size
             _window = UiKit.Window(transform);
-            float left = -Size.x / 2f + 48f, width = Size.x - 96f;
+            float left = -Size.x / 2f + 48f, width = Size.x - 96f, top = Size.y / 2f;
 
-            UiKit.Text(_window, "Title", Title, th.headingSize, new Vector2(0f, 370f), new Vector2(width, 70f), bold: true,
+            UiKit.Text(_window, "Title", Title, th.headingSize, new Vector2(0f, top - 60f), new Vector2(width, 70f), bold: true,
                        align: TextAlignmentOptions.Left);
 
-            Section("Sound", 290f);
-            _clipButtons.Clear();
-            for (int i = 0; i < clips.Length; i++)
-            {
-                int k = i;
-                string name = i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name;
-                _clipButtons.Add(Choice(_window, name, i, clips.Length, 220f, () => SelectClip(k)));
-            }
-            _play = UiKit.Button(_window, "Play", "Play", UiStyle.Prominent, new Vector2(left + 150f, 130f), new Vector2(300f, 0f), TogglePlay);
-
-            Section("Loss on", 40f);
+            Section("Hearing condition (loss on)", top - 140f);
             _earButtons.Clear();
             for (int i = 0; i < ExperienceState.Ears.Length; i++)
             {
                 var ear = ExperienceState.Ears[i];
-                _earButtons.Add(Choice(_window, ExperienceState.EarButton(ear), i, ExperienceState.Ears.Length, -30f, () => { _state.SetEar(ear); Apply(); }));
+                _earButtons.Add(Choice(_window, ExperienceState.EarButton(ear), i, ExperienceState.Ears.Length, top - 205f, () => { _state.SetEar(ear); Apply(); }));
             }
 
-            Section("Hearing loss", -120f);
+            Section("Hearing loss", top - 285f);
             _levelButtons.Clear();
             for (int i = 0; i < ExperienceState.Levels.Length; i++)
             {
                 var level = ExperienceState.Levels[i];
-                _levelButtons.Add(Choice(_window, ExperienceState.LevelButton(level), i, ExperienceState.Levels.Length, -190f, () => { _state.SetLevel(level); Apply(); }));
+                _levelButtons.Add(Choice(_window, ExperienceState.LevelButton(level), i, ExperienceState.Levels.Length, top - 350f, () => { _state.SetLevel(level); Apply(); }));
             }
 
-            _status = UiKit.Text(_window, "Status", "", th.smallSize, new Vector2(0f, -280f), new Vector2(width, 80f), color: th.text2,
+            _soundButtons.Clear();
+            Section("Pure tone", top - 430f);
+            for (int i = 0; i < ExperienceState.ToneHz.Length; i++)
+            {
+                int k = i;
+                _soundButtons.Add(Choice(_window, ExperienceState.ToneButton(ExperienceState.ToneHz[i]), i, ExperienceState.ToneHz.Length, top - 495f, () => ClickSound(k)));
+            }
+
+            Section("Audio recording", top - 575f);
+            for (int i = 0; i < clips.Length; i++)
+            {
+                int k = ExperienceState.ToneHz.Length + i;
+                string name = i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name;
+                _soundButtons.Add(Choice(_window, name, i, clips.Length, top - 640f, () => ClickSound(k)));
+            }
+
+            _status = UiKit.Text(_window, "Status", "", th.smallSize, new Vector2(0f, top - 730f), new Vector2(width, 80f), color: th.text2,
                                  align: TextAlignmentOptions.TopLeft);
 
-            UiKit.Button(_window, "Reset Speaker", "Reset speaker", UiStyle.Gray, new Vector2(left + 160f, -365f), new Vector2(320f, 0f), ResetSpeaker);
-            UiKit.Button(_window, "Back to Hall", "Back to Hall", UiStyle.Gray, new Vector2(-left - 160f, -365f), new Vector2(320f, 0f), BackToHall);
+            UiKit.Button(_window, "Reset Speaker", "Reset speaker", UiStyle.Gray, new Vector2(left + 160f, -top + 55f), new Vector2(320f, 0f), ResetSpeaker);
+            UiKit.Button(_window, "Back to Hall", "Back to Hall", UiStyle.Gray, new Vector2(-left - 160f, -top + 55f), new Vector2(320f, 0f), BackToHall);
 
             void Section(string label, float y) =>
                 UiKit.Text(_window, label, label, th.bodySize, new Vector2(0f, y), new Vector2(width, 50f), color: th.text2,
@@ -144,37 +172,42 @@ namespace AcousticChamber.Chambers.HearingLoss
             }
         }
 
-        void SelectClip(int index)
+        /// <summary>Click on a tone or recording: a new sound plays from the start; the playing one pauses; a paused one resumes.</summary>
+        void ClickSound(int sound)
         {
-            if (!_state.SelectClip(index)) return;
-            source.Stop();
-            source.clip = clips[index];
-            if (_state.Playing) source.Play();
-            Apply();
-        }
-
-        void TogglePlay()
-        {
-            _state.TogglePlaying();
-            if (_state.Playing)
+            switch (_state.ClickSound(sound))
             {
-                if (source.time > 0f && !source.isPlaying) source.UnPause();
-                else source.Play();
+                case SoundAction.PlayFromStart:
+                    source.Stop();
+                    source.clip = ClipOf(sound);
+                    source.Play();
+                    break;
+                case SoundAction.Pause:
+                    source.Pause();
+                    break;
+                case SoundAction.Resume:
+                    source.UnPause();
+                    break;
             }
-            else source.Pause();
             Apply();
         }
 
-        /// <summary>Pushes the state to the output and the panel.</summary>
+        AudioClip ClipOf(int sound) =>
+            ExperienceState.IsTone(sound) ? _tones[sound] : clips[ExperienceState.RecordingIndex(sound)];
+
+        string NameOf(int sound) => sound < 0 ? "nothing" : UiKit.LabelOf(_soundButtons[sound]).text;
+
+        /// <summary>Pushes the state to the output and the panel. The sound playing is white; a paused one is gray again.</summary>
         void Apply()
         {
             if (_output != null) _output.SetProfile(_state.Profile);
-            for (int i = 0; i < _clipButtons.Count; i++) _clipButtons[i].Style = i == _state.ClipIndex ? UiStyle.Prominent : UiStyle.Gray;
+            for (int i = 0; i < _soundButtons.Count; i++) _soundButtons[i].Style = i == _state.Sound && _state.Playing ? UiStyle.Prominent : UiStyle.Gray;
             for (int i = 0; i < _earButtons.Count; i++) _earButtons[i].Style = ExperienceState.Ears[i] == _state.Ear ? UiStyle.Prominent : UiStyle.Gray;
             for (int i = 0; i < _levelButtons.Count; i++) _levelButtons[i].Style = ExperienceState.Levels[i] == _state.Level ? UiStyle.Prominent : UiStyle.Gray;
-            if (_play != null) UiKit.LabelOf(_play).text = _state.Playing ? "Pause" : "Play";
-            if (_status != null) _status.text = _state.Status() + "\nPoint at the speaker and hold the trigger to move it.";
-            Debug.Log(Log + (_state.Playing ? "playing " : "paused ") + clips[_state.ClipIndex].name + "; " + _state.Status());
+            string playing = _state.Sound < 0 ? "Click a tone or a recording to play it; click it again to pause."
+                           : (_state.Playing ? "Playing " : "Paused ") + NameOf(_state.Sound) + ".";
+            if (_status != null) _status.text = _state.Status() + "  " + playing + "\nPoint at the speaker and hold the trigger to move it.";
+            Debug.Log(Log + (_state.Playing ? "playing " : "paused ") + NameOf(_state.Sound) + "; " + _state.Status());
         }
 
         void ResetSpeaker()

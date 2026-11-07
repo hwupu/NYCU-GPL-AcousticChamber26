@@ -9,88 +9,85 @@ namespace AcousticChamber.Chambers.HearingLoss.Tests
         static readonly int[] Zero = new int[10];
 
         [Test]
-        public void StartsPausedNormalHearingFirstClip()
+        public void StartsWithNothingPlayingBothEarsZeroDb()
         {
             var s = new ExperienceState(4);
-            Assert.AreEqual(0, s.ClipIndex);
+            Assert.AreEqual(-1, s.Sound);
             Assert.IsFalse(s.Playing);
-            Assert.AreEqual(LossOn.None, s.Ear);
+            Assert.AreEqual(Ear.Both, s.Ear);
             Assert.AreEqual(HearingLossLevel.None, s.Level);
             Assert.AreEqual(HearingProfile.Normal, s.Profile);
+            Assert.AreEqual(9, s.SoundCount);
             Assert.AreEqual("Left ear 0 dB, right ear 0 dB (at 4 kHz).", s.Status());
+        }
+
+        [Test]
+        public void ClickPlaysPausesResumesAndSwitches()
+        {
+            var s = new ExperienceState(4);
+            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(3)); // 4 kHz tone
+            Assert.IsTrue(s.Playing);
+            Assert.AreEqual(SoundAction.Pause, s.ClickSound(3));
+            Assert.IsFalse(s.Playing);
+            Assert.AreEqual(SoundAction.Resume, s.ClickSound(3));
+            Assert.IsTrue(s.Playing);
+            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(6)); // second recording
+            Assert.AreEqual(6, s.Sound);
+            Assert.IsTrue(s.Playing);
+            s.ClickSound(6);
+            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(0)); // another sound while paused starts it
+            Assert.IsTrue(s.Playing);
+            s.Stop();
+            Assert.IsFalse(s.Playing);
+            Assert.AreEqual(0, s.Sound);
+        }
+
+        [Test]
+        public void TonesFirstThenRecordings()
+        {
+            Assert.IsTrue(ExperienceState.IsTone(0));
+            Assert.IsTrue(ExperienceState.IsTone(4));
+            Assert.IsFalse(ExperienceState.IsTone(5));
+            Assert.AreEqual(0, ExperienceState.RecordingIndex(5));
+            CollectionAssert.AreEqual(new[] { 500, 1000, 2000, 4000, 8000 }, ExperienceState.ToneHz);
+            Assert.AreEqual("500 Hz", ExperienceState.ToneButton(500));
+            Assert.AreEqual("8 kHz", ExperienceState.ToneButton(8000));
         }
 
         [Test]
         public void RightLossLeavesLeftAtZero()
         {
             var s = new ExperienceState(4);
-            s.SetEar(LossOn.Right);
+            s.SetEar(Ear.Right);
             CollectionAssert.AreEqual(Zero, s.Profile.Left);
             CollectionAssert.AreEqual(HearingPresets.Mild, s.Profile.Right);
             Assert.AreEqual("Left ear 0 dB, right ear -20 dB (at 4 kHz).", s.Status());
-            s.SetEar(LossOn.Left);
-            CollectionAssert.AreEqual(HearingPresets.Mild, s.Profile.Left);
-            CollectionAssert.AreEqual(Zero, s.Profile.Right);
+            s.SetEar(Ear.Left);
             Assert.AreEqual("Left ear -20 dB, right ear 0 dB (at 4 kHz).", s.Status());
-            s.SetEar(LossOn.Both);
+            s.SetEar(Ear.Both);
             s.SetLevel(HearingLossLevel.Severe);
             Assert.AreEqual("Left ear -40 dB, right ear -40 dB (at 4 kHz).", s.Status());
         }
 
         [Test]
-        public void ChoosingAnEarAtZeroSetsMinus20()
+        public void ChoosingAnEarAtZeroSetsMinus20AndKeepsAnExistingLoss()
         {
             var s = new ExperienceState(4);
-            s.SetEar(LossOn.Left);
+            s.SetEar(Ear.Both); // already selected, but at 0 dB
             Assert.AreEqual(HearingLossLevel.Mild, s.Level);
-        }
-
-        [Test]
-        public void ChoosingAnEarKeepsAnExistingLoss()
-        {
-            var s = new ExperienceState(4);
-            s.SetEar(LossOn.Left);
             s.SetLevel(HearingLossLevel.Moderate);
-            s.SetEar(LossOn.Right);
+            s.SetEar(Ear.Left);
             Assert.AreEqual(HearingLossLevel.Moderate, s.Level);
-            Assert.AreEqual(LossOn.Right, s.Ear);
-        }
-
-        [Test]
-        public void NormalHearingSetsZeroAndZeroSetsNormalHearing()
-        {
-            var s = new ExperienceState(4);
-            s.SetEar(LossOn.Right);
-            s.SetLevel(HearingLossLevel.Severe);
-            s.SetEar(LossOn.None);
-            Assert.AreEqual(HearingLossLevel.None, s.Level);
-            Assert.AreEqual(HearingProfile.Normal, s.Profile);
-
-            s.SetEar(LossOn.Left);
             s.SetLevel(HearingLossLevel.None);
-            Assert.AreEqual(LossOn.None, s.Ear);
+            Assert.AreEqual(Ear.Left, s.Ear);
             Assert.AreEqual(HearingProfile.Normal, s.Profile);
         }
 
         [Test]
-        public void LossWhileNormalHearingGoesOnBothEars()
+        public void LevelsAreHlsimOnly()
         {
-            var s = new ExperienceState(4);
-            s.SetLevel(HearingLossLevel.Moderate);
-            Assert.AreEqual(LossOn.Both, s.Ear);
-            CollectionAssert.AreEqual(HearingPresets.Moderate, s.Profile.Left);
-            CollectionAssert.AreEqual(HearingPresets.Moderate, s.Profile.Right);
-        }
-
-        [Test]
-        public void ButtonLabels()
-        {
-            Assert.AreEqual("0 dB", ExperienceState.LevelButton(HearingLossLevel.None));
-            Assert.AreEqual("-20 dB", ExperienceState.LevelButton(HearingLossLevel.Mild));
-            Assert.AreEqual("-30 dB", ExperienceState.LevelButton(HearingLossLevel.Moderate));
-            Assert.AreEqual("-40 dB", ExperienceState.LevelButton(HearingLossLevel.Severe));
-            Assert.AreEqual("Normal hearing", ExperienceState.EarButton(LossOn.None));
-            Assert.AreEqual("Both ears", ExperienceState.EarButton(LossOn.Both));
+            CollectionAssert.AreEqual(new[] { "0 dB", "-20 dB", "-30 dB", "-40 dB" },
+                Array.ConvertAll(ExperienceState.Levels, ExperienceState.LevelButton));
         }
 
         [Test]
@@ -99,24 +96,22 @@ namespace AcousticChamber.Chambers.HearingLoss.Tests
             var s = new ExperienceState(2);
             int n = 0;
             s.Changed += () => n++;
-            Assert.IsFalse(s.SelectClip(0));
-            Assert.IsTrue(s.SelectClip(1));
-            s.SetPlaying(false);
-            s.TogglePlaying();
-            s.SetEar(LossOn.None);
+            s.Stop();
             s.SetLevel(HearingLossLevel.None);
+            Assert.AreEqual(0, n);
+            s.SetEar(Ear.Left); // ear and level change together: one event
+            Assert.AreEqual(1, n);
+            s.ClickSound(0);
             Assert.AreEqual(2, n);
-            Assert.IsTrue(s.Playing);
-            s.SetEar(LossOn.Left); // ear and level change together: one event
-            Assert.AreEqual(3, n);
         }
 
         [Test]
         public void RejectsBadInput()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ExperienceState(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ExperienceState(-1));
             var s = new ExperienceState(2);
-            Assert.Throws<ArgumentOutOfRangeException>(() => s.SelectClip(2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => s.ClickSound(7));
+            Assert.Throws<ArgumentOutOfRangeException>(() => s.ClickSound(-1));
             Assert.Throws<ArgumentException>(() => s.SetLevel(HearingLossLevel.Predicted));
         }
     }
