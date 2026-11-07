@@ -12,8 +12,8 @@ namespace AcousticChamber.App
     /// Headset test panel for PB-09 (no study logic): the pure-tone check of GPL.HearingLoss. Rows (PO 2026-11-08):
     /// hearing condition (loss on both ears / left / right), hearing loss (0 / -20 / -30 / -40 / -60 / -80 dB), pure tone
     /// (500 Hz, 1, 2, 4, 8 kHz). The tone is mixed into both ears of the final output *before* the hearing-loss filters, so the ear
-    /// with the loss sounds quieter than the other. The levels are the NIOSH notch shape, labelled by the 4 kHz band: -20 / -30 / -40
-    /// are the Mild / Moderate / Severe presets, -60 / -80 are Severe x 1.5 / x 2 (test panel only, not module presets). The panel
+    /// with the loss sounds quieter than the other. The levels are the HLSim noise-notch shape, labelled by the 4 kHz band: -20 / -30 / -40
+    /// are the Mild / Moderate / Severe presets, -60 / -80 are Severe x 1.5 / x 2 (TestPanelLevels; docs/references/HearingLossLevels.md). The panel
     /// shows per ear the loudest block of the tone before and after the filters, and the filter bank's expected change at that
     /// frequency.
     /// </summary>
@@ -23,12 +23,8 @@ namespace AcousticChamber.App
         const float ToneDbfs = -20f, ToneSeconds = 1.5f;
 
         static readonly Ear[] Ears = { Ear.Both, Ear.Left, Ear.Right };
-        static readonly int[] LevelDb = { 0, -20, -30, -40, -60, -80 };
-        static readonly int[] ToneHz = { 500, 1000, 2000, 4000, 8000 };
-
-        //                                       125  250  500  1k   1.5k  2k   3k   4k   6k   8k
-        static readonly int[] Severe60 = {  0,   0, -15, -30,  -38, -45, -45, -60, -45, -30 }; // Severe x 1.5 (-37.5 -> -38)
-        static readonly int[] Severe80 = {  0,   0, -20, -40,  -50, -60, -60, -80, -60, -40 }; // Severe x 2
+        static int[] LevelDb => TestPanelLevels.LevelDb;
+        static int[] ToneHz => TestPanelLevels.ToneHz;
 
         OutputHearingLoss _output;
         RectTransform _window;
@@ -40,22 +36,7 @@ namespace AcousticChamber.App
         float _inL, _inR, _outL, _outR;
         string _expL = "", _expR = "";
 
-        /// <summary>The bands of a level: the NIOSH notch whose 4 kHz band is <paramref name="db"/>.</summary>
-        public static int[] Bands(int db)
-        {
-            switch (db)
-            {
-                case 0: return HearingPresets.None;
-                case -20: return HearingPresets.Mild;
-                case -30: return HearingPresets.Moderate;
-                case -40: return HearingPresets.Severe;
-                case -60: return (int[])Severe60.Clone();
-                case -80: return (int[])Severe80.Clone();
-                default: throw new System.ArgumentOutOfRangeException(nameof(db), db, "Not a level on the test panel.");
-            }
-        }
-
-        HearingProfile Profile => HearingProfile.For(_ear, Bands(LevelDb[_level]));
+        HearingProfile Profile => HearingProfile.For(_ear, TestPanelLevels.Bands(LevelDb[_level]));
 
         void Start() => Build();
 
@@ -126,7 +107,8 @@ namespace AcousticChamber.App
             for (int i = 0; i < _levelButtons.Count; i++) _levelButtons[i].Style = i == _level ? UiStyle.Prominent : UiStyle.Gray;
             for (int i = 0; i < _toneButtons.Count; i++) _toneButtons[i].Style = i == _toneIndex ? UiStyle.Prominent : UiStyle.Gray;
             if (_status != null && _output != null) _status.text = _output.Note();
-            Debug.Log("[GPL] HearingLoss test: " + (_output != null ? _output.Note() : "no output"));
+            Debug.Log("[GPL] HearingLoss test: " + DbLabel(LevelDb[_level]) + " = " + TestPanelLevels.Source(LevelDb[_level]) + " on " + _ear +
+                      "; " + (_output != null ? _output.Note() : "no output"));
         }
 
         void PlayTone(int index)

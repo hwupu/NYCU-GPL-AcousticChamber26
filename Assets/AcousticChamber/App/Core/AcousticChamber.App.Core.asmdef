@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.App.Core",
     "rootNamespace": "AcousticChamber.App",
-    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core"],
+    "references": ["GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.HearingLoss.Core"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -16,7 +16,9 @@ Simulator (HLSim v4.0.29.0) as decoded in `docs/references/HLSIM_GUIDELINES.md`;
 | `Core/ToneGenerator.cs` | sine test tone on Left / Right / Both with 10 ms fades, allocation-free |
 | `Runtime/OutputHearingLoss.cs` | on the AudioListener (`OutputHearingLoss.Ensure()` adds it there): `SetProfile(profile)`, `Profile`, `PlayTestTone(ear, hz, dbfs, s)` (mixed in **before** the filters), `InputRmsDbfs(ear)` / `OutputRmsDbfs(ear)` of the last block, `Note()` for the log |
 
-Headset check: open the Sandbox scene, `Magic > App > Hearing Loss Test Panel (open scene)`, Play over Link or build: left / right tones at 1 and 4 kHz through a preset on both, left or right ear, with the RMS before and after the filters per ear.
+Headset check: open the Sandbox scene, `Magic > App > Hearing Loss Test Panel (open scene)`, Play over Link or build: pure tones (500 Hz-8 kHz, both ears) through a loss on both, the left or the right ear, with the RMS before and after the filters and the expected change per ear.
+
+**Levels, sources and the response at each tone, for write-ups: [docs/references/HearingLossLevels.md](../../../../docs/references/HearingLossLevels.md).**
 
 ## Use
 ```csharp
