@@ -118,7 +118,7 @@ namespace AcousticChamber.App
             _host.DebugRun = _debug;
             TestPanelKit.LabelOf(_sessionButton).text = _running ? "Session: running (stop)" : "Session: off (start)";
             _sessionButton.Style = _running ? UiStyle.Destructive : UiStyle.Prominent;
-            TestPanelKit.LabelOf(_modeButton).text = _debug ? "Mode: Config run" : "Mode: Real session";
+            TestPanelKit.LabelOf(_modeButton).text = _debug ? "Mode: Playground run" : "Mode: Real session";
             _modeButton.Selected = _debug;
             _englishButton.Selected = Loc.Current == UiLanguage.English;
             _chineseButton.Selected = Loc.Current == UiLanguage.Chinese;

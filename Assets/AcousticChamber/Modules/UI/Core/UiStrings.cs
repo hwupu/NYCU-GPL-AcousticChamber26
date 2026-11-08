@@ -34,7 +34,7 @@ namespace GPL.UI
             .Add(StopTitle, "Stop the session?", "要停止嗎？")
             .Add(StopMessage, "Everything is paused. Keep going continues where you left off. Drop out ends the session for good.",
                  "目前已暫停。「繼續」會從剛才的地方接著進行；「退出實驗」會結束本次實驗，之後無法再繼續。")
-            .Add(StopMessageDebug, "Config run, paused. Back to the chamber menu ends this run.",
+            .Add(StopMessageDebug, "Playground run, paused. Back to the chamber menu ends this run.",
                  "除錯模式，已暫停。「回到選單」會結束這次執行。")
             .Add(StopKeepGoing, "Keep going", "繼續")
             .Add(StopDropOut, "Drop out", "退出實驗")

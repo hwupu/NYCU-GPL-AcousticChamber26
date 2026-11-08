@@ -82,7 +82,7 @@ namespace GPL.DebugBench
                              " removed from this device. This cannot be undone.";
             if (e.Status == SessionStatus.InProgress)
                 message += " The session is unfinished: " + (e.StudyId.Length > 0 ? e.StudyId : "it") + " can no longer resume it.";
-            ModalDialog.Show(_canvas, "Delete " + (e.IsDebug ? "this Config run" : e.StudyId.Length > 0 ? e.StudyId + "'s session" : "this session") + "?", message,
+            ModalDialog.Show(_canvas, "Delete " + (e.IsDebug ? "this Playground run" : e.StudyId.Length > 0 ? e.StudyId + "'s session" : "this session") + "?", message,
                 new DialogButton("Cancel", UiStyle.Borderless),
                 new DialogButton("Delete", UiStyle.Destructive, () =>
                 {
