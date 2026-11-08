@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace GPL.UI
 {
-    public static partial class UiLay
+    public static partial class UiKit
     {
         /// <summary>How far a list reaches beyond its parent's right edge: the strip the scroll indicator lives in (24 u, as in the Storybook).</summary>
         public const float IndicatorMargin = 24f;

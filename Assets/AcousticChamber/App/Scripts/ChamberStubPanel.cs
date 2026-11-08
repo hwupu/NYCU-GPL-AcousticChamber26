@@ -30,7 +30,7 @@ namespace AcousticChamber.App
             UiNavigationBar.Create(_panel.Surface, chamber != null ? chamber.MenuTitle : "Chamber", UiNavigationBar.Leading.Back);
             var note = UiKit.Text(_panel.Surface.Body, "Note", "Stub chamber scene.\nThe chamber menu (Study ID, Start, Debug) comes with PB-07.\n‹ returns to the Main Hall.",
                                   th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.Center);
-            UiLay.Size(note.gameObject, prefW: 0f, flexW: 1f, flexH: 1f);
+            UiKit.Size(note.gameObject, prefW: 0f, flexW: 1f, flexH: 1f);
         }
 
         void Back()

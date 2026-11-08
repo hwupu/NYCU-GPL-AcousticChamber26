@@ -50,12 +50,12 @@ namespace GPL.UI
             var color = th.gray.pressed;
 
             // pill: horizontal layout, sized by its content; centered on its place relative to the tail tip (the canvas origin)
-            var pill = UiLay.Node(root, "Pill");
-            UiLay.Fill(pill, color, PillHeight / 2f);
-            UiLay.H(pill.gameObject, 12f, UiLay.Pad(28, 0, 28, 0), TextAnchor.MiddleCenter);
-            UiLay.Size(pill.gameObject, minH: PillHeight, prefH: PillHeight);
-            UiLay.Icon(pill, "Icon", icon, 36f);
-            if (!string.IsNullOrEmpty(label)) UiLay.Label(pill, "Label", label, th.smallSize, th.text);
+            var pill = UiKit.Node(root, "Pill");
+            UiKit.Fill(pill, color, PillHeight / 2f);
+            UiKit.H(pill.gameObject, 12f, UiKit.Pad(28, 0, 28, 0), TextAnchor.MiddleCenter);
+            UiKit.Size(pill.gameObject, minH: PillHeight, prefH: PillHeight);
+            UiKit.Icon(pill, "Icon", icon, 36f);
+            if (!string.IsNullOrEmpty(label)) UiKit.Label(pill, "Label", label, th.smallSize, th.text);
             var fit = pill.gameObject.AddComponent<ContentSizeFitter>();
             fit.horizontalFit = fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             c.Pill = pill;

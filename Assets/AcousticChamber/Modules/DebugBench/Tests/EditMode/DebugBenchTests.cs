@@ -208,20 +208,20 @@ namespace GPL.DebugBench.Tests
                 Layout(pages);
                 Assert.AreEqual("Parameters", parameters.Title);
                 var row = parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials");
-                var value = UiLay.RowValue(row);
+                var value = UiKit.RowValue(row);
                 Assert.AreEqual("6", value.text);
                 var plus = row.Find("Stepper/Plus").GetComponent<UiButton>();
                 Assert.AreEqual(UiStyle.Borderless, plus.Style, "steppers: fill on hover only");
                 Assert.IsTrue(plus.InGroup);
                 plus.onClick.Invoke();
                 Assert.AreEqual("7", value.text, "the row follows the working copy");
-                Assert.AreEqual("Default: 6", UiLay.RowSubtitle(row).text);
+                Assert.AreEqual("Default: 6", UiKit.RowSubtitle(row).text);
                 Assert.IsTrue(Find(parameters, "Revert").interactable);
                 Assert.IsTrue(Find(parameters, "Save as Custom").interactable);
 
                 Find(parameters, "Revert").onClick.Invoke();
                 Assert.AreEqual("6", value.text);
-                Assert.IsFalse(UiLay.RowSubtitle(row).gameObject.activeSelf, "no secondary line when not edited and no description");
+                Assert.IsFalse(UiKit.RowSubtitle(row).gameObject.activeSelf, "no secondary line when not edited and no description");
 
                 var fixation = parameters.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Fixation");
                 var sw = fixation.GetComponentInChildren<UiSwitch>();
@@ -229,7 +229,7 @@ namespace GPL.DebugBench.Tests
                 fixation.onClick.Invoke();
                 Assert.IsFalse(w.Values.GetBool("fixation"), "the whole row toggles the parameter");
                 Assert.IsFalse(sw.On);
-                Assert.AreEqual("Default: On", UiLay.RowSubtitle(fixation.transform).text);
+                Assert.AreEqual("Default: On", UiKit.RowSubtitle(fixation.transform).text);
 
                 parameters.BackButton.onClick.Invoke();
                 Assert.AreEqual(debug, pages.Top);
@@ -287,9 +287,9 @@ namespace GPL.DebugBench.Tests
                 // Presets: ✓ on Custom; Default's sheet has only Make active
                 var presets = bench.OpenPresetsPage();
                 UiButton RowOf(string name) => Named(pages.Top, "Row " + name);
-                Assert.AreEqual(DebugBench.ActiveMark, UiLay.RowValue(RowOf("Custom").transform).text);
-                Assert.IsEmpty(UiLay.RowValue(RowOf("Default").transform).text, "not active: no mark");
-                StringAssert.Contains("playground", UiLay.RowSubtitle(RowOf("Custom").transform).text);
+                Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowValue(RowOf("Custom").transform).text);
+                Assert.IsEmpty(UiKit.RowValue(RowOf("Default").transform).text, "not active: no mark");
+                StringAssert.Contains("playground", UiKit.RowSubtitle(RowOf("Custom").transform).text);
                 RowOf("Default").onClick.Invoke();
                 var sheet = UiPanel.Top(canvas.transform);
                 var actions = sheet.GetComponentsInChildren<UiButton>(true).Where(b => b.name.StartsWith("Row ")).Select(b => b.name).ToArray();
@@ -305,7 +305,7 @@ namespace GPL.DebugBench.Tests
                 Assert.AreEqual("Default", _store.ActiveName);
                 Assert.AreEqual("Default", w.Source);
                 Assert.AreEqual(6, w.Values.GetInt("trials"));
-                Assert.AreEqual(DebugBench.ActiveMark, UiLay.RowValue(RowOf("Default").transform).text, "the page is rebuilt");
+                Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowValue(RowOf("Default").transform).text, "the page is rebuilt");
                 Assert.AreEqual(windows, UiPanel.Stack(canvas.transform).Count, "the sheets are closed");
 
                 // Make Custom active without edits: no confirmation
@@ -357,15 +357,15 @@ namespace GPL.DebugBench.Tests
 
                 var debug = bench.OpenDebugPage();
                 var dataRow = debug.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Log files");
-                Assert.AreEqual("4 files", UiLay.RowValue(dataRow.transform).text);
+                Assert.AreEqual("4 files", UiKit.RowValue(dataRow.transform).text);
                 dataRow.onClick.Invoke();
                 var page = pages.Top;
                 Assert.AreEqual("Log files", page.Title);
                 string s2 = DataFileNames.BaseName(t0.AddMinutes(10), "C00", "S0002", false);
-                Assert.AreEqual(s2, UiLay.RowTitle(RowOf(s2)).text, "the file name is the row title");
-                Assert.IsNull(UiLay.RowSubtitle(RowOf(s2)), "one line: no description");
+                Assert.AreEqual(s2, UiKit.RowTitle(RowOf(s2)).text, "the file name is the row title");
+                Assert.IsNull(UiKit.RowSubtitle(RowOf(s2)), "one line: no description");
                 string dbg = DataFileNames.BaseName(t0.AddMinutes(30), "C00", "", true);
-                Assert.AreEqual(dbg, UiLay.RowTitle(RowOf(dbg)).text);
+                Assert.AreEqual(dbg, UiKit.RowTitle(RowOf(dbg)).text);
 
                 // Delete one: confirm first (Cancel keeps it)
                 var del = RowOf(s2).Find("Delete").GetComponent<UiButton>();
@@ -396,7 +396,7 @@ namespace GPL.DebugBench.Tests
                 Assert.IsFalse(all.interactable, "nothing left to delete");
 
                 page.BackButton.onClick.Invoke();
-                Assert.AreEqual("none", UiLay.RowValue(dataRow.transform).text);
+                Assert.AreEqual("none", UiKit.RowValue(dataRow.transform).text);
             }
             finally { Object.DestroyImmediate(canvas); }
         }

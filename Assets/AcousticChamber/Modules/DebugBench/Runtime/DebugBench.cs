@@ -41,8 +41,8 @@ namespace GPL.DebugBench
         /// <summary>False: the Practice trial button is inactive (the chamber has no practice trial). Read when the Debug page opens.</summary>
         public bool PracticeAvailable = true;
 
-        /// <summary>The chamber's own sections on the Debug page, between Parameters and Data (labels + groups on the column).</summary>
-        public Action<Column> ChamberSections;
+        /// <summary>The chamber's own sections on the Debug page, between Parameters and Data (labels + groups on the UiColumn).</summary>
+        public Action<UiColumn> ChamberSections;
 
         /// <param name="pages">The chamber panel's surface (the chamber menu is its root page).</param>
         /// <param name="canvas">The canvas sheets open on (Save as, confirmations).</param>
@@ -65,7 +65,7 @@ namespace GPL.DebugBench
         {
             var page = _pages.Push("Debug");
             _status = page.AddStatus("");
-            var col = Column.In(page);
+            var col = UiColumn.In(page);
 
             col.Label("Run");
             var run = col.Buttons("Run",
@@ -75,20 +75,20 @@ namespace GPL.DebugBench
 
             col.Label("Parameters");
             var g = col.Group("Parameters");
-            var work = UiLay.Row(g, "Row Playground", "Playground", "used by Debug runs", Work.Label, null, "chevron-right", () => OpenParametersPage());
-            _workValue = UiLay.RowValue(work);
-            var presets = UiLay.Row(g, "Row Presets", "Presets", "real sessions use the active one", "Active: " + Work.Store.ActiveName, null, "chevron-right",
+            var work = UiKit.Row(g, "Row Playground", "Playground", "used by Debug runs", Work.Label, null, "chevron-right", () => OpenParametersPage());
+            _workValue = UiKit.RowValue(work);
+            var presets = UiKit.Row(g, "Row Presets", "Presets", "real sessions use the active one", "Active: " + Work.Store.ActiveName, null, "chevron-right",
                                     () => OpenPresetsPage());
-            _presetsValue = UiLay.RowValue(presets);
+            _presetsValue = UiKit.RowValue(presets);
 
             ChamberSections?.Invoke(col);
 
             col.Label("Data");
             var d = col.Group("Data");
-            var data = UiLay.Row(d, "Row Log files", "Log files", "this chamber's CSV and session files", DataSummary(), null, "chevron-right",
+            var data = UiKit.Row(d, "Row Log files", "Log files", "this chamber's CSV and session files", DataSummary(), null, "chevron-right",
                                  () => OpenDataPage());
             data.GetComponent<UiButton>().interactable = Files != null;
-            _dataValue = UiLay.RowValue(data);
+            _dataValue = UiKit.RowValue(data);
 
             // empty until something happens (PO 2026-11-07: no "Ready."); success and failure notes stay
             SetStatus(Work.Warnings.Count > 0 ? Work.Warnings.Count + " repairs when loading " + Work.Source + " (see the log)" : "");
@@ -124,7 +124,7 @@ namespace GPL.DebugBench
             var rows = new List<ParamRow>();
             UiButton revert = page.AddHeaderAction("Revert", UiStyle.Borderless, () => Work.Revert());
 
-            var col = Column.In(page);
+            var col = UiColumn.In(page);
             var intro = col.Label(IntroText());
 
             // one group per ParamDef.Group, in schema order
@@ -184,23 +184,23 @@ namespace GPL.DebugBench
             if (d.Type == ParamType.Bool)
             {
                 // the whole row toggles, like every switch row
-                r.Switch = UiLay.SwitchRow(g, "Row " + d.Label, d.Label, "-", Work.Values.GetBool(d.Key), _ => Work.Step(d.Key, +1));
+                r.Switch = UiKit.SwitchRow(g, "Row " + d.Label, d.Label, "-", Work.Values.GetBool(d.Key), _ => Work.Step(d.Key, +1));
                 r.Row = (RectTransform)r.Switch.transform.parent;
-                r.Subtitle = UiLay.RowSubtitle(r.Row);
+                r.Subtitle = UiKit.RowSubtitle(r.Row);
                 return r;
             }
             // an info row: title and description at the left, the value, and (not for text) a - / + pair at the right
-            var row = UiLay.Row(g, "Row " + d.Label, d.Label, "-", "");
+            var row = UiKit.Row(g, "Row " + d.Label, d.Label, "-", "");
             r.Row = row;
-            r.Value = UiLay.RowValue(row);
-            r.Subtitle = UiLay.RowSubtitle(row);
+            r.Value = UiKit.RowValue(row);
+            r.Subtitle = UiKit.RowSubtitle(row);
             if (d.Type != ParamType.Text)
             {
-                var pair = UiLay.Node(row, "Stepper");
-                UiLay.H(pair.gameObject, th.inset, null, TextAnchor.MiddleCenter);
+                var pair = UiKit.Node(row, "Stepper");
+                UiKit.H(pair.gameObject, th.inset, null, TextAnchor.MiddleCenter);
                 // borderless in-group steppers: fill on hover only (DesignSystem section 4)
-                r.Minus = UiLay.Button(pair, "Minus", null, UiStyle.Borderless, "minus", small: true, onClick: () => Work.Step(d.Key, -1));
-                r.Plus = UiLay.Button(pair, "Plus", null, UiStyle.Borderless, "plus", small: true, onClick: () => Work.Step(d.Key, +1));
+                r.Minus = UiKit.Button(pair, "Minus", null, UiStyle.Borderless, "minus", small: true, onClick: () => Work.Step(d.Key, -1));
+                r.Plus = UiKit.Button(pair, "Plus", null, UiStyle.Borderless, "plus", small: true, onClick: () => Work.Step(d.Key, +1));
                 r.Plus.InGroup = r.Minus.InGroup = true;
             }
             return r;

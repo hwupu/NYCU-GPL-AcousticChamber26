@@ -26,25 +26,25 @@ namespace AcousticChamber.App
             var t = UiKit.Text(parent, name, text, size, Vector2.zero, Vector2.zero, bold, color ?? UiKit.Theme.text,
                                TextAlignmentOptions.TopLeft);
             t.textWrappingMode = TextWrappingModes.Normal;
-            UiLay.Size(t.gameObject, prefW: 0f, flexW: 1f, flexH: flexHeight ? 1f : -1f);
+            UiKit.Size(t.gameObject, prefW: 0f, flexW: 1f, flexH: flexHeight ? 1f : -1f);
             return t;
         }
 
         /// <summary>A horizontal row of controls (<c>gap</c> apart).</summary>
         public static RectTransform Row(Transform parent, string name)
         {
-            var row = UiLay.Node(parent, name);
-            UiLay.H(row.gameObject, UiKit.Theme.gap, null, TextAnchor.MiddleLeft);
-            UiLay.Size(row.gameObject, flexW: 1f);
+            var row = UiKit.Node(parent, name);
+            UiKit.H(row.gameObject, UiKit.Theme.gap, null, TextAnchor.MiddleLeft);
+            UiKit.Size(row.gameObject, flexW: 1f);
             return row;
         }
 
         /// <summary>A vertical column (<paramref name="flex"/> = share of the row's width).</summary>
         public static RectTransform Column(Transform parent, string name, float spacing = 12f)
         {
-            var col = UiLay.Node(parent, name);
-            UiLay.V(col.gameObject, spacing, null, TextAnchor.UpperLeft);
-            UiLay.Size(col.gameObject, prefW: 0f, flexW: 1f);
+            var col = UiKit.Node(parent, name);
+            UiKit.V(col.gameObject, spacing, null, TextAnchor.UpperLeft);
+            UiKit.Size(col.gameObject, prefW: 0f, flexW: 1f);
             return col;
         }
 
@@ -52,12 +52,12 @@ namespace AcousticChamber.App
         public static UiButton Wide(Transform parent, string name, string label, UiStyle style, System.Action onClick)
         {
             var th = UiKit.Theme;
-            var b = UiLay.Button(parent, name, label, style, minWidth: false, onClick: onClick);
-            UiLay.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
+            var b = UiKit.Button(parent, name, label, style, minWidth: false, onClick: onClick);
+            UiKit.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
             return b;
         }
 
-        /// <summary>The label text of a button made by <see cref="UiLay.Button"/>.</summary>
+        /// <summary>The label text of a button made by <see cref="UiKit.Button"/>.</summary>
         public static TextMeshProUGUI LabelOf(UiButton b) => b.GetComponentInChildren<TextMeshProUGUI>();
     }
 }

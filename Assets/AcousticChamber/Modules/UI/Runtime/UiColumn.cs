@@ -6,11 +6,11 @@ using UnityEngine.UI;
 namespace GPL.UI
 {
     /// <summary>
-    /// A page body that scrolls: a <see cref="UiLay.List"/> filling the body of a <see cref="UiPage"/>, with content stacked
+    /// A page body that scrolls: a <see cref="UiKit.List"/> filling the body of a <see cref="UiPage"/>, with content stacked
     /// top-down: group labels, groups (raised sections) and button rows, in order. Used by settings-like pages (Debug,
     /// Parameters, Presets, Data files). Everything is a layout, so rows grow with their text.
     /// </summary>
-    public sealed class Column
+    public sealed class UiColumn
     {
         /// <summary>Space between sections (a label + group).</summary>
         public const float SectionGap = 24f;
@@ -20,17 +20,17 @@ namespace GPL.UI
         public ScrollList List { get; }
         public RectTransform Content => List.Content;
 
-        Column(ScrollList list) => List = list;
+        UiColumn(ScrollList list) => List = list;
 
-        /// <summary>A column filling the body of <paramref name="page"/>.</summary>
-        public static Column In(UiPage page)
+        /// <summary>A UiColumn filling the body of <paramref name="page"/>.</summary>
+        public static UiColumn In(UiPage page)
         {
-            var content = UiLay.List(page.Body, "Column", out var list);
+            var content = UiKit.List(page.Body, "Column", out var list);
             content.GetComponent<VerticalLayoutGroup>().spacing = 0f;
-            return new Column(list);
+            return new UiColumn(list);
         }
 
-        /// <summary>Removes the column (the list is rebuilt after a change).</summary>
+        /// <summary>Removes the UiColumn (the list is rebuilt after a change).</summary>
         public void Destroy()
         {
             var go = List.gameObject;
@@ -43,21 +43,21 @@ namespace GPL.UI
         public TextMeshProUGUI Label(string text)
         {
             var th = UiKit.Theme;
-            var box = UiLay.Node(Content, "Label Box");
-            UiLay.V(box.gameObject, 0f, UiLay.Pad((int)UiKit.RowTextPad, 0, (int)UiKit.RowTextPad, (int)LabelGap), TextAnchor.UpperLeft);
-            UiLay.Size(box.gameObject, prefW: 0f, flexW: 1f);
+            var box = UiKit.Node(Content, "Label Box");
+            UiKit.V(box.gameObject, 0f, UiKit.Pad((int)UiKit.RowTextPad, 0, (int)UiKit.RowTextPad, (int)LabelGap), TextAnchor.UpperLeft);
+            UiKit.Size(box.gameObject, prefW: 0f, flexW: 1f);
             var t = UiKit.Text(box, "Label", text, th.minimumSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
             t.textWrappingMode = TextWrappingModes.Normal;
-            UiLay.Size(t.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(t.gameObject, prefW: 0f, flexW: 1f);
             return t;
         }
 
-        /// <summary>A raised group; fill it with <see cref="UiLay.Row"/>, <see cref="UiLay.SwitchRow"/> and friends.</summary>
+        /// <summary>A raised group; fill it with <see cref="UiKit.Row"/>, <see cref="UiKit.SwitchRow"/> and friends.</summary>
         public RectTransform Group(string name)
         {
-            var group = UiLay.Section(Content, name);
-            ((VerticalLayoutGroup)group.parent.GetComponent<VerticalLayoutGroup>()).padding = UiLay.Pad(0, 0, 0, (int)SectionGap);
-            UiLay.Size(group.parent.gameObject, prefW: 0f, flexW: 1f);
+            var group = UiKit.Section(Content, name);
+            ((VerticalLayoutGroup)group.parent.GetComponent<VerticalLayoutGroup>()).padding = UiKit.Pad(0, 0, 0, (int)SectionGap);
+            UiKit.Size(group.parent.gameObject, prefW: 0f, flexW: 1f);
             return group;
         }
 
@@ -69,16 +69,16 @@ namespace GPL.UI
         {
             var th = UiKit.Theme;
             var group = Group(name);
-            var row = UiLay.Node(group, "Buttons");
-            UiLay.H(row.gameObject, th.groupPadding, null, TextAnchor.MiddleCenter);
-            UiLay.Size(row.gameObject, prefW: 0f, flexW: 1f);
+            var row = UiKit.Node(group, "Buttons");
+            UiKit.H(row.gameObject, th.groupPadding, null, TextAnchor.MiddleCenter);
+            UiKit.Size(row.gameObject, prefW: 0f, flexW: 1f);
             var result = new UiButton[buttons.Length];
             for (int i = 0; i < buttons.Length; i++)
             {
                 var (label, style, onClick) = buttons[i];
-                var b = UiLay.Button(row, "Button " + label, label, style, minWidth: false, onClick: onClick);
+                var b = UiKit.Button(row, "Button " + label, label, style, minWidth: false, onClick: onClick);
                 b.InGroup = true; // borderless hover colors for a raised group
-                UiLay.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f); // equal widths
+                UiKit.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f); // equal widths
                 result[i] = b;
             }
             return result;
@@ -87,11 +87,11 @@ namespace GPL.UI
         /// <summary>Empty space.</summary>
         public void Gap(float height)
         {
-            var g = UiLay.Node(Content, "Gap");
-            UiLay.Size(g.gameObject, minH: height, prefH: height, flexH: 0f);
+            var g = UiKit.Node(Content, "Gap");
+            UiKit.Size(g.gameObject, minH: height, prefH: height, flexH: 0f);
         }
 
-        /// <summary>Kept for the callers that finish a column; the layout sizes the scroll range itself.</summary>
+        /// <summary>Kept for the callers that finish a UiColumn; the layout sizes the scroll range itself.</summary>
         public void Finish() { }
     }
 }

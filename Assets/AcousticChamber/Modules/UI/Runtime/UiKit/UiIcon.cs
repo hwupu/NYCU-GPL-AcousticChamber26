@@ -37,4 +37,22 @@ namespace GPL.UI
             set => Img.color = value;
         }
     }
+
+    public static partial class UiKit
+    {
+        /// <summary>UiIcon in a layout: the icon of a button or row (<paramref name="size"/> 0 = theme icon size), fixed size, tinted <paramref name="color"/> if given.</summary>
+        public static UiIcon Icon(Transform parent, string name, string icon, float size = 0f, Color? color = null)
+        {
+            var ic = IconNode(parent, name, icon, size > 0f ? size : Theme.iconSize);
+            if (color.HasValue) ic.Color = color.Value;
+            return ic;
+        }
+
+        static UiIcon IconNode(Transform parent, string name, string icon, float size)
+        {
+            var ic = BareIcon(parent, name, icon, size);
+            Size(ic.gameObject, minW: size, minH: size, prefW: size, prefH: size, flexW: 0f, flexH: 0f);
+            return ic;
+        }
+    }
 }

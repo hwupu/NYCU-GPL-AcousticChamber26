@@ -139,14 +139,14 @@ namespace GPL.UI
         {
             var th = UiKit.Theme;
             var rt = UiKit.Fill(UiKit.Rect(surface.transform, name, Vector2.zero, Vector2.zero));
-            UiLay.V(rt.gameObject, 0f, null, TextAnchor.UpperLeft);
+            UiKit.V(rt.gameObject, 0f, null, TextAnchor.UpperLeft);
             var page = rt.gameObject.AddComponent<UiPage>();
             page.Surface = surface;
             page.Title = title;
             page._group = rt.gameObject.AddComponent<CanvasGroup>();
-            page.Body = UiLay.Node(rt, "Body");
-            UiLay.V(page.Body.gameObject, 0f, UiLay.Pad(th.surfacePaddingX, 0, th.surfacePaddingX, 0), TextAnchor.UpperLeft);
-            UiLay.Size(page.Body.gameObject, flexW: 1f, flexH: 1f);
+            page.Body = UiKit.Node(rt, "Body");
+            UiKit.V(page.Body.gameObject, 0f, UiKit.Pad(th.surfacePaddingX, 0, th.surfacePaddingX, 0), TextAnchor.UpperLeft);
+            UiKit.Size(page.Body.gameObject, flexW: 1f, flexH: 1f);
             page.Finish();
             if (!first) page.Apply(0f);
             return page;
@@ -156,7 +156,7 @@ namespace GPL.UI
         public RectTransform AddNavigationBar()
         {
             if (NavigationBar != null) return NavigationBar;
-            NavigationBar = UiLay.Node(transform, "Navigation Bar");
+            NavigationBar = UiKit.Node(transform, "Navigation Bar");
             NavigationBar.SetSiblingIndex(0);
             Finish();
             return NavigationBar;
@@ -166,9 +166,9 @@ namespace GPL.UI
         public TextMeshProUGUI AddStatus(string text)
         {
             var th = UiKit.Theme;
-            Status = UiLay.Node(transform, "Status");
-            UiLay.V(Status.gameObject, 0f, UiLay.Pad(th.surfacePaddingX, 12, th.surfacePaddingX, 28), TextAnchor.MiddleLeft);
-            UiLay.Size(Status.gameObject, prefW: 0f, flexW: 1f);
+            Status = UiKit.Node(transform, "Status");
+            UiKit.V(Status.gameObject, 0f, UiKit.Pad(th.surfacePaddingX, 12, th.surfacePaddingX, 28), TextAnchor.MiddleLeft);
+            UiKit.Size(Status.gameObject, prefW: 0f, flexW: 1f);
             var t = UiKit.Text(Status, "Label", text, th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.Left);
             t.textWrappingMode = TextWrappingModes.NoWrap;
             t.overflowMode = TextOverflowModes.Ellipsis;
@@ -180,10 +180,10 @@ namespace GPL.UI
         public RectTransform AddToolbar()
         {
             var th = UiKit.Theme;
-            Toolbar = UiLay.Node(transform, "Toolbar");
-            UiLay.H(Toolbar.gameObject, th.gap, UiLay.Pad(th.surfacePaddingX, 0, th.surfacePaddingX, th.surfacePaddingBottom), TextAnchor.MiddleLeft);
+            Toolbar = UiKit.Node(transform, "Toolbar");
+            UiKit.H(Toolbar.gameObject, th.gap, UiKit.Pad(th.surfacePaddingX, 0, th.surfacePaddingX, th.surfacePaddingBottom), TextAnchor.MiddleLeft);
             // flexW 1: the slot spans the surface (a slot narrower than its content would sit at the left and not center or right-align its children)
-            UiLay.Size(Toolbar.gameObject, prefW: 0f, prefH: th.buttonHeight + th.surfacePaddingBottom, flexW: 1f, flexH: 0f);
+            UiKit.Size(Toolbar.gameObject, prefW: 0f, prefH: th.buttonHeight + th.surfacePaddingBottom, flexW: 1f, flexH: 0f);
             Finish();
             return Toolbar;
         }
@@ -193,7 +193,7 @@ namespace GPL.UI
         {
             var th = UiKit.Theme;
             var g = Body.GetComponent<VerticalLayoutGroup>();
-            g.padding = UiLay.Pad(th.surfacePaddingX, NavigationBar != null ? 12f : 0f, th.surfacePaddingX,
+            g.padding = UiKit.Pad(th.surfacePaddingX, NavigationBar != null ? 12f : 0f, th.surfacePaddingX,
                                   Status == null && Toolbar == null ? th.surfacePaddingBottom : 0f);
         }
 
@@ -203,7 +203,7 @@ namespace GPL.UI
         /// </summary>
         public UiButton AddHeaderAction(string label, UiStyle style, Action onClick)
         {
-            var b = UiLay.Button(NavigationBar, "Action " + label, label, style, small: true, minWidth: false, onClick: onClick);
+            var b = UiKit.Button(NavigationBar, "Action " + label, label, style, small: true, minWidth: false, onClick: onClick);
             return b;
         }
 
@@ -244,52 +244,6 @@ namespace GPL.UI
             _group.alpha = alpha;
             float s = Mathf.Lerp(UiKit.Theme.pageScale, 1f, alpha);
             transform.localScale = new Vector3(s, s, 1f);
-        }
-    }
-
-    /// <summary>
-    /// UiNavigationBar (docs/design): 116 u high (36 u top padding + an 80 u row): back or close button, title, DEBUG tag and header
-    /// actions at the right.
-    /// </summary>
-    public static class UiNavigationBar
-    {
-        public enum Leading { Back, Close, None }
-
-        public static RectTransform Create(UiSurface surface, string title, Leading leading = Leading.Back, bool debugTag = false,
-                                           Action onBack = null) =>
-            Create(surface.Root, title, leading, debugTag, onBack ?? surface.Back);
-
-        /// <summary>
-        /// Centers the title across the bar (for a bar without a leading button, e.g. the protocol slides): the title takes the free
-        /// width and is centered in it.
-        /// </summary>
-        public static void CenterTitle(UiPage page)
-        {
-            var bar = page.NavigationBar;
-            var box = bar.Find("Title Box");
-            UiLay.Size(box.gameObject, flexW: 1f);
-            box.GetComponentInChildren<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
-            bar.Find("Spacer").gameObject.SetActive(false); // no spacer (and its gap): the title is centered in the whole bar
-        }
-
-        public static RectTransform Create(UiPage page, string title, Leading leading = Leading.Back, bool debugTag = false,
-                                           Action onBack = null)
-        {
-            var th = UiKit.Theme;
-            var bar = page.AddNavigationBar();
-            UiLay.H(bar.gameObject, 8f, UiLay.Pad(th.surfacePaddingX, th.navTopPadding, th.surfacePaddingX, 0), TextAnchor.MiddleLeft);
-            UiLay.Size(bar.gameObject, prefW: 0f, prefH: th.navTopPadding + th.buttonHeight, flexW: 1f, flexH: 0f); // spans the surface: the spacer pushes the tag and actions to the right
-            if (leading != Leading.None)
-                page.BackButton = UiLay.Button(bar, "Back", null, UiStyle.Borderless, leading == Leading.Back ? "chevron-left" : "cross", onClick: onBack);
-            UiLay.Label(bar, "Title", title, th.titleSize, th.text, true);
-            var spacer = UiLay.Node(bar, "Spacer");
-            UiLay.Size(spacer.gameObject, flexW: 1f);
-            if (debugTag)
-            {
-                var t = UiLay.Label(bar, "DEBUG Tag", "DEBUG", th.minimumSize, th.debug, true, TextAlignmentOptions.Right);
-                t.characterSpacing = 12f;
-            }
-            return bar;
         }
     }
 }

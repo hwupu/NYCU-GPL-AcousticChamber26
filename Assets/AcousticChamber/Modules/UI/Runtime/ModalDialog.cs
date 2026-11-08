@@ -58,7 +58,7 @@ namespace GPL.UI
             foreach (var b in buttons)
             {
                 var button = b;
-                UiLay.Button(d.Actions, "Button " + b.Label, b.Label, b.Style, minWidth: false, onClick: () =>
+                UiKit.Button(d.Actions, "Button " + b.Label, b.Label, b.Style, minWidth: false, onClick: () =>
                 {
                     if (button.Closes) dialog.Close();
                     button.OnClick?.Invoke();

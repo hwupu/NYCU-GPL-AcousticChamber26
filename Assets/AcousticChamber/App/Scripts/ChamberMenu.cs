@@ -42,7 +42,7 @@ namespace AcousticChamber.App
         TextMeshProUGUI _volume, _preset, _unfinished, _status;
         float _volumePoll;
         int _target = -1, _shownVolume = int.MinValue;
-        NumberPadEntry _pad;
+        UiNumberPad _pad;
         UiSurface _pages;
         PresetStore _presets;
         SessionStore _sessions;
@@ -136,26 +136,26 @@ namespace AcousticChamber.App
         {
             var th = UiKit.Theme;
             _status = page.AddStatus("");
-            var row = UiLay.Node(page.Body, "Content");
-            UiLay.H(row.gameObject, th.gap, null, TextAnchor.UpperLeft);
-            UiLay.Size(row.gameObject, flexW: 1f, flexH: 1f);
+            var row = UiKit.Node(page.Body, "Content");
+            UiKit.H(row.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(row.gameObject, flexW: 1f, flexH: 1f);
 
-            _pad = NumberPadEntry.CreateLayout(row, "Number Pad", StudyId.MaxDigits,
+            _pad = UiNumberPad.CreateLayout(row, "Number Pad", StudyId.MaxDigits,
                                                d => StudyId.IsValidDigits(d) ? StudyId.FromDigits(d) : d, "Study ID");
 
             // the number pad takes 2/5 of the width, the button column 3/5 (the 20 u gap is not shared)
-            UiLay.Size(_pad.gameObject, minW: 0f, prefW: 0f, flexW: 2f);
-            var col = UiLay.Node(row, "Column");
-            UiLay.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
-            UiLay.Size(col.gameObject, minW: 0f, prefW: 0f, flexW: 3f);
-            var start = UiLay.Button(col, "Start", "Start", UiStyle.Prominent, minWidth: false, onClick: OnStart);
-            var debug = UiLay.Button(col, "Debug", "Debug", UiStyle.Gray, minWidth: false, onClick: () => _bench.OpenDebugPage());
+            UiKit.Size(_pad.gameObject, minW: 0f, prefW: 0f, flexW: 2f);
+            var col = UiKit.Node(row, "Column");
+            UiKit.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(col.gameObject, minW: 0f, prefW: 0f, flexW: 3f);
+            var start = UiKit.Button(col, "Start", "Start", UiStyle.Prominent, minWidth: false, onClick: OnStart);
+            var debug = UiKit.Button(col, "Debug", "Debug", UiStyle.Gray, minWidth: false, onClick: () => _bench.OpenDebugPage());
             foreach (var b in new[] { start, debug })
-                UiLay.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
+                UiKit.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
 
-            var lines = UiLay.Node(col, "Lines");
-            UiLay.V(lines.gameObject, 7f, UiLay.Pad(0, 20, 0, 0), TextAnchor.UpperLeft);
-            UiLay.Size(lines.gameObject, prefW: 0f, flexW: 1f);
+            var lines = UiKit.Node(col, "Lines");
+            UiKit.V(lines.gameObject, 7f, UiKit.Pad(0, 20, 0, 0), TextAnchor.UpperLeft);
+            UiKit.Size(lines.gameObject, prefW: 0f, flexW: 1f);
             _volume = Line(lines, "Volume");
             _preset = Line(lines, "Preset");
             _unfinished = Line(lines, "Unfinished");
@@ -166,7 +166,7 @@ namespace AcousticChamber.App
             var t = UiKit.Text(parent, name, "", UiKit.Theme.smallSize, Vector2.zero, Vector2.zero, color: UiKit.Theme.text2,
                                align: TextAlignmentOptions.Left);
             t.textWrappingMode = TextWrappingModes.Normal;
-            UiLay.Size(t.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(t.gameObject, prefW: 0f, flexW: 1f);
             t.gameObject.SetActive(false);
             return t;
         }
@@ -274,25 +274,25 @@ namespace AcousticChamber.App
         {
             var th = UiKit.Theme;
             var sheet = UiSheet.Create(_canvas, "Volume Step", "Headset volume step", 860f, () => SetStatus("Start cancelled."));
-            var row = UiLay.Node(sheet.Body, "Content");
-            UiLay.H(row.gameObject, th.gap, null, TextAnchor.UpperLeft);
-            UiLay.Size(row.gameObject, flexW: 1f);
-            var pad = NumberPadEntry.CreateLayout(row, "Number Pad", 2, null, "0–" + MaxVolumeStep);
+            var row = UiKit.Node(sheet.Body, "Content");
+            UiKit.H(row.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(row.gameObject, flexW: 1f);
+            var pad = UiNumberPad.CreateLayout(row, "Number Pad", 2, null, "0–" + MaxVolumeStep);
 
-            var col = UiLay.Node(row, "Column");
-            UiLay.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
-            UiLay.Size(col.gameObject, prefW: 0f, flexW: 1f);
+            var col = UiKit.Node(row, "Column");
+            UiKit.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(col.gameObject, prefW: 0f, flexW: 1f);
             var info = UiKit.Text(col, "Info", "Enter the headset volume step (0–" + MaxVolumeStep + ") before handing the headset over. It is logged with the session.",
                                   th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
-            UiLay.Size(info.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(info.gameObject, prefW: 0f, flexW: 1f);
             UiButton ok = null;
-            ok = UiLay.Button(col, "OK", "OK", UiStyle.Prominent, minWidth: false, onClick: () =>
+            ok = UiKit.Button(col, "OK", "OK", UiStyle.Prominent, minWidth: false, onClick: () =>
             {
                 if (!TryVolume(pad.Value, out int v)) return;
                 sheet.Close();
                 then(v);
             });
-            UiLay.Size(ok.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
+            UiKit.Size(ok.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
             ok.interactable = false;
             pad.Changed += s => ok.interactable = TryVolume(s, out _);
             sheet.Show();

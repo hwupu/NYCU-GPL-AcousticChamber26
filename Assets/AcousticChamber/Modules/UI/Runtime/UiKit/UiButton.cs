@@ -215,4 +215,44 @@ namespace GPL.UI
             _animating = false;
         }
     }
+
+    public static partial class UiKit
+    {
+        /// <summary>
+        /// UiButton of the rebuilt kit: a capsule laid out by a horizontal group. 80 u high (small 60), width = label + padding
+        /// (at least 220 u unless <paramref name="minWidth"/> is false). The side with an icon has 25 % less padding; an icon
+        /// button is a circle. Children: "Icon Leading", "Label Box" > "Label", "Icon Trailing".
+        /// </summary>
+        public static UiButton Button(Transform parent, string name, string label, UiStyle style, string iconLeading = null,
+                                      string iconTrailing = null, bool small = false, bool minWidth = true, System.Action onClick = null)
+        {
+            var th = Theme;
+            float h = small ? th.smallButtonHeight : th.buttonHeight;
+            bool iconOnly = string.IsNullOrEmpty(label) && (iconLeading != null || iconTrailing != null);
+            float padX = small ? 32f : th.buttonPaddingX;
+            float left = iconLeading != null ? padX * th.iconSidePaddingShare : padX;
+            float right = iconTrailing != null ? padX * th.iconSidePaddingShare : padX;
+            if (iconOnly) left = right = 0f;
+
+            var node = Node(parent, name);
+            var img = Fill(node, Color.clear, h / 2f);
+            img.raycastTarget = true;
+            H(node.gameObject, th.iconGap, Pad(left, 0, right, 0), TextAnchor.MiddleCenter);
+            Size(node.gameObject, minW: iconOnly ? h : (minWidth && !small ? th.buttonMinWidth : 0f), minH: h, prefH: h, flexH: 0f,
+                 prefW: iconOnly ? h : -1f);
+            var b = node.gameObject.AddComponent<UiButton>();
+            b.targetGraphic = img;
+            var nav = b.navigation;
+            nav.mode = Navigation.Mode.None;
+            b.navigation = nav;
+            float icon = small ? th.iconSizeSmall : th.iconSize;
+            if (iconLeading != null) IconNode(node, "Icon Leading", iconLeading, icon).FollowsLabel = true;
+            if (!string.IsNullOrEmpty(label))
+                Label(node, "Label", label, th.buttonSize, th.text, style == UiStyle.Prominent || style == UiStyle.Destructive, TextAlignmentOptions.Center);
+            if (iconTrailing != null) IconNode(node, "Icon Trailing", iconTrailing, icon).FollowsLabel = true;
+            b.Style = style;
+            if (onClick != null) b.onClick.AddListener(() => onClick());
+            return b;
+        }
+    }
 }

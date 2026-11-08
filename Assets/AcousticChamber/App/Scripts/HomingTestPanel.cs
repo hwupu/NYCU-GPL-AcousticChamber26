@@ -53,7 +53,7 @@ namespace AcousticChamber.App
             _panel = TestPanelKit.Panel(canvas, Size, "GPL.Homing test panel");
             _status = _panel.Surface.AddStatus("Press Head gate or Recenter.");
             var columns = TestPanelKit.Row(_panel.Surface.Body, "Columns");
-            UiLay.Size(columns.gameObject, flexW: 1f, flexH: 1f);
+            UiKit.Size(columns.gameObject, flexW: 1f, flexH: 1f);
             columns.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().childAlignment = TextAnchor.UpperLeft;
 
             var left = TestPanelKit.Column(columns, "Controls");

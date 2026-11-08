@@ -44,7 +44,7 @@ Speed      [0.25 ×] [0.5 ×] [1 ×] [2 ×] [4 ×]
 Point at the orb and press the grip to move it.
 [Reset source]                                   [Back to Hall]
 ```
-Chosen buttons use `Selected` (built with `UiLay.ChoiceGroup` / `UiKit.Select`).
+Chosen buttons use `Selected` (built with `UiKit.ChoiceGroup` / `UiKit.Select`).
 
 ## Leaving
 **Back to Hall** or **Y** → dialog "Leave Moving Source?" **Back to Hall / Keep going** (time and audio frozen). The output
@@ -54,4 +54,4 @@ returns to normal hearing.
 No Study ID, presets, CSV, `.session` file, Debug bench or resume (ADR-0006).
 
 ## Moving the panel
-The handle below the panel moves it: direction and distance (`GPL.UI` `PanelMover`; PO 2026-11-08).
+The handle below the panel moves it: direction and distance (`GPL.UI` `UiGrabber`; PO 2026-11-08).

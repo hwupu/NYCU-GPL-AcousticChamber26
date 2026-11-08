@@ -95,8 +95,8 @@ namespace GPL.Protocol
             CenterText(page, true);
             MessageText(page.Body, "Title", title);
             UiLanguage? pick = null;
-            UiLay.Button(row, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = UiLanguage.English; });
-            UiLay.Button(row, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = UiLanguage.Chinese; });
+            UiKit.Button(row, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = UiLanguage.English; });
+            UiKit.Button(row, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = UiLanguage.Chinese; });
             while (pick == null) yield return null;
             Hide();
             Loc.Set(pick.Value);
@@ -115,8 +115,8 @@ namespace GPL.Protocol
             CenterText(page, true);
             MessageText(page.Body, "Text", text);
             int pick = -1;
-            UiLay.Button(row, "Left", Loc.Get(leftKey), UiStyle.Gray, onClick: () => { if (InputOpen) pick = 0; });
-            UiLay.Button(row, "Right", Loc.Get(rightKey), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = 1; });
+            UiKit.Button(row, "Left", Loc.Get(leftKey), UiStyle.Gray, onClick: () => { if (InputOpen) pick = 0; });
+            UiKit.Button(row, "Right", Loc.Get(rightKey), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = 1; });
             yield return null; // the click that closed the previous screen does not count here
             while (pick < 0) yield return null;
             Hide();
@@ -138,7 +138,7 @@ namespace GPL.Protocol
             MessageText(page.Body, "Text", text);
             bool clicked = false;
             if (hasButton)
-                UiLay.Button(row, "Button", Loc.Get(buttonKey), UiStyle.Prominent, onClick: () => { if (InputOpen) clicked = true; });
+                UiKit.Button(row, "Button", Loc.Get(buttonKey), UiStyle.Prominent, onClick: () => { if (InputOpen) clicked = true; });
             yield return null; // the click that closed the previous screen does not count here
             while (!clicked && !(until != null && until())) yield return null;
             yield return null;
@@ -165,7 +165,7 @@ namespace GPL.Protocol
             g.childAlignment = TextAnchor.MiddleCenter;
             g.spacing = 0f;
             float margin = hasToolbar ? th.buttonHeight + th.surfacePaddingBottom : th.surfacePaddingBottom;
-            g.padding = UiLay.Pad(th.surfacePaddingX, margin, th.surfacePaddingX, hasToolbar ? 0f : th.surfacePaddingBottom);
+            g.padding = UiKit.Pad(th.surfacePaddingX, margin, th.surfacePaddingX, hasToolbar ? 0f : th.surfacePaddingBottom);
         }
 
         /// <summary>A centered, wrapping, bold heading-size text across the body width.</summary>
@@ -173,7 +173,7 @@ namespace GPL.Protocol
         {
             var t = UiKit.Text(parent, name, text, UiKit.Theme.headingSize, Vector2.zero, Vector2.zero, bold: true);
             t.textWrappingMode = TextWrappingModes.Normal;
-            UiLay.Size(t.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(t.gameObject, prefW: 0f, flexW: 1f);
             return t;
         }
 
@@ -191,11 +191,11 @@ namespace GPL.Protocol
                                align: TextAlignmentOptions.Left);
             t.lineSpacing = 20f;
             t.textWrappingMode = TextWrappingModes.Normal;
-            UiLay.Size(t.gameObject, prefW: 720f, flexW: 0f);
+            UiKit.Size(t.gameObject, prefW: 720f, flexW: 0f);
             bool clicked = false;
             var toolbar = page.AddToolbar();
             toolbar.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
-            var button = UiLay.Button(toolbar, "Button", Loc.Get(UiStrings.Continue), UiStyle.Prominent, onClick: () => { if (InputOpen) clicked = true; });
+            var button = UiKit.Button(toolbar, "Button", Loc.Get(UiStrings.Continue), UiStyle.Prominent, onClick: () => { if (InputOpen) clicked = true; });
             button.GetComponentInChildren<TextMeshProUGUI>().gameObject.AddComponent<LocalizedText>().key = UiStrings.Continue;
             yield return null;
             while (!clicked) yield return null;
@@ -319,20 +319,20 @@ namespace GPL.Protocol
                 var toolbar = uiPage.AddToolbar();
                 // the illustration runs the full width between the bar and the toolbar (after the slots: they set the body padding)
                 var bodyGroup = uiPage.Body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
-                bodyGroup.padding = UiLay.Pad(0, 12, 0, 0);
-                var imageRt = UiLay.Node(uiPage.Body, "Image");
-                UiLay.Size(imageRt.gameObject, minW: 0f, minH: 0f, prefW: 0f, prefH: 0f, flexW: 1f, flexH: 1f);
+                bodyGroup.padding = UiKit.Pad(0, 12, 0, 0);
+                var imageRt = UiKit.Node(uiPage.Body, "Image");
+                UiKit.Size(imageRt.gameObject, minW: 0f, minH: 0f, prefW: 0f, prefH: 0f, flexW: 1f, flexH: 1f);
                 var image = imageRt.gameObject.AddComponent<UnityEngine.UI.RawImage>();
                 image.raycastTarget = false;
                 var caption = UiKit.Text(imageRt, "Caption", "", th.headingSize, Vector2.zero, Vector2.zero, bold: true);
                 UiKit.Fill(caption.rectTransform, 48f);
                 caption.raycastTarget = false;
-                var back = UiLay.Button(toolbar, "Back", "…", UiStyle.Borderless, minWidth: false, onClick: () => { if (InputOpen && move == 0) move = -1; });
-                var spacer = UiLay.Node(toolbar, "Spacer");
-                UiLay.Size(spacer.gameObject, flexW: 1f);
-                var next = UiLay.Button(toolbar, "Next", "…", UiStyle.Prominent, minWidth: false, onClick: () => { if (InputOpen && move == 0) move = 1; });
+                var back = UiKit.Button(toolbar, "Back", "…", UiStyle.Borderless, minWidth: false, onClick: () => { if (InputOpen && move == 0) move = -1; });
+                var spacer = UiKit.Node(toolbar, "Spacer");
+                UiKit.Size(spacer.gameObject, flexW: 1f);
+                var next = UiKit.Button(toolbar, "Next", "…", UiStyle.Prominent, minWidth: false, onClick: () => { if (InputOpen && move == 0) move = 1; });
                 foreach (var b in new[] { back, next })
-                    UiLay.Size(b.gameObject, minW: SlideButtonWidth, minH: th.buttonHeight, prefW: SlideButtonWidth, prefH: th.buttonHeight, flexW: 0f, flexH: 0f);
+                    UiKit.Size(b.gameObject, minW: SlideButtonWidth, minH: th.buttonHeight, prefW: SlideButtonWidth, prefH: th.buttonHeight, flexW: 0f, flexH: 0f);
                 var backLabel = back.GetComponentInChildren<TextMeshProUGUI>();
                 var nextLabel = next.GetComponentInChildren<TextMeshProUGUI>();
                 backLabel.overflowMode = TextOverflowModes.Ellipsis; // a long title ends in …

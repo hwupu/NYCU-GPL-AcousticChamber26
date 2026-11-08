@@ -7,11 +7,12 @@ namespace GPL.UI
 {
     /// <summary>
     /// Basic builders under a canvas (rects, rounded boxes, text, icons) and the theme and motion switches shared by the
-    /// kit (docs/design, ADR-0005 / 0007). The components (<see cref="UiLay"/>, <see cref="UiPanel"/>, <see cref="UiSurface"/>)
-    /// are laid out by uGUI layout groups; these builders are what they are made of. Every new object takes its parent's layer, so
+    /// kit (docs/design, ADR-0005 / 0007). The factories of the components (<c>UiKit.Button</c>, <c>UiKit.Row</c>, ... one file
+    /// per Storybook component, same name) and the classes <see cref="UiPanel"/>, <see cref="UiSurface"/> are laid out by uGUI layout
+    /// groups; these builders are what they are made of. Every new object takes its parent's layer, so
     /// content added to an OVROverlayCanvas at run time stays on the hidden canvas layer. Sizes are canvas units.
     /// </summary>
-    public static class UiKit
+    public static partial class UiKit
     {
         static UiTheme _theme;
         static Sprite _round;
@@ -94,7 +95,7 @@ namespace GPL.UI
         // ---- icons -------------------------------------------------------------------------------------------
 
         /// <summary>An icon of the theme's icon set, <paramref name="size"/> u square (0 = <c>iconSize</c>), tinted <paramref name="color"/> (default: text).</summary>
-        public static UiIcon Icon(Transform parent, string name, string icon, float size = 0f, Color? color = null)
+        public static UiIcon BareIcon(Transform parent, string name, string icon, float size = 0f, Color? color = null)
         {
             if (size <= 0f) size = Theme.iconSize;
             var rt = Rect(parent, name, Vector2.zero, new Vector2(size, size));

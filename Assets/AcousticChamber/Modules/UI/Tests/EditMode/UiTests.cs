@@ -219,7 +219,7 @@ namespace GPL.UI.Tests
         /// <summary>A kit button directly on the canvas (no layout group around it): sized by hand.</summary>
         UiButton Button(string label, UiStyle style, Vector2 pos, Vector2 size, string icon = null)
         {
-            var b = UiLay.Button(_canvas.transform, label, label, style, icon, minWidth: false);
+            var b = UiKit.Button(_canvas.transform, label, label, style, icon, minWidth: false);
             var rt = (RectTransform)b.transform;
             rt.anchoredPosition = pos;
             rt.sizeDelta = size;
@@ -254,7 +254,7 @@ namespace GPL.UI.Tests
         public void NumberPadShowsFormattedStudyId()
         {
             var panel = UiPanel.Create(_canvas.transform, "Panel", new Vector2(1000f, 800f));
-            var pad = NumberPadEntry.CreateLayout(panel.Surface.Body, "Pad", StudyId.MaxDigits, StudyId.FromDigits, "S____");
+            var pad = UiNumberPad.CreateLayout(panel.Surface.Body, "Pad", StudyId.MaxDigits, StudyId.FromDigits, "S____");
             var display = pad.transform.Find("Display/Value Box/Label").GetComponent<TextMeshProUGUI>();
             Assert.AreEqual("S____", display.text);
             Press(pad, "Key 1");
@@ -290,9 +290,9 @@ namespace GPL.UI.Tests
         public void ScrollListMovesContentFadesEdgesAndClipsHits()
         {
             var panel = UiPanel.Create(_canvas.transform, "Panel", new Vector2(1000f, 700f));
-            var content = UiLay.List(panel.Surface.Body, "List", out var list);
-            var group = UiLay.Section(content, "Group");
-            var rows = Enumerable.Range(0, 12).Select(i => UiLay.Row(group, "Row " + i, "Row " + i)).ToArray();
+            var content = UiKit.List(panel.Surface.Body, "List", out var list);
+            var group = UiKit.Section(content, "Group");
+            var rows = Enumerable.Range(0, 12).Select(i => UiKit.Row(group, "Row " + i, "Row " + i)).ToArray();
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)panel.Surface.Root.transform);
             content.GetComponent<UiListSync>().Sync();
@@ -536,7 +536,7 @@ namespace GPL.UI.Tests
         static void Click(string label) =>
             ModalDialog.Current.GetComponentsInChildren<Button>().Single(b => LabelOf(b).text == label).onClick.Invoke();
 
-        static void Press(NumberPadEntry pad, string key) =>
+        static void Press(UiNumberPad pad, string key) =>
             pad.GetComponentsInChildren<Button>(true).Single(b => b.name == key).onClick.Invoke();
     }
 

@@ -19,7 +19,7 @@ namespace GPL.DebugBench
         public UiPage OpenPresetsPage()
         {
             var page = _pages.Push("Presets");
-            Column col = null;
+            UiColumn col = null;
 
             void Build()
             {
@@ -30,16 +30,16 @@ namespace GPL.DebugBench
                 string active = store.ActiveName;
                 var names = store.List();
 
-                col = Column.In(page);
+                col = UiColumn.In(page);
                 col.Label("Real sessions use the active preset (" + ActiveMark + "). Tap a preset to make it active (it loads into the playground) or to delete Custom.");
                 var g = col.Group("Presets");
                 for (int i = 0; i < names.Count; i++)
                 {
                     string name = names[i];
                     string sub = PresetSub(name);
-                    var row = UiLay.Row(g, "Row " + name, name, sub.Length > 0 ? sub : null, name == active ? ActiveMark : "", null, null,
+                    var row = UiKit.Row(g, "Row " + name, name, sub.Length > 0 ? sub : null, name == active ? ActiveMark : "", null, null,
                                         () => OpenPresetSheet(name, Build));
-                    var mark = UiLay.RowValue(row);
+                    var mark = UiKit.RowValue(row);
                     if (mark != null) mark.color = th.text;
                 }
                 col.Label("Saved on this device in " + store.Directory + ". Copy them off with the data.");
@@ -73,18 +73,18 @@ namespace GPL.DebugBench
             string message = (active ? "Active: new real sessions use it, and the playground is based on it." : "Not active.") +
                              (isDefault ? " Read-only: it is Config/default.params in the project." : "");
             var msg = UiKit.Text(sheet.Body, "Message", message, th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
-            UiLay.Size(msg.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(msg.gameObject, prefW: 0f, flexW: 1f);
 
-            var spacer = UiLay.Node(sheet.Body, "Gap");
-            UiLay.Size(spacer.gameObject, minH: 24f, prefH: 24f, flexH: 0f);
-            var g = UiLay.Section(sheet.Body, "Actions");
-            var makeActive = UiLay.Row(g, "Row Make active", "Make active", active ? "already active" : MakeActiveSub(), active ? ActiveMark : "", null, null,
+            var spacer = UiKit.Node(sheet.Body, "Gap");
+            UiKit.Size(spacer.gameObject, minH: 24f, prefH: 24f, flexH: 0f);
+            var g = UiKit.Section(sheet.Body, "Actions");
+            var makeActive = UiKit.Row(g, "Row Make active", "Make active", active ? "already active" : MakeActiveSub(), active ? ActiveMark : "", null, null,
                                        () => MakeActive(name, sheet, rebuild));
             makeActive.GetComponent<UiButton>().interactable = !active;
 
             if (!isDefault)
             {
-                var delete = UiLay.Row(g, "Row Delete", "Delete", "removes the file from this device", null, null, null,
+                var delete = UiKit.Row(g, "Row Delete", "Delete", "removes the file from this device", null, null, null,
                                        () => ConfirmDeletePreset(name, sheet, rebuild));
                 delete.GetComponent<UiButton>().Style = UiStyle.DestructiveText;
             }

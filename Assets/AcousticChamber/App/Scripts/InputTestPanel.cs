@@ -47,7 +47,7 @@ namespace AcousticChamber.App
             var panel = TestPanelKit.Panel(transform, Size, "GPL.Input test panel"); // the Stop dialog pushes it back
             _status = panel.Surface.AddStatus("Start the session, then press Y.");
             var columns = TestPanelKit.Row(panel.Surface.Body, "Columns");
-            UiLay.Size(columns.gameObject, flexW: 1f, flexH: 1f);
+            UiKit.Size(columns.gameObject, flexW: 1f, flexH: 1f);
             columns.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().childAlignment = TextAnchor.UpperLeft;
 
             // left column: controls

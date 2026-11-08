@@ -111,7 +111,7 @@ namespace AcousticChamber.App.Tests
             var list = page.GetComponentInChildren<ScrollList>();
             Assert.IsNotNull(list);
             Assert.Greater(list.Viewport.rect.height, 200f);
-            Assert.AreEqual(904f + UiLay.IndicatorMargin, list.Viewport.rect.width, 0.5f, "the list reaches 24 u into the right padding");
+            Assert.AreEqual(904f + UiKit.IndicatorMargin, list.Viewport.rect.width, 0.5f, "the list reaches 24 u into the right padding");
             Assert.AreEqual(904f, ((RectTransform)list.Content.GetChild(0)).rect.width, 0.5f, "the content keeps the body width");
             page.BackButton.onClick.Invoke();
             Assert.AreEqual(1, surface.Count);

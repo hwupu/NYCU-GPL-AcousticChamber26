@@ -6,7 +6,7 @@ namespace GPL.UI
     /// <summary>
     /// UiPanel (docs/design): the transparent root of a panel. It owns appearance (fade + scale from <c>sheetScale</c>), push back
     /// (<c>pushScale</c> per level and a dim) and the placement of the canvas (8° below eye level, or level). The rounded
-    /// rectangle with the background is its child <see cref="Surface"/>; the move handle (<see cref="PanelMover"/>, a 3D object
+    /// rectangle with the background is its child <see cref="Surface"/>; the move handle (<see cref="UiGrabber"/>, a 3D object
     /// outside the canvas) reads <see cref="GrabberVisible"/> and <see cref="Alpha"/>, so it hides and fades with the panel.
     /// Put it under an overlay canvas that is sized like the surface.
     /// </summary>

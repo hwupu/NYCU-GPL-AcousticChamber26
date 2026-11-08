@@ -11,7 +11,7 @@ namespace GPL.UI
     /// It is a 3D ray target (<see cref="IRayTarget"/>), shown only while some content is visible.
     /// </summary>
     [RequireComponent(typeof(OverlayPanel))]
-    public class PanelMover : MonoBehaviour, IRayTarget
+    public class UiGrabber : MonoBehaviour, IRayTarget
     {
         public const string HandleName = "Move Handle";
         /// <summary>

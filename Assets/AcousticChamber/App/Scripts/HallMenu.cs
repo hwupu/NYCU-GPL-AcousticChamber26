@@ -77,12 +77,12 @@ namespace AcousticChamber.App
             if (chambers.Count == 0)
             {
                 var empty = UiKit.Text(surface.Body, "Empty", EmptyText, th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
-                UiLay.Size(empty.gameObject, prefW: 0f, flexW: 1f);
+                UiKit.Size(empty.gameObject, prefW: 0f, flexW: 1f);
                 if (catalog == null) Debug.LogWarning("[GPL] HallMenu: no ChamberCatalog set; run Magic > App > Step 3 - Main Hall.");
                 return;
             }
 
-            var content = UiLay.List(surface.Body, "Chambers", out var list);
+            var content = UiKit.List(surface.Body, "Chambers", out var list);
             content.GetComponent<VerticalLayoutGroup>().spacing = 8f;
             var grid = new HallGrid(Size.x - 2f * th.surfacePaddingX, chambers.Count, th.inset);
             RectTransform row = null;
@@ -90,14 +90,14 @@ namespace AcousticChamber.App
             {
                 if (i % HallGrid.Columns == 0)
                 {
-                    row = UiLay.Node(content, "Row " + (i / HallGrid.Columns + 1));
-                    UiLay.H(row.gameObject, grid.Gap, null, TextAnchor.UpperLeft);
-                    UiLay.Size(row.gameObject, flexW: 1f);
+                    row = UiKit.Node(content, "Row " + (i / HallGrid.Columns + 1));
+                    UiKit.H(row.gameObject, grid.Gap, null, TextAnchor.UpperLeft);
+                    UiKit.Size(row.gameObject, flexW: 1f);
                 }
                 Card(row, chambers[i], grid);
             }
             if (chambers.Count % HallGrid.Columns == 1) // an empty slot keeps the last card at half width
-                UiLay.Size(UiLay.Node(row, "Empty Slot").gameObject, minW: 0f, prefW: 0f, flexW: 1f);
+                UiKit.Size(UiKit.Node(row, "Empty Slot").gameObject, minW: 0f, prefW: 0f, flexW: 1f);
         }
 
         /// <summary>The Hall's panel (fades out while a chamber loads).</summary>
@@ -106,11 +106,11 @@ namespace AcousticChamber.App
         void Card(RectTransform row, ChamberDefinition c, HallGrid g)
         {
             var th = UiKit.Theme;
-            var card = UiLay.Node(row, "Card " + c.id);
-            var bg = UiLay.Fill(card, Color.clear, CardRadius);
+            var card = UiKit.Node(row, "Card " + c.id);
+            var bg = UiKit.Fill(card, Color.clear, CardRadius);
             bg.raycastTarget = true;
-            UiLay.V(card.gameObject, 0f, UiLay.Pad(g.Inset, g.Inset, g.Inset, 0), TextAnchor.UpperLeft);
-            UiLay.Size(card.gameObject, minW: 0f, prefW: 0f, flexW: 1f); // equal columns whatever the title (min 0)
+            UiKit.V(card.gameObject, 0f, UiKit.Pad(g.Inset, g.Inset, g.Inset, 0), TextAnchor.UpperLeft);
+            UiKit.Size(card.gameObject, minW: 0f, prefW: 0f, flexW: 1f); // equal columns whatever the title (min 0)
             var button = card.gameObject.AddComponent<UiButton>();
             button.targetGraphic = bg;
             var nav = button.navigation;
@@ -120,14 +120,14 @@ namespace AcousticChamber.App
             button.onClick.AddListener(() => Open(c));
 
             // title band below the cover
-            var cover = UiLay.Node(card, "Cover");
-            UiLay.Fill(cover, th.cover, CoverRadius);
-            UiLay.Size(cover.gameObject, prefW: 0f, prefH: g.CoverHeight, flexW: 1f);
-            var title = UiLay.Label(card, "Title", c.CardTitle, th.bodySize, th.text);
+            var cover = UiKit.Node(card, "Cover");
+            UiKit.Fill(cover, th.cover, CoverRadius);
+            UiKit.Size(cover.gameObject, prefW: 0f, prefH: g.CoverHeight, flexW: 1f);
+            var title = UiKit.Label(card, "Title", c.CardTitle, th.bodySize, th.text);
             title.overflowMode = TextOverflowModes.Ellipsis;
             var box = (RectTransform)title.transform.parent;
-            box.GetComponent<VerticalLayoutGroup>().padding = UiLay.Pad(UiKit.RowTextPad - g.Inset, 0, UiKit.RowTextPad - g.Inset, 4);
-            UiLay.Size(box.gameObject, prefW: 0f, prefH: g.TitleBand, flexW: 1f);
+            box.GetComponent<VerticalLayoutGroup>().padding = UiKit.Pad(UiKit.RowTextPad - g.Inset, 0, UiKit.RowTextPad - g.Inset, 4);
+            UiKit.Size(box.gameObject, prefW: 0f, prefH: g.TitleBand, flexW: 1f);
             if (c.thumbnail != null)
             {
                 var img = UiKit.Fill(UiKit.Rect(cover.transform, "Thumbnail", Vector2.zero, Vector2.zero)).gameObject.AddComponent<RawImage>();

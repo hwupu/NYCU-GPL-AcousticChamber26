@@ -33,7 +33,7 @@ namespace GPL.DebugBench
         {
             if (Files == null) throw new InvalidOperationException("DebugBench.Files is not set.");
             var page = _pages.Push("Log files");
-            Column col = null;
+            UiColumn col = null;
             UiButton deleteAll = null;
             deleteAll = page.AddHeaderAction("Delete all", UiStyle.DestructiveText, () => ConfirmDeleteAll(Build));
 
@@ -44,7 +44,7 @@ namespace GPL.DebugBench
                 var entries = Files.List();
                 deleteAll.interactable = entries.Count > 0;
 
-                col = Column.In(page);
+                col = UiColumn.In(page);
                 col.Label(entries.Count == 0
                     ? "No log files of this chamber on this device."
                     : CountText(entries.Count) + " on this device, newest first. Copy them off before deleting: deleting cannot be undone.");
@@ -55,13 +55,13 @@ namespace GPL.DebugBench
                     {
                         var e = entries[i];
                         // one line: the file name; a long one shrinks instead of being cut (the _DEBUG suffix stays visible)
-                        var row = UiLay.Row(g, "Row " + e.BaseName, e.BaseName);
-                        var label = UiLay.RowTitle(row);
+                        var row = UiKit.Row(g, "Row " + e.BaseName, e.BaseName);
+                        var label = UiKit.RowTitle(row);
                         label.enableAutoSizing = true;
                         label.fontSizeMin = UiKit.Theme.minimumSize;
                         label.fontSizeMax = UiKit.Theme.bodySize;
                         // an icon button (red, like the Delete all text in the header)
-                        var del = UiLay.Button(row, "Delete", null, UiStyle.DestructiveText, "trash-can", small: true,
+                        var del = UiKit.Button(row, "Delete", null, UiStyle.DestructiveText, "trash-can", small: true,
                                                onClick: () => ConfirmDelete(e, Build));
                         del.InGroup = true;
                     }

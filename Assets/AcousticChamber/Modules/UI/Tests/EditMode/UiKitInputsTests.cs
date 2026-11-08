@@ -34,7 +34,7 @@ namespace GPL.UI.Tests
         (UiPanel panel, RectTransform group) Surface()
         {
             var panel = UiPanel.Create(_canvas.transform, "Panel", new Vector2(1000f, 1000f));
-            var group = UiLay.Section(panel.Surface.Body, "Group");
+            var group = UiKit.Section(panel.Surface.Body, "Group");
             return (panel, group);
         }
 
@@ -43,7 +43,7 @@ namespace GPL.UI.Tests
         {
             var (panel, group) = Surface();
             bool state = false;
-            var sw = UiLay.SwitchRow(group, "Row", "Subtitles", "Show text", false, on => state = on);
+            var sw = UiKit.SwitchRow(group, "Row", "Subtitles", "Show text", false, on => state = on);
             Layout(panel.Surface.transform);
             var sr = (RectTransform)sw.transform;
             Assert.AreEqual(100f, sr.rect.width, 0.5f);
@@ -58,7 +58,7 @@ namespace GPL.UI.Tests
         public void TextFieldIsEightyHighShowsPlaceholderAndRing()
         {
             var (panel, _) = Surface();
-            var f = UiLay.TextField(panel.Surface.Body, "Field", null, "Study ID");
+            var f = UiKit.TextField(panel.Surface.Body, "Field", null, "Study ID");
             Layout(panel.Surface.transform);
             Assert.AreEqual(80f, ((RectTransform)f.transform).rect.height, 0.5f);
             var label = f.GetComponentInChildren<TMPro.TextMeshProUGUI>();
@@ -77,7 +77,7 @@ namespace GPL.UI.Tests
         {
             var (panel, _) = Surface();
             float seen = -1f;
-            var s = UiLay.Stepper(panel.Surface.Body, "Stepper", 1f, 0f, 2f, 0.5f, v => v.ToString("0.0") + " m", v => seen = v);
+            var s = UiKit.Stepper(panel.Surface.Body, "Stepper", 1f, 0f, 2f, 0.5f, v => v.ToString("0.0") + " m", v => seen = v);
             Layout(panel.Surface.transform);
             var plus = s.transform.Find("Plus").GetComponent<UiButton>();
             var minus = s.transform.Find("Minus").GetComponent<UiButton>();
@@ -97,7 +97,7 @@ namespace GPL.UI.Tests
         public void NumberPadIsFiveTwentyWideWithEqualEightyHighKeysAndEntersDigits()
         {
             var (panel, _) = Surface();
-            var pad = NumberPadEntry.CreateLayout(panel.Surface.Body, "Pad", 4, s => s.Length > 0 ? "S" + s.PadLeft(4, '0') : "", "S____");
+            var pad = UiNumberPad.CreateLayout(panel.Surface.Body, "Pad", 4, s => s.Length > 0 ? "S" + s.PadLeft(4, '0') : "", "S____");
             Layout(panel.Surface.transform);
             var root = (RectTransform)pad.transform;
             Assert.AreEqual(520f, root.rect.width, 0.5f);
@@ -123,7 +123,7 @@ namespace GPL.UI.Tests
         {
             var window = UiPanel.Create(_canvas.transform, "Window", new Vector2(1000f, 800f));
             var d = UiDialog.Create(_canvas.transform, "Dialog", "Stop?", "Sure?");
-            var ok = UiLay.Button(d.Actions, "Ok", "OK", UiStyle.Prominent, minWidth: false);
+            var ok = UiKit.Button(d.Actions, "Ok", "OK", UiStyle.Prominent, minWidth: false);
             bool closedRaised = false;
             d.Panel.Closed += () => closedRaised = true;
             d.Show();
@@ -167,8 +167,8 @@ namespace GPL.UI.Tests
         public void DialogIs820WideSizedByContentWithActionsAtTheRight()
         {
             var d = UiDialog.Create(_canvas.transform, "Dialog", "Stop the session?", "Your progress is saved.");
-            var cancel = UiLay.Button(d.Actions, "Cancel", "Cancel", UiStyle.Borderless, minWidth: false);
-            var stop = UiLay.Button(d.Actions, "Stop", "Stop", UiStyle.Prominent, minWidth: false);
+            var cancel = UiKit.Button(d.Actions, "Cancel", "Cancel", UiStyle.Borderless, minWidth: false);
+            var stop = UiKit.Button(d.Actions, "Stop", "Stop", UiStyle.Prominent, minWidth: false);
             d.Fit();
             var surface = (RectTransform)d.Panel.Surface.transform;
             Assert.AreEqual(820f, surface.rect.width, 0.5f);

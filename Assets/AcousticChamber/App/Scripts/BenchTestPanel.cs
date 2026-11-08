@@ -60,11 +60,11 @@ namespace AcousticChamber.App
                 {
                     col.Label("Test playback (not saved)");
                     var p = col.Group("Playback");
-                    UiLay.SwitchRow(p, "Play stimulus", "Play stimulus", "2 s on, 1 s off, at the current position", _stim, on => { _stim = on; _bench.SetStatus(on ? "Stimulus playing (demo)." : "Stimulus stopped."); });
-                    UiLay.SwitchRow(p, "Play background", "Play background", "loops while on", _bg, on => { _bg = on; _bench.SetStatus(on ? "Background playing (demo)." : "Background stopped."); });
+                    UiKit.SwitchRow(p, "Play stimulus", "Play stimulus", "2 s on, 1 s off, at the current position", _stim, on => { _stim = on; _bench.SetStatus(on ? "Stimulus playing (demo)." : "Stimulus stopped."); });
+                    UiKit.SwitchRow(p, "Play background", "Play background", "loops while on", _bg, on => { _bg = on; _bench.SetStatus(on ? "Background playing (demo)." : "Background stopped."); });
                     col.Label("Display (Debug only, not saved)");
                     var d = col.Group("Display");
-                    UiLay.SwitchRow(d, "Show audio sphere", "Show audio sphere", "always, not only after the answer", _sphere, on => { _sphere = on; _bench.SetStatus(on ? "Audio sphere always visible." : "Audio sphere only after the answer."); });
+                    UiKit.SwitchRow(d, "Show audio sphere", "Show audio sphere", "always, not only after the answer", _sphere, on => { _sphere = on; _bench.SetStatus(on ? "Audio sphere always visible." : "Audio sphere only after the answer."); });
                     col.Label("Test data (bench test only)");
                     col.Buttons("Test data", ("Create 3 demo data files", UiStyle.Borderless, () =>
                     {

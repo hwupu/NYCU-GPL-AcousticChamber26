@@ -90,4 +90,24 @@ namespace GPL.UI
             _knob.color = Color.Lerp(th.text2, th.raised, t);
         }
     }
+
+    public static partial class UiKit
+    {
+        /// <summary>
+        /// A row with a switch at the right (100 x 60 u); the whole row toggles it. <paramref name="changed"/> gets the new state.
+        /// </summary>
+        public static UiSwitch SwitchRow(Transform group, string name, string title, string subtitle, bool on, System.Action<bool> changed,
+                                         string iconLeading = null)
+        {
+            UiSwitch sw = null;
+            var row = Row(group, name, title, subtitle, null, iconLeading, null, () =>
+            {
+                sw.On = !sw.On;
+                changed?.Invoke(sw.On);
+            });
+            sw = UiSwitch.Create(row, "Switch", Vector2.zero, on);
+            Size(sw.gameObject, UiSwitch.Width, UiSwitch.Height, UiSwitch.Width, UiSwitch.Height, 0f, 0f);
+            return sw;
+        }
+    }
 }

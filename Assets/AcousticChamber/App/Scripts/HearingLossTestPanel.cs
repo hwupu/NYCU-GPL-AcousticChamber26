@@ -57,20 +57,20 @@ namespace AcousticChamber.App
             TestPanelKit.Text(body, "Hearing condition", "Hearing condition (loss on)", th.smallSize, th.text2);
             var ears = new List<string>();
             foreach (var ear in Ears) ears.Add(ear == Ear.Both ? "Both ears" : ear + " ear");
-            UiLay.ChoiceGroup(body, "Ear", ears, 0, i => { _ear = Ears[i]; Apply(); }, out var earButtons);
+            UiKit.ChoiceGroup(body, "Ear", ears, 0, i => { _ear = Ears[i]; Apply(); }, out var earButtons);
             _earButtons.AddRange(earButtons);
 
             TestPanelKit.Text(body, "Hearing loss", "Hearing loss (NIOSH notch, label = 4 kHz band)", th.smallSize, th.text2);
             var levels = new List<string>();
             foreach (int db in LevelDb) levels.Add(DbLabel(db));
-            UiLay.ChoiceGroup(body, "Level", levels, 0, i => { _level = i; Apply(); }, out var levelButtons);
+            UiKit.ChoiceGroup(body, "Level", levels, 0, i => { _level = i; Apply(); }, out var levelButtons);
             _levelButtons.AddRange(levelButtons);
 
             TestPanelKit.Text(body, "Pure tone", "Pure tone (both ears, " + ToneDbfs.ToString(CultureInfo.InvariantCulture) + " dBFS peak, " +
                               ToneSeconds.ToString(CultureInfo.InvariantCulture) + " s)", th.smallSize, th.text2);
             var tones = new List<string>();
             foreach (int hz in ToneHz) tones.Add(HzLabel(hz));
-            UiLay.ChoiceGroup(body, "Tone", tones, -1, i => PlayTone(i), out var toneButtons);
+            UiKit.ChoiceGroup(body, "Tone", tones, -1, i => PlayTone(i), out var toneButtons);
             _toneButtons.AddRange(toneButtons);
 
             _live = TestPanelKit.Text(body, "Live", "", th.smallSize, th.text, flexHeight: true);

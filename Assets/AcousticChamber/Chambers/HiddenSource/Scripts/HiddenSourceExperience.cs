@@ -120,34 +120,34 @@ namespace AcousticChamber.Chambers.HiddenSource
             var intro = UiKit.Text(body, "Intro", "A sound is hidden on the floor around you. Press Start, point to where you hear it with either controller, " +
                                    "and press A. Then see how close you were.", th.smallSize, Vector2.zero, Vector2.zero, color: th.text2,
                                    align: TextAlignmentOptions.TopLeft);
-            UiLay.Size(intro.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(intro.gameObject, prefW: 0f, flexW: 1f);
 
             var rooms = new List<string>();
             foreach (var r in RoomChoices.All) rooms.Add(RoomChoices.Label(r));
-            var roomRow = UiLay.LabeledRow(body, "Room", "Room");
-            UiLay.ChoiceGroup(roomRow, "Room", rooms, 0, i => { _room = RoomChoices.All[i]; Apply(); }, out var roomButtons);
+            var roomRow = UiKit.LabeledRow(body, "Room", "Room");
+            UiKit.ChoiceGroup(roomRow, "Room", rooms, 0, i => { _room = RoomChoices.All[i]; Apply(); }, out var roomButtons);
             _roomButtons.AddRange(roomButtons);
 
-            var cueRow = UiLay.LabeledRow(body, "Distance", "Distance");
-            UiLay.ChoiceGroup(cueRow, "Distance", new[] { "Natural", "Flat" }, 0, i => { _natural = i == 0; Apply(); }, out var cueButtons);
+            var cueRow = UiKit.LabeledRow(body, "Distance", "Distance");
+            UiKit.ChoiceGroup(cueRow, "Distance", new[] { "Natural", "Flat" }, 0, i => { _natural = i == 0; Apply(); }, out var cueButtons);
             _cueButtons.AddRange(cueButtons);
 
             // two groups in one row: the ear (Both, Left, Right) and the level (0, -20, -40 dB)
-            var hearing = UiLay.LabeledRow(body, "Hearing", "Hearing");
+            var hearing = UiKit.LabeledRow(body, "Hearing", "Hearing");
             var ears = new List<string>();
             foreach (var ear in HearingConditions.Ears) ears.Add(HearingConditions.EarLabel(ear));
-            UiLay.ChoiceGroup(hearing, "Ear", ears, 0, i => { _condition = _condition.WithEar(HearingConditions.Ears[i]); Apply(); }, out var earButtons);
+            UiKit.ChoiceGroup(hearing, "Ear", ears, 0, i => { _condition = _condition.WithEar(HearingConditions.Ears[i]); Apply(); }, out var earButtons);
             _hearingButtons.AddRange(earButtons);
             var levels = new List<string>();
             foreach (var level in HearingConditions.Levels) levels.Add(HearingConditions.LevelLabel(level));
-            UiLay.ChoiceGroup(hearing, "Level", levels, 0, i => { _condition = _condition.WithLevel(HearingConditions.Levels[i]); Apply(); }, out var levelButtons);
+            UiKit.ChoiceGroup(hearing, "Level", levels, 0, i => { _condition = _condition.WithLevel(HearingConditions.Levels[i]); Apply(); }, out var levelButtons);
             _levelButtons.AddRange(levelButtons);
 
             _status = UiKit.Text(body, "Status", "No round yet.", th.smallSize, Vector2.zero, Vector2.zero, align: TextAlignmentOptions.TopLeft);
-            UiLay.Size(_status.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(_status.gameObject, prefW: 0f, flexW: 1f);
 
             var toolbar = surface.AddToolbar();
-            UiLay.Button(toolbar, "Start", "Start", UiStyle.Prominent, onClick: StartRound);
+            UiKit.Button(toolbar, "Start", "Start", UiStyle.Prominent, onClick: StartRound);
         }
 
         /// <summary>Applies the choices to the sound and the output and shows them on the buttons.</summary>

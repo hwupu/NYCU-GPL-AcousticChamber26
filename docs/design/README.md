@@ -34,22 +34,33 @@ src/screens/           Main Hall, chamber menu, Debug, experience panels (later)
 ```
 
 ## Component names and hierarchy
-Names follow `UiKit` where it has one, otherwise SwiftUI / visionOS. A Vue component = one Unity class or `UiKit` builder of the
-same name. Props use SwiftUI vocabulary (`iconLeading` / `iconTrailing`, `selected`, `disabled`).
+A Vue component = one Unity file of the same name in `Assets/AcousticChamber/Modules/UI/Runtime/UiKit/` (`UiButton.vue` ->
+`UiButton.cs`). Layout components are built by a static factory of `UiKit` (`UiKit.Button(...)`, `UiKit.Row(...)`); components with
+state are classes of the same name. Props use SwiftUI vocabulary (`iconLeading` / `iconTrailing`, `selected`, `disabled`).
 
-| Component | Replaces (UiKit) | SwiftUI / visionOS | Notes |
+| Component | Unity (`GPL.UI`, `UiKit/<Name>.cs`) | SwiftUI / visionOS | Notes |
 |---|---|---|---|
-| `UiIcon` | glyph text (‹ ×) | `Image` | sprite tinted by the label color |
-| `UiButton` | `Button`, `IconButton`, `SmallButton` | `Button` | `buttonStyle` prominent / gray / borderless / destructiveText / destructive; `selected` = toggle button; no label = icon button |
-| `UiSwitch` | `UiSwitch` | `Toggle` | iOS style switch |
-| `UiChoiceGroup` | `ChoiceButton` + `Select` | `Picker` | `selection` single / multiple; `appearance` segmented / tabs |
-| `UiSection` | `Group` | `Section` | raised rounded group with an optional header (and footer) |
-| `UiRow` | `Row`, `InfoRow` | list row | leading icon, title, subtitle (one or many lines), trailing value / ›, button, icon, switch; clickable rows highlight |
-| `UiList` | `ScrollList`, `Column` | `List` | scrolling stack of sections with edge fades |
-| `UiNavigationBar` | `Page` header | `NavigationStack` bar | ‹ back, title, DEBUG tag, header actions |
-| `UiPanel` | `OverlayPanel`, `UiLayer` | visionOS window | **transparent root**: placement (`below` = 8 deg below the eye line, default; `level` = 0 deg; lifted above the floor so the grabber is never hidden), translation, scale, fade, push back, dim; holds the surface and the grabber |
-| `UiSurface` | `Window` / `Sheet` body | window background | the rounded rectangle with the background and its padding; slots: `navigationBar`, content, `statusBar` (footer line), `toolbar` (bottom bar) |
-| `UiGrabber` | `PanelMover` handle | window grabber | below the surface, outside it; only on movable panels |
+| `UiIcon` | `UiKit.Icon`, class `UiIcon` | `Image` | sprite tinted by the label color |
+| `UiButton` | `UiKit.Button`, class `UiButton` | `Button` | `buttonStyle` prominent / gray / borderless / destructiveText / destructive; `selected` = toggle button; no label = icon button |
+| `UiSwitch` | `UiKit.SwitchRow`, class `UiSwitch` | `Toggle` | iOS style switch |
+| `UiChoiceGroup` | `UiKit.ChoiceGroup` (+ `UiKit.Select`) | `Picker` | `selection` single / multiple; `appearance` segmented / tabs |
+| `UiSection` | `UiKit.Section` | `Section` | raised rounded group with an optional header (and footer) |
+| `UiRow` | `UiKit.Row`, `LabeledRow` | list row | leading icon, title, subtitle (one or many lines), trailing value / ›, button, icon, switch; clickable rows highlight |
+| `UiTextField` | `UiKit.TextField`, class `UiTextField` | `TextField` | shows a value; fed by an `ITextEntry` |
+| `UiNumberPad` | class `UiNumberPad` (`CreateLayout`) | - | digits, Clear, backspace |
+| `UiStepper` | `UiKit.Stepper`, class `UiStepper` | `Stepper` | - / + around a value |
+| `UiList` | `UiKit.List` (over `ScrollList`) | `List` | scrolling stack of sections with edge fades |
+| `UiNavigationBar` | static class `UiNavigationBar` | `NavigationStack` bar | ‹ back, title, DEBUG tag, header actions |
+| `UiPanel` | class `UiPanel` (over `OverlayPanel`) | visionOS window | **transparent root**: placement (`below` = 8 deg below the eye line, default; `level` = 0 deg; lifted above the floor so the grabber is never hidden), translation, scale, fade, push back, dim; holds the surface and the grabber |
+| `UiSurface` | classes `UiSurface`, `UiPage` | window background | the rounded rectangle with the background and its padding; slots: `navigationBar`, content, `statusBar` (footer line), `toolbar` (bottom bar) |
+| `UiGrabber` | class `UiGrabber` | window grabber | below the surface, outside it; only on movable panels |
+| `UiDialog` | class `UiDialog` (`ModalDialog` is the facade chambers use) | `alert` | a decision, 820 u, no grabber |
+| `UiSheet` | class `UiSheet` | `sheet` | a window that pushes the one behind it back |
+| `UiCallout` | class `UiCallout` | - | world-space annotation of a 3D object |
+| `UiSlider` | not built | `Slider` | preview only until something uses it |
+
+Not components (no Storybook counterpart): `UiColumn` (the scrolling body of the Debug-style pages), `UiPointer`, `OverlayPanel`,
+`ScrollList`, `UiTheme`.
 
 Panel kinds (`UiPanel` props): `window` fixed (Main Hall, onboarding), `window` + `movable` (experience chamber menu, has the grabber),
 `dialog` (confirmation: Drop out; centered, 820 u, no grabber). A sheet is a `window` that pushes the one behind it back.

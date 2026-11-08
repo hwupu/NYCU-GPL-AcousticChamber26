@@ -115,7 +115,7 @@ namespace AcousticChamber.Chambers.Template
         /// Example of a chamber's own Debug section (PB-21b): the fixation dot in front of the headset outside a run, to check
         /// its distance and height. No session, no log row.
         /// </summary>
-        public override void DebugSections(Column col, DebugBench bench)
+        public override void DebugSections(UiColumn col, DebugBench bench)
         {
             col.Label("Fixation dot");
             col.Buttons("Fixation dot",

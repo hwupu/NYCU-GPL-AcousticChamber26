@@ -8,7 +8,7 @@ namespace GPL.UI
     /// Layout helpers of the rebuilt kit (docs/design): every component is a tree of uGUI layout groups, so sizes come from
     /// the design numbers (padding, gaps, minimum heights), never from hand-computed positions. Units are canvas units (u).
     /// </summary>
-    public static partial class UiLay
+    public static partial class UiKit
     {
         /// <summary>A child object stretched over nothing in particular: the layout of its parent places it.</summary>
         public static RectTransform Node(Transform parent, string name)

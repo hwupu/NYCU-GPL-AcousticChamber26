@@ -37,16 +37,16 @@ namespace GPL.UI
         public float maxWaitSec = 5f;
 
         /// <summary>
-        /// True = the participant can move the panel with the handle below it (<see cref="PanelMover"/>). Set at run time by
+        /// True = the participant can move the panel with the handle below it (<see cref="UiGrabber"/>). Set at run time by
         /// the chamber menus and experience panels; the chosen yaw / pitch stay for the visit (also after a recenter).
         /// </summary>
         public bool Movable
         {
-            get => GetComponent<PanelMover>() != null;
+            get => GetComponent<UiGrabber>() != null;
             set
             {
-                var mover = GetComponent<PanelMover>();
-                if (value && mover == null) gameObject.AddComponent<PanelMover>();
+                var mover = GetComponent<UiGrabber>();
+                if (value && mover == null) gameObject.AddComponent<UiGrabber>();
                 else if (!value && mover != null) Destroy(mover);
             }
         }
@@ -112,7 +112,7 @@ namespace GPL.UI
             float scale = ScalePerMeter * distanceM;
             Vector3 pos = head + rot * Vector3.forward * distanceM + Vector3.up * heightOffsetM;
             // a tall panel (or its move handle below it) must stay above the floor: lift it when its lowest point would go under
-            float halfHeight = ((RectTransform)transform).rect.height / 2f + (Movable ? PanelMover.Reserve : 0f);
+            float halfHeight = ((RectTransform)transform).rect.height / 2f + (Movable ? UiGrabber.Reserve : 0f);
             float lowest = pos.y + (rot * Vector3.down).y * halfHeight * scale;
             float floor = _rig.transform.position.y + MinClearanceM;
             if (lowest < floor) pos.y += floor - lowest;

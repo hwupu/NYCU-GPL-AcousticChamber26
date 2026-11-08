@@ -133,40 +133,40 @@ namespace AcousticChamber.Chambers.MovingSource
             Choices(body, "Distance", new[] { "Natural", "Flat" }, 0, i => { _natural = i == 0; Apply(); }, _cueButtons);
 
             // two groups in one row: the ear (Both, Left, Right) and the level (0, -20, -40 dB)
-            var hearing = UiLay.LabeledRow(body, "Hearing", "Hearing");
+            var hearing = UiKit.LabeledRow(body, "Hearing", "Hearing");
             var ears = new List<string>();
             foreach (var ear in HearingConditions.Ears) ears.Add(HearingConditions.EarLabel(ear));
-            UiLay.ChoiceGroup(hearing, "Ear", ears, 0, i => { _condition = _condition.WithEar(HearingConditions.Ears[i]); Apply(); }, out var earButtons);
+            UiKit.ChoiceGroup(hearing, "Ear", ears, 0, i => { _condition = _condition.WithEar(HearingConditions.Ears[i]); Apply(); }, out var earButtons);
             _hearingButtons.AddRange(earButtons);
             var levels = new List<string>();
             foreach (var level in HearingConditions.Levels) levels.Add(HearingConditions.LevelLabel(level));
-            UiLay.ChoiceGroup(hearing, "Level", levels, 0, i => { _condition = _condition.WithLevel(HearingConditions.Levels[i]); Apply(); }, out var levelButtons);
+            UiKit.ChoiceGroup(hearing, "Level", levels, 0, i => { _condition = _condition.WithLevel(HearingConditions.Levels[i]); Apply(); }, out var levelButtons);
             _levelButtons.AddRange(levelButtons);
 
             // the path (Circle, Fly-by, Approach) and a Stop button beside it
-            var path = UiLay.LabeledRow(body, "Path", "Path");
+            var path = UiKit.LabeledRow(body, "Path", "Path");
             var pathLabels = new List<string>();
             foreach (var kind in PathButtons) pathLabels.Add(PathLabel(kind));
-            UiLay.ChoiceGroup(path, "Path", pathLabels, -1, i => StartPath(PathButtons[i]), out var pathButtons);
+            UiKit.ChoiceGroup(path, "Path", pathLabels, -1, i => StartPath(PathButtons[i]), out var pathButtons);
             _pathButtons.AddRange(pathButtons);
-            UiLay.Button(path, "Stop", "Stop", UiStyle.Gray, minWidth: false, onClick: StopPath);
+            UiKit.Button(path, "Stop", "Stop", UiStyle.Gray, minWidth: false, onClick: StopPath);
 
             var speeds = new List<string>();
             foreach (var s in SourcePath.SpeedSteps) speeds.Add(s.ToString("0.##") + " ×");
             Choices(body, "Speed", speeds, _speedIndex, i => { _speedIndex = i; Show(); }, _speedButtons);
 
             _status = UiKit.Text(body, "Status", "", th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
-            UiLay.Size(_status.gameObject, prefW: 0f, flexW: 1f);
+            UiKit.Size(_status.gameObject, prefW: 0f, flexW: 1f);
 
             var toolbar = surface.AddToolbar();
-            UiLay.Button(toolbar, "Reset Source", "Reset source", UiStyle.Gray, onClick: ResetSource);
+            UiKit.Button(toolbar, "Reset Source", "Reset source", UiStyle.Gray, onClick: ResetSource);
         }
 
         /// <summary>A labeled row with one choice group; the group's buttons go to <paramref name="store"/>.</summary>
         static void Choices(RectTransform body, string label, IList<string> labels, int selected, System.Action<int> changed, List<UiButton> store)
         {
-            var row = UiLay.LabeledRow(body, label, label);
-            UiLay.ChoiceGroup(row, label, labels, selected, changed, out var buttons);
+            var row = UiKit.LabeledRow(body, label, label);
+            UiKit.ChoiceGroup(row, label, labels, selected, changed, out var buttons);
             store.AddRange(buttons);
         }
 
