@@ -25,6 +25,7 @@ const sw = ref(true), gain = ref(6), speed = ref(0.4)
         <UiRow title="Gain" icon-leading="sound-up"><UiStepper v-model="gain" :min="0" :max="12" :format="(v) => `+${v}`" /></UiRow>
         <UiRow title="Speed"><div class="w-360"><UiSlider v-model="speed" /></div></UiRow>
         <UiRow title="Log files" subtitle="3 files" icon-leading="folder"><UiButton label="Delete all" button-style="destructiveText" in-group small :min-width="false" /></UiRow>
+        <UiRow title="S0012_2026-11-08.csv" subtitle="48 KB" icon-leading="folder"><UiButton icon-leading="trash-can" button-style="destructiveText" in-group small /></UiRow>
       </UiSection>
 
       <UiSection header="STATES">

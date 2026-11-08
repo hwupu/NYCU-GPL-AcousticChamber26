@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * UiPanel (Unity: OverlayPanel + UiLayer). The TRANSPARENT ROOT of every panel: it owns placement, translation, scale, fade, push back
+ * UiPanel (Unity: UiPanel over OverlayPanel). The TRANSPARENT ROOT of every panel: it owns placement, scale, fade, push back
  * and dim. Inside it: a UiSurface (the rounded rectangle with the background, all the slots) and, on movable windows, a UiGrabber
  * below it. Everything animates on this one root, so the grabber hides, dims and pushes back together with the surface.
  *
@@ -10,7 +10,7 @@
  *  placement  where the panel hangs in the room (Unity; here only a data attribute): `below` (default) = centre 8 deg below the eye line, `level` = 0 deg.
  *           The placement is lifted so the grabber's lowest point stays above the floor (clearance in the Unity placer, so the handle is never hidden below it).
  *  shown    false = scaled to `sheet-scale` and faded out (appear / leave in place; settle curve, 450 ms)
- *  depth    sheets on top of this panel: 0 front, 1 = scale 94 % + dim 45 %, 2 = 88 %... (UiLayer pushes it back)
+ *  depth    sheets on top of this panel: 0 front, 1 = scale 94 % + dim 45 %, 2 = 88 %... (the panel stack pushes it back; the dim covers the surface only)
  * Slots (passed to the surface): navigationBar, default, statusBar, toolbar.
  */
 import { computed } from 'vue'
@@ -57,6 +57,6 @@ const showGrabber = computed(() => props.kind === 'window' && props.movable)
 .ui-panel:not([data-shown]) { opacity: 0; pointer-events: none; }
 .push-dim { position: absolute; inset: 0; border-radius: var(--radius-panel); background: var(--color-dim); opacity: 0; pointer-events: none; transition: opacity var(--push) var(--ease-settle); }
 .ui-panel[data-pushed] .push-dim { opacity: 1; }
-.grabber { top: calc(100% + 56px - 75px); transition: opacity var(--push) var(--ease-settle); }
+.grabber { top: 100%; transition: opacity var(--push) var(--ease-settle); }
 .ui-panel[data-pushed] .grabber { opacity: 0; pointer-events: none; }
 </style>

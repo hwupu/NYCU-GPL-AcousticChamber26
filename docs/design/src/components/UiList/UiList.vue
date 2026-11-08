@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * UiList (Unity: ScrollList + Column; SwiftUI List). A borderless scrolling stack of UiSections: no frame, no scrollbar. The edges
+ * UiList (Unity: UiKit.List over ScrollList; SwiftUI List). A borderless scrolling stack of UiSections: no frame, no scrollbar. The edges
  * fade (56 u, solid `background` color) only where more content waits; a thin indicator (8 u, text3) shows while scrolling and
- * fades 0.6 s later. Sections are 24 u apart (`Column.Gap`). Set `background` to the surface behind the list (fade color).
+ * fades 0.6 s later. Sections are 24 u apart (`UiColumn.Gap`). Set `background` to the surface behind the list (fade color).
  */
 import { onMounted, ref } from 'vue'
 

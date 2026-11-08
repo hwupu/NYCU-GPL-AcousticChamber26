@@ -19,7 +19,7 @@ const dialog = ref(false), shown = ref(true), digits = ref(''), ear = ref('both'
     <section>
       <h3 class="mb-16 text-small font-bold text-text2">Fixed window (Main Hall, onboarding): no grabber; here with a bottom toolbar (slide style)</h3>
       <UiPanel :height="520">
-        <template #navigationBar><UiNavigationBar title="Recenter" leading="none" /></template>
+        <template #navigationBar><UiNavigationBar title="Recenter" leading="none" centered /></template>
         <div class="flex flex-1 items-center justify-center text-body text-text2">Slide content</div>
         <template #toolbar>
           <UiButton label="Language" icon-leading="arrow-left" button-style="borderless" />
@@ -29,12 +29,22 @@ const dialog = ref(false), shown = ref(true), digits = ref(''), ear = ref('both'
     </section>
 
     <section>
+      <h3 class="mb-16 text-small font-bold text-text2">Protocol screen (language, message): the text is centered vertically with a margin above the buttons; one action (Continue) is centered</h3>
+      <UiPanel :height="520">
+        <div class="flex flex-1 items-center justify-center pb-40 text-center text-heading">Please put on the headset and sit comfortably.</div>
+        <template #toolbar>
+          <div class="flex flex-1 justify-center"><UiButton label="Continue" button-style="prominent" /></div>
+        </template>
+      </UiPanel>
+    </section>
+
+    <section>
       <h3 class="mb-16 text-small font-bold text-text2">Chamber menu (default window, movable): grabber below the surface, status line at the bottom</h3>
       <UiPanel movable>
         <template #navigationBar><UiNavigationBar title="C04 · HumPerHW2" debug-tag /></template>
         <div class="flex flex-1 items-start gap-48">
-          <UiNumberPad v-model="digits" />
-          <div class="flex flex-1 flex-col gap-20">
+          <div class="min-w-0 flex-[2]"><UiNumberPad v-model="digits" fill /></div>
+          <div class="flex min-w-0 flex-[3] flex-col gap-20">
             <UiButton label="Start" button-style="prominent" class="w-full" />
             <UiButton label="Config" icon-leading="gear" class="w-full" />
           </div>

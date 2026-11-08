@@ -7,15 +7,16 @@
  */
 import UiButton from '../UiButton/UiButton.vue'
 
-withDefaults(defineProps<{ title: string; leading?: 'back' | 'close' | 'none'; debugTag?: boolean }>(), { leading: 'back' })
+/** `centered`: the title takes the free width and is centered across the bar (bars without a leading button: the protocol slides). */
+withDefaults(defineProps<{ title: string; leading?: 'back' | 'close' | 'none'; debugTag?: boolean; centered?: boolean }>(), { leading: 'back' })
 defineEmits<{ back: [] }>()
 </script>
 
 <template>
   <header class="ui-navigation-bar">
     <UiButton v-if="leading !== 'none'" :icon-leading="leading === 'back' ? 'chevron-left' : 'cross'" button-style="borderless" @click="$emit('back')" />
-    <h2 class="title">{{ title }}</h2>
-    <span class="flex-1" />
+    <h2 class="title" :data-centered="centered ? '' : undefined">{{ title }}</h2>
+    <span v-if="!centered" class="flex-1" />
     <span v-if="debugTag" class="debug-tag">DEBUG</span>
     <div class="actions"><slot /></div>
   </header>
@@ -24,6 +25,7 @@ defineEmits<{ back: [] }>()
 <style scoped>
 .ui-navigation-bar { display: flex; align-items: center; gap: 8px; box-sizing: border-box; height: 116px; padding-top: 36px; }
 .title { margin: 0; font-size: var(--text-title); font-weight: var(--font-weight-bold); line-height: 1; transform: translateY(var(--label-nudge)); white-space: nowrap; }
+.title[data-centered] { flex: 1; text-align: center; }
 .debug-tag { margin-right: var(--gap); font-size: var(--text-minimum); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; color: var(--color-debug); transform: translateY(var(--label-nudge)); }
 .actions { display: flex; gap: 8px; }
 </style>
