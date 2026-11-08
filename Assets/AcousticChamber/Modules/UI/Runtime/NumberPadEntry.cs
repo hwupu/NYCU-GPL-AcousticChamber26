@@ -86,6 +86,69 @@ namespace GPL.UI
             return pad;
         }
 
+        /// <summary>Layout width of the rebuilt number pad (docs/design UiNumberPad).</summary>
+        public const float LayoutWidth = 520f;
+
+        /// <summary>
+        /// The rebuilt pad (docs/design UiNumberPad), laid out by layout groups: a <see cref="UiTextField"/> 80 u high, 20 u above a
+        /// <c>raised</c> container (radius 44) of 3 x 4 borderless keys, 4 u inset and apart. Place the returned node in a layout
+        /// (width <see cref="LayoutWidth"/>).
+        /// </summary>
+        public static NumberPadEntry CreateLayout(Transform parent, string name, int maxDigits, Func<string, string> format = null,
+                                                  string placeholder = "")
+        {
+            var th = UiKit.Theme;
+            var root = UiLay.Node(parent, name);
+            UiLay.V(root.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiLay.Size(root.gameObject, minW: LayoutWidth, prefW: LayoutWidth, flexW: 0f);
+            var pad = root.gameObject.AddComponent<NumberPadEntry>();
+            pad._model = new DigitEntry(maxDigits);
+            pad._model.Changed += pad.OnModelChanged;
+            if (format != null) pad.Format = format;
+            pad._placeholder = placeholder ?? "";
+
+            var field = UiLay.TextField(root, "Display", null, null);
+            pad._display = field.GetComponentInChildren<TextMeshProUGUI>();
+
+            var keys = UiLay.Node(root, "Keys");
+            UiLay.Fill(keys, th.raised, ContainerRadius);
+            UiLay.V(keys.gameObject, Inset, UiLay.Pad(Inset, Inset, Inset, Inset), TextAnchor.UpperLeft);
+            string[] labels = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", BackspaceLabel };
+            RectTransform rowNode = null;
+            for (int i = 0; i < labels.Length; i++)
+            {
+                if (i % 3 == 0)
+                {
+                    rowNode = UiLay.Node(keys, "Row " + (i / 3 + 1));
+                    UiLay.H(rowNode.gameObject, Inset, null, TextAnchor.MiddleCenter);
+                }
+                string k = labels[i];
+                UiButton b;
+                if (k == BackspaceLabel)
+                {
+                    b = UiLay.Button(rowNode, "Key Backspace", null, UiStyle.Borderless, iconLeading: "backspace", minWidth: false, onClick: () => pad._model.Backspace());
+                }
+                else if (k == "C")
+                {
+                    b = UiLay.Button(rowNode, "Key Clear", Loc.Get(UiStrings.Clear), UiStyle.Borderless, minWidth: false, onClick: pad.Clear);
+                    var label = b.GetComponentInChildren<TextMeshProUGUI>();
+                    label.fontSize = th.smallSize;
+                    label.gameObject.AddComponent<LocalizedText>().key = UiStrings.Clear; // follows the language
+                }
+                else
+                {
+                    char d = k[0];
+                    b = UiLay.Button(rowNode, "Key " + k, k, UiStyle.Borderless, minWidth: false, onClick: () => pad._model.Append(d));
+                    b.GetComponentInChildren<TextMeshProUGUI>().fontSize = th.headingSize;
+                }
+                b.InGroup = true;
+                // equal thirds: no label-driven width; an icon-only key fills its cell
+                UiLay.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
+            }
+            pad.Refresh();
+            return pad;
+        }
+
         public void SetValue(string value) => _model?.Set(value);
         public void Clear() => _model?.Clear();
         public void SetVisible(bool visible) => gameObject.SetActive(visible);
