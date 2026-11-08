@@ -85,7 +85,7 @@ namespace AcousticChamber.App
             _preset = TestPanelKit.Text(body, "Preset", "", th.smallSize, th.text2);
             var start = TestPanelKit.Wide(body, "Start", "Start", UiStyle.Prominent,
                                           () => Debug.Log("[GPL] BenchTestPanel: Start would use the active preset " + store.ActiveName));
-            var debug = TestPanelKit.Wide(body, "Debug", "Debug", UiStyle.Gray, () => _bench.OpenDebugPage());
+            var debug = TestPanelKit.Wide(body, "Debug", "Config", UiStyle.Gray, () => _bench.OpenDebugPage());
             menu.Returned += () => ShowPreset(store);
             ShowPreset(store);
         }

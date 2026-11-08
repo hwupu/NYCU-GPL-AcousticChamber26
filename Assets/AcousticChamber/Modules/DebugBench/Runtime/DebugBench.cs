@@ -63,7 +63,7 @@ namespace GPL.DebugBench
 
         public UiPage OpenDebugPage()
         {
-            var page = _pages.Push("Debug");
+            var page = _pages.Push("Config");
             _status = page.AddStatus("");
             var col = UiColumn.In(page);
 
@@ -75,7 +75,7 @@ namespace GPL.DebugBench
 
             col.Label("Parameters");
             var g = col.Group("Parameters");
-            var work = UiKit.Row(g, "Row Playground", "Playground", "used by Debug runs", Work.Label, null, "chevron-right", () => OpenParametersPage());
+            var work = UiKit.Row(g, "Row Playground", "Playground", "used by Config runs", Work.Label, null, "chevron-right", () => OpenParametersPage());
             _workValue = UiKit.RowValue(work);
             var presets = UiKit.Row(g, "Row Presets", "Presets", "real sessions use the active one", "Active: " + Work.Store.ActiveName, null, "chevron-right",
                                     () => OpenPresetsPage());
@@ -208,7 +208,7 @@ namespace GPL.DebugBench
 
         string IntroText() =>
             "Playground: a copy of the active preset, " + Work.Source + (Work.IsEdited ? " · " + Work.EditedKeys.Count + " edited" : "") +
-            ". Debug runs use it; real sessions use " + Work.Source + " as saved. Revert goes back to it.";
+            ". Config runs use it; real sessions use " + Work.Source + " as saved. Revert goes back to it.";
 
         public static readonly string SaveAsLabel = "Save as " + WorkingCopy.CustomName;
 

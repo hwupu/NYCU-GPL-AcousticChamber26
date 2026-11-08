@@ -149,7 +149,7 @@ namespace AcousticChamber.App
             UiKit.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
             UiKit.Size(col.gameObject, minW: 0f, prefW: 0f, flexW: 3f);
             var start = UiKit.Button(col, "Start", "Start", UiStyle.Prominent, minWidth: false, onClick: OnStart);
-            var debug = UiKit.Button(col, "Debug", "Debug", UiStyle.Gray, minWidth: false, onClick: () => _bench.OpenDebugPage());
+            var debug = UiKit.Button(col, "Debug", "Config", UiStyle.Gray, minWidth: false, onClick: () => _bench.OpenDebugPage());
             foreach (var b in new[] { start, debug })
                 UiKit.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
 
@@ -357,7 +357,7 @@ namespace AcousticChamber.App
                 log.Write(LogEvents.DebugBegin, (practice ? "practice trial, " : "") + "app " + Application.version + ", " + SystemInfo.deviceModel);
                 Launch(new ChamberRun { Record = rec, Values = values, Log = log, IsDebug = true, IsPractice = practice });
             }
-            catch (Exception e) { Fail("Could not start the Debug run", e); }
+            catch (Exception e) { Fail("Could not start the Config run", e); }
         }
 
         EventLog OpenLog(string path, LogContext ctx) =>
@@ -390,7 +390,7 @@ namespace AcousticChamber.App
             _stopHost.DebugRun = run.IsDebug;
             _stopHost.StudyId = run.Record.StudyId;
             if (_actions != null) _actions.StopEnabled = true;
-            SetStatus((run.IsPractice ? "Practice trial " : run.IsDebug ? "Debug run " : run.IsResume ? "Resumed " : "Started ") + run.Record.SessionId);
+            SetStatus((run.IsPractice ? "Practice trial " : run.IsDebug ? "Config run " : run.IsResume ? "Resumed " : "Started ") + run.Record.SessionId);
             _runCo = StartCoroutine(RunToEnd(run));
         }
 
@@ -438,7 +438,7 @@ namespace AcousticChamber.App
             }
             catch (Exception e) { Debug.LogException(e); }
             finally { run.Log.Dispose(); }
-            SetStatus(run.Record.SessionId + (run.IsDebug ? " Debug run ended." : stopped.HasValue ? ": dropped out." : ": completed."));
+            SetStatus(run.Record.SessionId + (run.IsDebug ? " Config run ended." : stopped.HasValue ? ": dropped out." : ": completed."));
             // the participant's language belongs to the run (onboarding, slides, thanks); menus are English (PB-20b)
             Loc.Set(UiLanguage.English);
             if (!run.IsDebug) _pad.Clear();

@@ -106,7 +106,7 @@ namespace AcousticChamber.App.Tests
             debug.onClick.Invoke();
             Layout();
             var page = surface.Top;
-            Assert.AreEqual("Debug", page.Title);
+            Assert.AreEqual("Config", page.Title);
             Assert.IsNotNull(page.Status, "the Debug page has its status line");
             var list = page.GetComponentInChildren<ScrollList>();
             Assert.IsNotNull(list);
