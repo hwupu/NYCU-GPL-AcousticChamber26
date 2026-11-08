@@ -40,10 +40,11 @@ namespace AcousticChamber.Chambers.HearingLoss
         OVRCameraRig _rig;
         OutputHearingLoss _output;
         GlobalActions _actions;
-        RectTransform _window;
+        UiPanel _panel;
         TextMeshProUGUI _status;
         AudioClip[] _tones;
         readonly List<UiButton> _soundButtons = new List<UiButton>(); // tones, then recordings
+        readonly List<string> _soundNames = new List<string>();
         readonly List<UiButton> _earButtons = new List<UiButton>();
         readonly List<UiButton> _levelButtons = new List<UiButton>();
         bool _leaving;
@@ -116,57 +117,48 @@ namespace AcousticChamber.Chambers.HearingLoss
         {
             var th = UiKit.Theme;
             ((RectTransform)transform).sizeDelta = Size; // scenes made before the 2026-11-08 layout have the old size
-            _window = UiKit.Window(transform);
-            float left = -Size.x / 2f + 48f, width = Size.x - 96f, top = Size.y / 2f;
-
-            UiKit.Text(_window, "Title", Title, th.headingSize, new Vector2(0f, top - 60f), new Vector2(width, 70f), bold: true,
-                       align: TextAlignmentOptions.Left);
-
-            Section("Hearing condition (loss on)", top - 140f);
+            _panel = UiPanel.Create(transform, "Panel", Size);
+            var surface = _panel.Surface;
+            surface.RootBack = BackToHall;
+            UiNavigationBar.Create(surface, Title, UiNavigationBar.Leading.Back);
+            var body = surface.Body;
+            body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = 12f;
             _earButtons.Clear();
-            for (int i = 0; i < ExperienceState.Ears.Length; i++)
-            {
-                var ear = ExperienceState.Ears[i];
-                _earButtons.Add(Choice(_window, ExperienceState.EarButton(ear), i, ExperienceState.Ears.Length, top - 205f, () => { _state.SetEar(ear); Apply(); }));
-            }
-
-            Section("Hearing loss", top - 285f);
             _levelButtons.Clear();
-            for (int i = 0; i < ExperienceState.Levels.Length; i++)
-            {
-                var level = ExperienceState.Levels[i];
-                _levelButtons.Add(Choice(_window, ExperienceState.LevelButton(level), i, ExperienceState.Levels.Length, top - 350f, () => { _state.SetLevel(level); Apply(); }));
-            }
-
             _soundButtons.Clear();
-            Section("Pure tone", top - 430f);
-            for (int i = 0; i < ExperienceState.ToneHz.Length; i++)
-            {
-                int k = i;
-                _soundButtons.Add(Choice(_window, ExperienceState.ToneButton(ExperienceState.ToneHz[i]), i, ExperienceState.ToneHz.Length, top - 495f, () => ClickSound(k)));
-            }
+            _soundNames.Clear();
 
-            Section("Audio recording", top - 575f);
-            for (int i = 0; i < clips.Length; i++)
-            {
-                int k = ExperienceState.ToneHz.Length + i;
-                string name = i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name;
-                _soundButtons.Add(Choice(_window, name, i, clips.Length, top - 640f, () => ClickSound(k)));
-            }
+            var ears = new List<string>();
+            foreach (var ear in ExperienceState.Ears) ears.Add(ExperienceState.EarButton(ear));
+            var earRow = UiLay.LabeledRow(body, "Hearing condition", "Ear", 160f);
+            UiLay.ChoiceGroup(earRow, "Ear", ears, 0, i => { _state.SetEar(ExperienceState.Ears[i]); Apply(); }, out var earButtons);
+            _earButtons.AddRange(earButtons);
 
-            _status = UiKit.Text(_window, "Status", "", th.smallSize, new Vector2(0f, top - 730f), new Vector2(width, 80f), color: th.text2,
-                                 align: TextAlignmentOptions.TopLeft);
+            var levels = new List<string>();
+            foreach (var level in ExperienceState.Levels) levels.Add(ExperienceState.LevelButton(level));
+            var levelRow = UiLay.LabeledRow(body, "Hearing loss", "Loss", 160f);
+            UiLay.ChoiceGroup(levelRow, "Level", levels, 0, i => { _state.SetLevel(ExperienceState.Levels[i]); Apply(); }, out var levelButtons);
+            _levelButtons.AddRange(levelButtons);
 
-            UiKit.Button(_window, "Reset Speaker", "Reset speaker", UiStyle.Gray, new Vector2(left + 160f, -top + 55f), new Vector2(320f, 0f), ResetSpeaker);
-            UiKit.Button(_window, "Back to Hall", "Back to Hall", UiStyle.Gray, new Vector2(-left - 160f, -top + 55f), new Vector2(320f, 0f), BackToHall);
+            var tones = new List<string>();
+            foreach (var hz in ExperienceState.ToneHz) tones.Add(ExperienceState.ToneButton(hz));
+            var toneRow = UiLay.LabeledRow(body, "Pure tone", "Tone", 160f);
+            UiLay.ChoiceGroup(toneRow, "Tone", tones, -1, i => ClickSound(i), out var toneButtons);
+            _soundButtons.AddRange(toneButtons);
+            _soundNames.AddRange(tones);
 
-            void Section(string label, float y) =>
-                UiKit.Text(_window, label, label, th.bodySize, new Vector2(0f, y), new Vector2(width, 50f), color: th.text2,
-                           align: TextAlignmentOptions.Left);
+            var recs = new List<string>();
+            for (int i = 0; i < clips.Length; i++) recs.Add(i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name);
+            var recRow = UiLay.LabeledRow(body, "Audio recording", "Recording", 160f);
+            UiLay.ChoiceGroup(recRow, "Recording", recs, -1, i => ClickSound(ExperienceState.ToneHz.Length + i), out var recButtons);
+            _soundButtons.AddRange(recButtons);
+            _soundNames.AddRange(recs);
 
-            // the i-th of n equal buttons across the panel width at height y
-            UiButton Choice(Transform parent, string label, int i, int n, float y, System.Action click) =>
-                UiKit.ChoiceButton(parent, label, i, n, left, width, y, click);
+            _status = UiKit.Text(body, "Status", "", th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
+            UiLay.Size(_status.gameObject, prefW: 0f, flexW: 1f);
+
+            var toolbar = surface.AddToolbar();
+            UiLay.Button(toolbar, "Reset Speaker", "Reset speaker", UiStyle.Gray, onClick: ResetSpeaker);
         }
 
         /// <summary>Click on a tone or recording: a new sound plays from the start; the playing one pauses; a paused one resumes.</summary>
@@ -192,7 +184,7 @@ namespace AcousticChamber.Chambers.HearingLoss
         AudioClip ClipOf(int sound) =>
             ExperienceState.IsTone(sound) ? _tones[sound] : clips[ExperienceState.RecordingIndex(sound)];
 
-        string NameOf(int sound) => sound < 0 ? "nothing" : UiKit.LabelOf(_soundButtons[sound]).text;
+        string NameOf(int sound) => sound < 0 ? "nothing" : _soundNames[sound];
 
         /// <summary>Pushes the state to the output and the panel. The sound playing is Selected; a paused one is normal again.</summary>
         void Apply()
@@ -244,12 +236,11 @@ namespace AcousticChamber.Chambers.HearingLoss
             if (_leaving || AppNav.Busy) return;
             _leaving = true;
             source.Stop();
-            var layer = _window != null ? _window.GetComponent<UiLayer>() : null;
-            if (layer != null) layer.Show(false);
+            if (_panel != null) _panel.Shown = false;
             if (!AppNav.BackToHall())
             {
                 _leaving = false;
-                if (layer != null) layer.Show(true);
+                if (_panel != null) _panel.Shown = true;
             }
         }
     }

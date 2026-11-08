@@ -44,7 +44,8 @@ namespace GPL.UI.Tests
 
             // 600 surface - 116 nav - 12 body top - 40 bottom
             Assert.AreEqual(600f - 116f - 12f - 40f, list.Viewport.rect.height, 0.5f);
-            Assert.AreEqual(1000f - 96f, list.Viewport.rect.width, 0.5f);
+            Assert.AreEqual(1000f - 96f + UiLay.IndicatorMargin, list.Viewport.rect.width, 0.5f, "24 u into the right padding: the indicator's strip");
+            Assert.AreEqual(1000f - 96f, ((RectTransform)content.GetChild(0)).rect.width, 0.5f, "the sections keep the body width");
             Assert.Greater(list.Model.Max, 0f, "the content is taller than the viewport: it scrolls");
             list.ScrollTo(40f);
             Assert.AreEqual(40f, list.Content.anchoredPosition.y, 0.5f);

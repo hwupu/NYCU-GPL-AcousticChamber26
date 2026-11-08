@@ -1,8 +1,8 @@
 # GPL.UI
 
 Readable, clickable GUI for Meta Quest: overlay canvases placed in front of the participant, a controller ray pointer,
-design-system components (DesignSystem v2, ADR-0005: buttons with timed states, capsules, hit regions), text (TextMeshPro,
-English + 中文), a number pad, modal dialogs, localization.
+the design-system components (rebuilt 2026-11: layout-group based, designed in the Storybook preview `docs/design/`, ADR-0007),
+text (TextMeshPro, English + 中文), an icon set, a number pad, dialogs and sheets, localization.
 Generalized from HW2's `UiPointer`, `GuiPanelPlacer`, `ParticipantIdField`, `LocalizedText`, `Localization` and the GUI
 helpers of `HumPerSetup`.
 
@@ -15,35 +15,30 @@ OVROverlayCanvas, OVRControllerHelper), uGUI + TextMeshPro (`com.unity.ugui` 2.x
 | `Core/Localization.cs` | `UiLanguage` (English, Chinese), `StringTable`, `Loc` (current language, `Changed`, lookup; later tables override; missing key -> `[key]`; labels exactly "English" / "中文") |
 | `Core/DigitEntry.cs` | number-pad model: digits only, max length |
 | `Core/Motion.cs` | `CubicBezier` timing curve, `Motion.Settle` = cubic-bezier(.16, 1, .3, 1) (fast start, soft landing, no overshoot), `Motion.Progress` |
-| `Runtime/UiTheme` | design tokens asset (design system v2): surfaces and text, per-style state colors (normal / hover / pressed / label; pressed is the brightest), type scale, geometry (capsule buttons, 60 u hit minimum, 4 u inset, radii), motion (150 / 350 / 250 / 450 ms), `reduceMotion`; `Edited` restyles every button live; `version` + `ResetTokens` migrate old assets |
-| `Runtime/UiButton` | the design-system button (a uGUI `Button`): style = Prominent / Gray / Borderless / DestructiveText / Destructive, settle transitions on unscaled time (hover in fast, out slower, press instant at 97 % scale, release settles), disabled 40 %, `InGroup` hover colors, `Selected` (active toggle / chosen button: `select` fill, PB-08e); `UiKit.ChoiceButton` builds one of n equal buttons in a row, `UiKit.Select(buttons, i => on)` sets `Selected` on a set |
-| `Runtime/UiKit` | builders: `Window` (the canvas's base layer, pushed back by sheets), `Group` + `Row` (raised group, 88 u rows, optional secondary line, value and ›), `InfoRow` (a row that is not a button, room for its own controls), `SetRowSub`, `RowText`, `SmallButton` (− / + steppers), `SwitchRow`, `Rect`, `Box` (any corner radius from one procedural 9-slice sprite), `Round`, `Background`, `Text`, `LocText`, `Button`, `LocButton`, `IconButton` (‹ `BackGlyph`, × `CloseGlyph`), `DebugTag`, `HitRect`; `MotionSuppressed` (set while a stimulus plays: every transition instant). New objects take the parent's layer |
+| `Runtime/UiTheme`, `UiIconSet` | design tokens asset (version 3: surfaces and text, per-style state colors, type scale, geometry, paddings, radii, motion, `reduceMotion`) and the icon set (name -> sprite, white PNGs exported by `pnpm icons` from `docs/design/src/icons`); `Edited` restyles every button live; `version` + `ResetTokens` migrate old assets |
+| `Runtime/UiKit` | basic builders the components are made of: `Rect`, `Fill`, `Box`, `Round` (any corner radius from one procedural 9-slice sprite), `Text`, `Icon`, `Select` (shows a chosen button in a set), `Clear`, `HitRect`, `InLeavingLayer`; `Theme`, `MotionSuppressed` (set while a stimulus plays: every transition instant). New objects take the parent's layer |
+| `Runtime/UiButton`, `UiIcon`, `UiSwitch` | the button (a uGUI `Button`): style Prominent / Gray / Borderless / DestructiveText / Destructive, settle transitions on unscaled time, `InGroup`, `Selected`, icons follow the label color (`UiIcon.FollowsLabel`); the switch (100 x 60 u) |
+| `Runtime/Kit/UiLay*` | **the components, as layouts** (sizes come from paddings, minimum heights and flexible widths, never from hand-computed positions): `Button` (80 u, icon-side padding 75 %, label nudge 2 u), `Section` (raised group), `Row` (88 u, title, subtitle, value, icons), `SwitchRow`, `ChoiceGroup` (segmented, single selection; `LabeledRow` puts a label in front), `TextField`, `Stepper`, `List` (scrolling stack with edge fades), `Label`, `Fill` (the background is a child image the layout ignores: a sliced `Image` on a layout node adds its 130 u slice size to the node's preferred size) |
+| `Runtime/Kit/UiPanel` | the transparent root of a panel: `Shown` (fade + scale from `sheetScale`), `Depth` (pushed back: 94 % per level and a dim), `Placement` (8° below eye level or level), `Present` / `Close` / `Stack` / `Top` (panels of a canvas stack; a `Modal` panel takes the ray), `HasGrabber`, `GrabberVisible`. Its child `Surface` is the rounded rectangle |
+| `Runtime/Kit/UiSurface`, `UiPage`, `UiNavigationBar` | the surface holds a stack of pages (`Push`, `Pop`, `PopToRoot`, `Back`, `RootBack`; pages change in place, fade + `pageScale` 0.98, the page below stays alive). A page has the slots navigation bar (116 u: ‹ / ×, title, DEBUG tag, header actions), body (48 u at the sides, 40 u at the bottom without status or toolbar), status line and toolbar |
+| `Runtime/Kit/UiDialog`, `UiSheet`, `Runtime/ModalDialog`, `StopDialog` | a decision (820 u, title, message, right-aligned actions, main action last) and a sheet (navigation bar with × and a body); both are modal panels that push the panels behind back. `ModalDialog.Show(canvas, title, message, buttons)` is the call chambers use; `StopDialog` is the Stop dialog (Drop out asks twice on a second dialog on top; `Freeze` while open) |
+| `Runtime/Kit/UiCallout` | a world-space annotation of a 3D object (pill, icon, label, tail); follows its target, faces the head, keeps its angular size; `Show(delay)` fades in after the delay, `Dismiss()` fades out; no periodic animation |
+| `Runtime/Column` | a scrolling page body for settings-like pages (Debug, Parameters, Presets, Data files): `Label`, `Group`, `Buttons`, `Gap` |
 | `Runtime/UiRoot` | one per scene: sets the theme (old theme assets: current defaults + a warning), registers the module strings |
-| `Runtime/PanelMover` | `OverlayPanel.Movable = true` adds a pill-shaped handle below the panel, outside it (a real 3D object and `IRayTarget`, visionOS style; the overlay canvas would clip it): it reacts in a zone much larger than the pill, grows and brightens on hover (settle curve); trigger held + swing the ray turns the panel around the head (yaw, pitch), hand away from / toward the head moves the panel farther / nearer (0.8-5 m). `OverlayPanel.Place` lifts a panel that would reach the floor. Used by the chamber menu (not during a run) and the experience panels. `UiPointer.ActiveRay` / `HasActiveRay` give chamber code the active controller's ray |
+| `Runtime/PanelMover` | `OverlayPanel.Movable = true` adds a pill-shaped grabber below the panel (a real 3D object and `IRayTarget`, visionOS style; the overlay canvas would clip it): 120 x 8 u, 16 u below the surface, 220 x 16 u on hover. Trigger held + swing the ray turns the panel around the head (yaw, pitch) at a fixed distance (the canvas scale follows the distance, so a different distance would look the same). `OverlayPanel.Place` lifts a panel that would reach the floor. `UiPointer.ActiveRay` / `HasActiveRay` give chamber code the active controller's ray |
 | `Runtime/OverlayPanel` | places a canvas 2 m ahead (`yawOffsetDeg` to the side, negative = left), 8° below eye level, facing the eye; scale follows distance; waits for valid head height; re-places 2 frames after a system recenter; hides layers 30/31 from the eye cameras |
-| `Runtime/UiPointer` | ray from the controller (last trigger owns the ray), white laser; hit regions grown to 60 x 60 u (`UiKit.HitRect`; the element's own rect wins ties, `Pick`); trigger down presses a `UiButton` (pressed look until release) and clicks it; inside a `ScrollList` the click waits for the release (the press may become a drag) and the right thumbstick scrolls the list under the ray; rows scrolled out of view are not hit; `UiPointer.Modal` limits it to the top sheet |
-| `Runtime/RayTarget` | `IRayTarget` (3D objects the pointer can hover, press and drag; `RayTargets.Register`): the nearer of a UI hit and a target wins; a held target owns the trigger until release (no UI clicks meanwhile); ignored while a modal sheet is open (PB-10) |
-| `Runtime/ITextEntry`, `NumberPadEntry` | swappable text entry; the number pad (3 x 4 borderless keys in a container with a 4 u inset, Clear, ←) shows the formatted value live (`StudyId.FromDigits`: `1` -> `S0001`) |
-| `Runtime/NativeKeyboardEntry` | `ITextEntry` over the platform keyboard (Quest system overlay; needs "Requires System Keyboard"); `Diagnosis()` flags "reports Visible but never shown" (PB-14, headset test open: docs/references/Keyboard.md). Not used by any screen; the number pad stays the default |
-| `Runtime/UiLayer` | one layer of a canvas (window or sheet): appears in place (scale `sheetScale` → 1 + fade) and is pushed back by the sheets on top of it (`pushScale` per level, dims to `dim`); settle curve, unscaled time; instant outside Play mode. No blur |
-| `Core/ScrollModel.cs` | scroll state, Unity-free: offset / max, press → drag after 12 u (shorter presses stay clicks), content follows the pointer, momentum (exponential decay 0.35 s, clamped ends), thumbstick 1200 u/s (dead zone 0.2) |
-| `Runtime/ScrollList` | borderless scroll list: clipped viewport (`RectMask2D`), top-anchored `Content` + `ContentHeight`, edge fades (56 u, only where more content waits, color = the background behind), indicator (8 u, `text3`, fades 0.6 s after moving); driven by `UiPointer` |
-| `Runtime/PageStack`, `Page` | pages in one container (the window): `Push(title, debugTag)`, `Pop`, `PopToRoot`, `Back`; header with ‹ (back one page; on the root page only if `RootBack` is set), title, optional DEBUG tag; pages change in place (fade + `pageScale` 0.98); pages below stay alive (inactive) and raise `Returned` when they come back; keep the top `Page.HeaderHeight` free; `AddHeaderAction` (Revert, Delete all at the header's right) |
-| `Runtime/Column` | a scrolling page body below the header at the content width: `Label` (group label, wraps), `Group`, `Buttons` (a group of side-by-side buttons), `Gap`, `Finish` |
-| `Runtime/UiSwitch` | switch 100 x 60 u (off: gray track, text2 knob; on: prominent track, dark knob; the knob settles); `UiKit.SwitchRow` makes the whole row its target |
-| `Runtime/Sheet` | a sheet: surface box on top of a canvas, pushes the window and lower sheets back; sheets stack; only the top one takes the ray (`UiPointer.Modal`); `Close` brings the layers forward, fades out, destroys; `Abandoned` if destroyed without `Close` |
-| `Runtime/ModalDialog` | a decision sheet: title and message left-aligned, buttons right-aligned and sized to their labels (main action last = right); dialogs stack (`Current` = top) |
-| `Runtime/StopDialog` | the Stop dialog: real session Drop out (red text) / Keep going (prominent); Drop out asks once more on a second sheet on top ("Drop out S0012?" Cancel / Drop out in red); Debug run Back to the chamber menu / Keep going; returns a `StopChoice`. `Freeze` (time scale 0 + audio pause, nested, restores the old values) while open |
-| `Runtime/Kit/` | rebuilt kit, proof of concept (docs/design): `UiLay` (layout-group helpers, label nudge, background child), `UiPanel` (transparent root: show, push back, placement, grabber visibility), `UiSurface`, `UiNavigationBar`, `UiLay.Section/Row/ChoiceGroup/Button/SwitchRow/TextField/Stepper/List`, `UiDialog`, `UiCallout` (world-space, not in an overlay); `UiKitPoc` = the C01 menu (Magic > App > UiKit PoC Panel) |
-| `Runtime/UiShowcase` | headset test panel of the module (no study logic): every button style, ‹ back, DEBUG tag, number pad, Stop dialog, a motion switch |
-| `Editor/UiSetup` | `EnsureFontAsset` (dynamic SDF from a .ttf/.otf), `EnsureTheme` (creates or migrates the theme asset), `EnsureUnlitMaterial`, `CreateOverlayCanvas`, `EnsurePointer`, `EnsureUiRoot`, `EnsureGroup`, `EnsureLayerName` |
+| `Runtime/UiPointer` | ray from the controller (last trigger owns the ray), white laser; hit regions grown to 60 x 60 u; trigger down presses a `UiButton` and clicks it; inside a `ScrollList` the click waits for the release and the right thumbstick scrolls the list under the ray; content under a canvas group that does not block the ray (leaving, pushed back, hidden) is not hit; `UiPointer.Modal` limits it to the top modal panel |
+| `Runtime/RayTarget` | `IRayTarget` (3D objects the pointer can hover, press and drag; `RayTargets.Register`): the nearer of a UI hit and a target wins; a held target owns the trigger until release |
+| `Runtime/ITextEntry`, `NumberPadEntry` | swappable text entry; the number pad (`CreateLayout`: a text field above 3 x 4 borderless keys in a raised container, Clear, ←) shows the formatted value live (`StudyId.FromDigits`: `1` -> `S0001`) |
+| `Runtime/NativeKeyboardEntry` | `ITextEntry` over the platform keyboard (Quest system overlay; needs "Requires System Keyboard"). Not used by any screen; the number pad stays the default |
+| `Core/ScrollModel.cs`, `Runtime/ScrollList` | scroll state, Unity-free (drag after 12 u, momentum, thumbstick), and the clipped list with edge fades and an indicator; `UiLay.List` sizes its range from the layout |
+| `Runtime/Kit/UiKitPoc` | the C01 menu from the components with hide / push back / placement buttons (Magic > App > UI Test Panel) |
+| `Editor/UiSetup`, `UiIconSetup` | `EnsureFontAsset`, `EnsureTheme`, `EnsureIconSet` (and the importer for the icon PNGs), `EnsureUnlitMaterial`, `CreateOverlayCanvas`, `EnsurePointer`, `EnsureUiRoot`, `EnsureGroup`, `EnsureLayerName` |
 
 ## Use
 Editor step (once per scene; see `AcousticChamber.App.Editor.AppSetup` for an example):
 ```csharp
-var regular = UiSetup.EnsureFontAsset("Assets/.../NotoSansTC-Regular.otf", "Assets/.../NotoSansTC-Regular SDF.asset");
-var bold    = UiSetup.EnsureFontAsset("Assets/.../NotoSansTC-Bold.otf",    "Assets/.../NotoSansTC-Bold SDF.asset");
-var theme   = UiSetup.EnsureTheme("Assets/.../UiTheme.asset", regular, bold);
+var theme = UiSetup.EnsureTheme("Assets/.../UiTheme.asset", regular, bold);
 var ui = UiSetup.EnsureGroup("UI");
 UiSetup.EnsureUiRoot(ui, theme);
 var canvas = UiSetup.CreateOverlayCanvas(ui, "Menu", new Vector2(1000, 700));
@@ -51,27 +46,26 @@ UiSetup.EnsurePointer(ui, UiSetup.EnsureUnlitMaterial("Assets/.../Laser.mat", Co
 ```
 Run time (screens are built by code into the canvas):
 ```csharp
-var window = UiKit.Window(canvas.transform);   // content goes into the window; sheets go onto the canvas
-var pages = PageStack.On(window);
-var menu = pages.Push("C04 · HumPerHW2", debugTag: true).Rect;   // later: pages.Push("Debug"), ‹ pops
-UiKit.LocButton(window, "Next", UiStrings.Next, UiStyle.Prominent, new Vector2(0, -250), new Vector2(300, 0), OnNext);
-UiKit.IconButton(window, "Back", UiKit.BackGlyph, new Vector2(-412, 270), OnBack);
-var pad = NumberPadEntry.Create(window, new Vector2(-250, -50), StudyId.MaxDigits, StudyId.FromDigits, "S____");
-var list = ScrollList.Create(menu, "Files", new Vector2(0, -60), new Vector2(800, 500));   // rows go under list.Content
-var group = UiKit.Group(list.Content, "Group", Vector2.zero, 760, files.Count);
-ScrollList.TopAnchored(group, 0);
-list.ContentHeight = group.sizeDelta.y;
-var sheet = Sheet.Open(canvas.transform, "Save as", Vector2.zero, new Vector2(820, 500));   // build into sheet.Rect; sheet.Close()
-ModalDialog.Show(canvas.transform, "Delete this file pair?", "...",
+var panel = UiPanel.Create(canvas.transform, "Menu", new Vector2(1000, 700));
+var surface = panel.Surface;
+surface.RootBack = BackToHall;
+UiNavigationBar.Create(surface, "C04 · HumPerHW2", UiNavigationBar.Leading.Back, debugTag: true);
+var status = surface.AddStatus("");                       // status line (or surface.AddToolbar())
+var section = UiLay.Section(surface.Body, "Path", "PATH");
+UiLay.Row(section, "Circle", "Circle", "Around the head", iconLeading: "arrow-clockwise", onClick: OnCircle);
+UiLay.ChoiceGroup(surface.Body, "Ear", new[] { "Both", "Left", "Right" }, 0, i => SetEar(i), out var buttons);   // UiKit.Select(buttons, ...) shows the state
+var page = surface.Push("Debug");                         // a page with its own bar; ‹ pops
+ModalDialog.Show(canvas.transform, "Delete this file?", "...",
                  new DialogButton("Cancel", UiStyle.Borderless), new DialogButton("Delete", UiStyle.Destructive, Delete));
-UiKit.MotionSuppressed = true;   // while a stimulus plays: no UI motion
+UiKit.MotionSuppressed = true;                            // while a stimulus plays: no UI motion
 ```
+Tests measure the laid-out rects (`UiKitLayoutTests`, `UiKitInputsTests`, App `LayoutTests`); the design numbers are in `docs/design`.
 
 ## Quest notes
 - Text and panels are drawn through `OVROverlayCanvas` (sharp, compositor layer). The source canvas lives on layer 30,
   which the eye cameras must not render; content added at run time must be on the same layer (UiKit does this).
 - Meta's `OVRInputModule` does not work with the Input System only, hence the own pointer.
 - Laser material: a URP Unlit **material asset** (single-pass stereo). `Sprites/Default` renders in one eye.
-- Glyphs missing from the font show as boxes. Noto Sans TC has no "⌫", "✕", "❮"; use "←", "×" (`CloseGlyph`), "‹" (`BackGlyph`).
+- The grabber and the callout are real 3D objects (URP Unlit material), not part of an overlay canvas, which clips them.
 - All UI motion runs on unscaled time, so it keeps working while the Stop dialog freezes `Time.timeScale`.
-- Existing `UiTheme.asset` files from v1 are migrated by `UiSetup.EnsureTheme` (run the setup step once).
+- Icons are white PNGs tinted at run time (the Vector Graphics package does not compile on Unity 6000.6).

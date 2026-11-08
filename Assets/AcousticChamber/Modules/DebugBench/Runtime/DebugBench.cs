@@ -27,10 +27,7 @@ namespace GPL.DebugBench
     /// </summary>
     public sealed partial class DebugBench
     {
-        /// <summary>Space reserved for the status line at the bottom of the Debug page (the line is centered in it).</summary>
-        public const float StatusHeight = 88f;
-
-        readonly PageStack _pages;
+        readonly UiSurface _pages;
         readonly Transform _canvas;
         TextMeshProUGUI _status, _workValue, _presetsValue;
 
@@ -47,9 +44,9 @@ namespace GPL.DebugBench
         /// <summary>The chamber's own sections on the Debug page, between Parameters and Data (labels + groups on the column).</summary>
         public Action<Column> ChamberSections;
 
-        /// <param name="pages">The chamber panel's page stack (the chamber menu is its root page).</param>
+        /// <param name="pages">The chamber panel's surface (the chamber menu is its root page).</param>
         /// <param name="canvas">The canvas sheets open on (Save as, confirmations).</param>
-        public DebugBench(PageStack pages, Transform canvas, WorkingCopy work)
+        public DebugBench(UiSurface pages, Transform canvas, WorkingCopy work)
         {
             _pages = pages ?? throw new ArgumentNullException(nameof(pages));
             _canvas = canvas;
@@ -64,10 +61,11 @@ namespace GPL.DebugBench
 
         // ---- Debug page ----------------------------------------------------------------------------------------
 
-        public Page OpenDebugPage()
+        public UiPage OpenDebugPage()
         {
             var page = _pages.Push("Debug");
-            var col = Column.In(page, StatusHeight);
+            _status = page.AddStatus("");
+            var col = Column.In(page);
 
             col.Label("Run");
             var run = col.Buttons("Run",
@@ -76,27 +74,22 @@ namespace GPL.DebugBench
             run[1].interactable = PracticeAvailable;
 
             col.Label("Parameters");
-            var g = col.Group("Parameters", 2);
-            var work = UiKit.Row(g, 0, "Playground", Work.Label, () => OpenParametersPage(), sub: "used by Debug runs");
-            _workValue = UiKit.RowText(work.transform, "Value");
-            var presets = UiKit.Row(g, 1, "Presets", "Active: " + Work.Store.ActiveName, () => OpenPresetsPage(), sub: "real sessions use the active one");
-            _presetsValue = UiKit.RowText(presets.transform, "Value");
+            var g = col.Group("Parameters");
+            var work = UiLay.Row(g, "Row Playground", "Playground", "used by Debug runs", Work.Label, null, "chevron-right", () => OpenParametersPage());
+            _workValue = UiLay.RowValue(work);
+            var presets = UiLay.Row(g, "Row Presets", "Presets", "real sessions use the active one", "Active: " + Work.Store.ActiveName, null, "chevron-right",
+                                    () => OpenPresetsPage());
+            _presetsValue = UiLay.RowValue(presets);
 
             ChamberSections?.Invoke(col);
 
             col.Label("Data");
-            var d = col.Group("Data", 1);
-            var data = UiKit.Row(d, 0, "Log files", DataSummary(), () => OpenDataPage(), sub: "this chamber's CSV and session files");
-            data.interactable = Files != null;
-            _dataValue = UiKit.RowText(data.transform, "Value");
-            col.Finish();
+            var d = col.Group("Data");
+            var data = UiLay.Row(d, "Row Log files", "Log files", "this chamber's CSV and session files", DataSummary(), null, "chevron-right",
+                                 () => OpenDataPage());
+            data.GetComponent<UiButton>().interactable = Files != null;
+            _dataValue = UiLay.RowValue(data);
 
-            var th = UiKit.Theme;
-            var size = page.Rect.rect.size;
-            _status = UiKit.Text(page.Rect, "Status", "", th.smallSize, new Vector2(0f, -size.y / 2f + StatusHeight / 2f),
-                                 new Vector2(Page.ContentWidth(size.x) - 2f * UiKit.RowTextPad, StatusHeight), color: th.text2,
-                                 align: TextAlignmentOptions.Left);
-            UiKit.SingleLine(_status);
             // empty until something happens (PO 2026-11-07: no "Ready."); success and failure notes stay
             SetStatus(Work.Warnings.Count > 0 ? Work.Warnings.Count + " repairs when loading " + Work.Source + " (see the log)" : "");
 
@@ -107,9 +100,9 @@ namespace GPL.DebugBench
         /// <summary>Updates the Debug page's row values (working copy, active preset, data count).</summary>
         public void RefreshDebugPage()
         {
-            if (_workValue != null) _workValue.text = Work.Label + "  ›";
-            if (_presetsValue != null) _presetsValue.text = "Active: " + Work.Store.ActiveName + "  ›";
-            if (_dataValue != null) _dataValue.text = DataSummary() + "  ›";
+            if (_workValue != null) _workValue.text = Work.Label;
+            if (_presetsValue != null) _presetsValue.text = "Active: " + Work.Store.ActiveName;
+            if (_dataValue != null) _dataValue.text = DataSummary();
         }
 
         // ---- Parameters page -----------------------------------------------------------------------------------
@@ -119,11 +112,12 @@ namespace GPL.DebugBench
             public ParamDef Def;
             public RectTransform Row;
             public TextMeshProUGUI Value;
+            public TextMeshProUGUI Subtitle;
             public UiButton Minus, Plus;
             public UiSwitch Switch;
         }
 
-        public Page OpenParametersPage()
+        public UiPage OpenParametersPage()
         {
             var th = UiKit.Theme;
             var page = _pages.Push("Parameters");
@@ -144,13 +138,12 @@ namespace GPL.DebugBench
             foreach (var (name, defs) in groups)
             {
                 if (groups.Count > 1 || name.Length > 0) col.Label(name.Length > 0 ? name : "Other");
-                var g = col.Group("Group " + name, defs.Count);
-                for (int i = 0; i < defs.Count; i++) rows.Add(BuildParamRow(g, i, defs[i]));
+                var g = col.Group("Group " + name);
+                for (int i = 0; i < defs.Count; i++) rows.Add(BuildParamRow(g, defs[i]));
             }
 
             var save = col.Buttons("Save", (SaveAsLabel, UiStyle.Borderless, () => SaveAsCustom()))[0];
             var note = col.Label(SaveNote());
-            col.Finish();
 
             void Refresh()
             {
@@ -169,7 +162,9 @@ namespace GPL.DebugBench
                         r.Value.text = WorkingCopy.Format(r.Def, raw);
                         r.Value.color = edited ? th.text : th.text2;
                     }
-                    UiKit.SetRowSub(r.Row, edited ? Work.Source + ": " + WorkingCopy.Format(r.Def, Work.SourceValue(r.Def.Key)) : r.Def.Description);
+                    string sub = edited ? Work.Source + ": " + WorkingCopy.Format(r.Def, Work.SourceValue(r.Def.Key)) : r.Def.Description;
+                    r.Subtitle.text = sub;
+                    r.Subtitle.gameObject.SetActive(!string.IsNullOrEmpty(sub)); // no secondary line when there is nothing to say
                     if (r.Minus != null) r.Minus.interactable = Work.CanStep(r.Def.Key, -1);
                     if (r.Plus != null) r.Plus.interactable = Work.CanStep(r.Def.Key, +1);
                 }
@@ -182,35 +177,31 @@ namespace GPL.DebugBench
             return page;
         }
 
-        ParamRow BuildParamRow(RectTransform g, int index, ParamDef d)
+        ParamRow BuildParamRow(RectTransform g, ParamDef d)
         {
             var th = UiKit.Theme;
             var r = new ParamRow { Def = d };
             if (d.Type == ParamType.Bool)
             {
                 // the whole row toggles, like every switch row
-                r.Switch = UiKit.SwitchRow(g, index, d.Label, "-", Work.Values.GetBool(d.Key), _ => Work.Step(d.Key, +1));
+                r.Switch = UiLay.SwitchRow(g, "Row " + d.Label, d.Label, "-", Work.Values.GetBool(d.Key), _ => Work.Step(d.Key, +1));
                 r.Row = (RectTransform)r.Switch.transform.parent;
+                r.Subtitle = UiLay.RowSubtitle(r.Row);
                 return r;
             }
-            const float stepW = 80f;
-            float controls = d.Type == ParamType.Text ? UiKit.RowTextPad : 2f * stepW + th.inset + 16f + 24f;
-            var row = UiKit.InfoRow(g, index, d.Label, "-", "", controls);
+            // an info row: title and description at the left, the value, and (not for text) a - / + pair at the right
+            var row = UiLay.Row(g, "Row " + d.Label, d.Label, "-", "");
             r.Row = row;
-            r.Value = UiKit.RowText(row, "Value");
-            float right = row.sizeDelta.x / 2f;
-            switch (d.Type)
+            r.Value = UiLay.RowValue(row);
+            r.Subtitle = UiLay.RowSubtitle(row);
+            if (d.Type != ParamType.Text)
             {
-                case ParamType.Text:
-                    break;
-                default:
-                    float plusX = right - 24f - stepW / 2f;
-                    // borderless in-group steppers: fill on hover only (DesignSystem section 4)
-                    r.Plus = UiKit.SmallButton(row, "Plus", "+", new Vector2(plusX, 0f), stepW, () => Work.Step(d.Key, +1), UiStyle.Borderless);
-                    r.Minus = UiKit.SmallButton(row, "Minus", UiKit.MinusGlyph, new Vector2(plusX - stepW - th.inset, 0f), stepW,
-                                                () => Work.Step(d.Key, -1), UiStyle.Borderless);
-                    r.Plus.InGroup = r.Minus.InGroup = true;
-                    break;
+                var pair = UiLay.Node(row, "Stepper");
+                UiLay.H(pair.gameObject, th.inset, null, TextAnchor.MiddleCenter);
+                // borderless in-group steppers: fill on hover only (DesignSystem section 4)
+                r.Minus = UiLay.Button(pair, "Minus", null, UiStyle.Borderless, "minus", small: true, onClick: () => Work.Step(d.Key, -1));
+                r.Plus = UiLay.Button(pair, "Plus", null, UiStyle.Borderless, "plus", small: true, onClick: () => Work.Step(d.Key, +1));
+                r.Plus.InGroup = r.Minus.InGroup = true;
             }
             return r;
         }

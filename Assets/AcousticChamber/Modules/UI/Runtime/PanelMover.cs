@@ -141,9 +141,7 @@ namespace GPL.UI
                 var c = _rect.GetChild(i);
                 if (c == _handle || !c.gameObject.activeSelf) continue;
                 var up = c.GetComponent<UiPanel>();
-                if (up != null) { if (up.GrabberVisible) return true; continue; }
-                var layer = c.GetComponent<UiLayer>();
-                if (layer == null || layer.Visible) return true;
+                if (up != null && up.GrabberVisible) return true;
             }
             return false;
         }

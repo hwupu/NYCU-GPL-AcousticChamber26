@@ -118,7 +118,7 @@ namespace GPL.UI
             var text = Node(node, "Text");
             V(text.gameObject, 2f, null, TextAnchor.MiddleLeft);
             Size(text.gameObject, flexW: 1f);
-            if (string.IsNullOrEmpty(subtitle)) Label(text, "Title", title, th.bodySize, th.text);
+            if (subtitle == null) Label(text, "Title", title, th.bodySize, th.text); // one centered line
             else
             {
                 var t = UiKit.Text(text, "Title", title, th.bodySize, Vector2.zero, Vector2.zero, align: TextAlignmentOptions.TopLeft);
@@ -126,9 +126,31 @@ namespace GPL.UI
                 var s = UiKit.Text(text, "Subtitle", subtitle, th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
                 s.textWrappingMode = TextWrappingModes.Normal; // line breaks and wrapping: several lines
             }
-            if (!string.IsNullOrEmpty(value)) Label(node, "Value", value, th.bodySize, th.text2, align: TextAlignmentOptions.Right);
+            if (value != null) Label(node, "Value", value, th.bodySize, th.text2, align: TextAlignmentOptions.Right);
             if (iconTrailing != null) Icon(node, "Icon Trailing", iconTrailing, th.iconSize, th.text2);
             return node;
+        }
+
+        /// <summary>The title of a <see cref="Row"/>.</summary>
+        public static TextMeshProUGUI RowTitle(Transform row)
+        {
+            var t = row.Find("Text/Title");
+            if (t == null) t = row.Find("Text/Title Box/Label");
+            return t != null ? t.GetComponent<TextMeshProUGUI>() : null;
+        }
+
+        /// <summary>The value (right) of a <see cref="Row"/> created with a non-null value, or null.</summary>
+        public static TextMeshProUGUI RowValue(Transform row)
+        {
+            var t = row.Find("Value Box/Label");
+            return t != null ? t.GetComponent<TextMeshProUGUI>() : null;
+        }
+
+        /// <summary>The subtitle of a <see cref="Row"/> created with a non-null subtitle, or null.</summary>
+        public static TextMeshProUGUI RowSubtitle(Transform row)
+        {
+            var t = row.Find("Text/Subtitle");
+            return t != null ? t.GetComponent<TextMeshProUGUI>() : null;
         }
 
         // ---- choice group ----------------------------------------------------------------------------------------------
@@ -137,7 +159,24 @@ namespace GPL.UI
         /// UiChoiceGroup (segmented, single selection): n equal borderless buttons on a capsule track, 4 u inset and gap. The
         /// track is <c>raised</c> on a surface and <c>surface</c> inside a raised group. <paramref name="changed"/> gets the index.
         /// </summary>
-        public static RectTransform ChoiceGroup(Transform parent, string name, IList<string> labels, int selected, Action<int> changed)
+        public static RectTransform ChoiceGroup(Transform parent, string name, IList<string> labels, int selected, Action<int> changed) =>
+            ChoiceGroup(parent, name, labels, selected, changed, out _);
+
+        /// <summary>A row of a label (at the left, <c>text2</c>, <paramref name="labelWidth"/> wide) and room for controls: add them to the returned row.</summary>
+        public static RectTransform LabeledRow(Transform parent, string name, string label, float labelWidth = 200f)
+        {
+            var th = UiKit.Theme;
+            var row = Node(parent, name);
+            H(row.gameObject, th.gap, null, TextAnchor.MiddleLeft);
+            Size(row.gameObject, flexW: 1f);
+            var l = Label(row, "Label", label, th.bodySize, th.text2);
+            Size(l.transform.parent.gameObject, minW: labelWidth, prefW: labelWidth, flexW: 0f);
+            return row;
+        }
+
+        /// <summary>Like the plain overload; <paramref name="buttons"/> are the segments, so the owner can show a state with <see cref="UiKit.Select"/>.</summary>
+        public static RectTransform ChoiceGroup(Transform parent, string name, IList<string> labels, int selected, Action<int> changed,
+                                                out List<UiButton> buttons)
         {
             var th = UiKit.Theme;
             bool inGroup = parent.GetComponentInParent<ToggleSurface>() != null;
@@ -145,22 +184,23 @@ namespace GPL.UI
             Fill(node, inGroup ? th.surface : th.raised, (th.buttonHeight + 2f * th.inset) / 2f);
             H(node.gameObject, th.inset, Pad(th.inset, th.inset, th.inset, th.inset), TextAnchor.MiddleCenter);
             Size(node.gameObject, flexW: 1f);
-            var buttons = new List<UiButton>();
+            var list = new List<UiButton>();
+            buttons = list;
             for (int i = 0; i < labels.Count; i++)
             {
                 int index = i;
                 var b = Button(node, labels[i], labels[i], UiStyle.Borderless, minWidth: false, onClick: () =>
                 {
-                    UiKit.Select(buttons, j => j == index);
+                    UiKit.Select(list, j => j == index);
                     changed?.Invoke(index);
                 });
                 b.InGroup = true;
                 var pad = b.GetComponent<HorizontalLayoutGroup>();
                 pad.padding = Pad(16, 0, 16, 0);
                 Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f); // prefW 0: equal shares
-                buttons.Add(b);
+                list.Add(b);
             }
-            UiKit.Select(buttons, j => j == selected);
+            UiKit.Select(list, j => j == selected);
             return node;
         }
     }

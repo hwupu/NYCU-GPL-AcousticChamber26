@@ -27,7 +27,6 @@ namespace AcousticChamber.App
         static int[] ToneHz => TestPanelLevels.ToneHz;
 
         OutputHearingLoss _output;
-        RectTransform _window;
         TextMeshProUGUI _live, _status;
         readonly List<UiButton> _earButtons = new List<UiButton>(), _levelButtons = new List<UiButton>(), _toneButtons = new List<UiButton>();
         Ear _ear = Ear.Both;
@@ -48,50 +47,35 @@ namespace AcousticChamber.App
             if (actions != null) actions.Use(new BindingTable());
 
             var th = UiKit.Theme;
-            var canvas = (RectTransform)transform;
-            UiKit.Clear(canvas);
-            canvas.sizeDelta = Size;
-            _window = UiKit.Window(canvas);
-            float left = -Size.x / 2f + 48f, width = Size.x - 96f;
-            UiKit.Text(_window, "Title", "GPL.HearingLoss test panel", th.headingSize, new Vector2(0f, Size.y / 2f - 60f), new Vector2(width, 70f),
-                       bold: true, align: TextAlignmentOptions.Left);
-            UiKit.DebugTag(_window);
+            var panel = TestPanelKit.Panel(transform, Size, "GPL.HearingLoss test panel");
+            var body = panel.Surface.Body;
+            var statusLabel = panel.Surface.AddStatus("");
+            _status = statusLabel;
 
             _earButtons.Clear(); _levelButtons.Clear(); _toneButtons.Clear();
 
-            Label("Hearing condition (loss on)", 240f);
-            for (int i = 0; i < Ears.Length; i++)
-            {
-                var ear = Ears[i];
-                _earButtons.Add(Choice(ear == Ear.Both ? "Both ears" : ear + " ear", i, Ears.Length, 175f, () => { _ear = ear; Apply(); }));
-            }
+            TestPanelKit.Text(body, "Hearing condition", "Hearing condition (loss on)", th.smallSize, th.text2);
+            var ears = new List<string>();
+            foreach (var ear in Ears) ears.Add(ear == Ear.Both ? "Both ears" : ear + " ear");
+            UiLay.ChoiceGroup(body, "Ear", ears, 0, i => { _ear = Ears[i]; Apply(); }, out var earButtons);
+            _earButtons.AddRange(earButtons);
 
-            Label("Hearing loss (NIOSH notch, label = 4 kHz band)", 95f);
-            for (int i = 0; i < LevelDb.Length; i++)
-            {
-                int k = i;
-                _levelButtons.Add(Choice(DbLabel(LevelDb[i]), i, LevelDb.Length, 30f, () => { _level = k; Apply(); }));
-            }
+            TestPanelKit.Text(body, "Hearing loss", "Hearing loss (NIOSH notch, label = 4 kHz band)", th.smallSize, th.text2);
+            var levels = new List<string>();
+            foreach (int db in LevelDb) levels.Add(DbLabel(db));
+            UiLay.ChoiceGroup(body, "Level", levels, 0, i => { _level = i; Apply(); }, out var levelButtons);
+            _levelButtons.AddRange(levelButtons);
 
-            Label("Pure tone (both ears, " + ToneDbfs.ToString(CultureInfo.InvariantCulture) + " dBFS peak, " +
-                  ToneSeconds.ToString(CultureInfo.InvariantCulture) + " s)", -50f);
-            for (int i = 0; i < ToneHz.Length; i++)
-            {
-                int k = i;
-                _toneButtons.Add(Choice(HzLabel(ToneHz[i]), i, ToneHz.Length, -115f, () => PlayTone(k)));
-            }
+            TestPanelKit.Text(body, "Pure tone", "Pure tone (both ears, " + ToneDbfs.ToString(CultureInfo.InvariantCulture) + " dBFS peak, " +
+                              ToneSeconds.ToString(CultureInfo.InvariantCulture) + " s)", th.smallSize, th.text2);
+            var tones = new List<string>();
+            foreach (int hz in ToneHz) tones.Add(HzLabel(hz));
+            UiLay.ChoiceGroup(body, "Tone", tones, -1, i => PlayTone(i), out var toneButtons);
+            _toneButtons.AddRange(toneButtons);
 
-            _live = UiKit.Text(_window, "Live", "", th.smallSize, new Vector2(0f, -240f), new Vector2(width, 130f), align: TextAlignmentOptions.TopLeft);
-            _status = UiKit.Text(_window, "Status", "", th.minimumSize, new Vector2(0f, -Size.y / 2f + 40f), new Vector2(width, 40f), color: th.text2,
-                                 align: TextAlignmentOptions.Left);
+            _live = TestPanelKit.Text(body, "Live", "", th.smallSize, th.text, flexHeight: true);
             if (_output == null) _status.text = "No AudioListener in the scene.";
             Apply();
-
-            void Label(string text, float y) =>
-                UiKit.Text(_window, text, text, th.smallSize, new Vector2(0f, y), new Vector2(width, 40f), color: th.text2, align: TextAlignmentOptions.Left);
-
-            UiButton Choice(string label, int i, int n, float y, System.Action click) =>
-                UiKit.ChoiceButton(_window, label, i, n, left, width, y, click);
         }
 
         void Apply()

@@ -6,13 +6,13 @@ Guide for AI coding agents. `AGENTS.md` is a git symlink to this file (Windows: 
 Exploratory acoustic-perception lab in VR (Meta Quest 3, Unity 6000.6.6f1, URP, OpenXR, Meta XR Core SDK 207.0.1, Meta XR Audio SDK 85.0.0). A **Main Hall** lists independent **chambers** (one experiment design each: stimuli, parameters, log schema, resume rules). Every study chamber opens with the same menu (Study ID, Start, Debug, Back to Hall); a chamber in development is used through Debug. Experience chambers (no data) have their own panel (ADR-0006). Shared features are portable modules; anything chamber-specific stays in the chamber folder. **All our files live under `Assets/AcousticChamber/`.**
 
 Read before coding: [docs/Architecture.md](docs/Architecture.md) (layout section 2, logging section 10), [docs/decisions/](docs/decisions/), open [docs/Questions.md](docs/Questions.md), [docs/references/INSTRUCTIONS.md](docs/references/INSTRUCTIONS.md) (binding; Quest pitfalls section 3), [docs/DesignSystem.md](docs/DesignSystem.md) for UI. Reference implementation `../115A-535655-HumPer-HW2`: port and generalize, do not re-invent.
-Do not read docs/references/HLSIM_GUIDELINES.md or docs/archive/ unless the task needs them. UI is designed first in the Storybook preview `docs/design/` (pnpm; [README](docs/design/README.md)), then built in Unity.
+Do not read docs/references/HLSIM_GUIDELINES.md unless the task needs it. UI is designed first in the Storybook preview `docs/design/` (pnpm; [README](docs/design/README.md)), then built in Unity.
 
 ## Process
 - The user is the Product Owner (PO); you are Scrum Master and engineer. Ask before coding when an experimental parameter is unspecified (propose a default). Plan non-trivial work and get approval.
 - Small steps: do the current request, verify, hand over, wait. Report honestly: what was run, what was only calculated, what only a headset can show.
 - Commit only when asked; push only when asked; never force-push without approval (`--force-with-lease`). Look before deleting or overwriting the PO's work.
-- Keep docs current: ProductBacklog, SprintBoard (one short line per ticket), PromptLog (rows about 200 characters; details in commit messages), ADRs, each chamber's `Docs/`.
+- Keep docs current: ProductBacklog, SprintBoard (one short line per ticket), ADRs, each chamber's `Docs/`. Details of a change go in the commit message (imperative, `PB-xx`); there is no prompt log (removed 2026-11-09, in git history).
 
 ## Architecture rules
 1. Three layers, one-way: `Modules` (`GPL.*`) <- `App` <- `Chambers`. Chambers never reference each other; the App knows chambers only through `ChamberDefinition` assets.
@@ -34,7 +34,7 @@ Do not read docs/references/HLSIM_GUIDELINES.md or docs/archive/ unless the task
 - Root groups `XR`, `Audio`, `Stimuli`, `Experiment`, `Environment`, `UI` (identity transforms). Console prefix `[GPL]` / `[Chamber:<Id>]`.
 - Asmdefs `GPL.<Module>[.Core|.Editor|.Tests]`, `AcousticChamber.Chambers.<Id>[.Core|.Editor|.Tests]`, `AcousticChamber.App`.
 - Write code with the file tools, not heredocs or `sed`.
-- Choices and toggles in any panel: `UiKit.ChoiceButton` + `UiKit.Select` / `UiButton.Selected` (DesignSystem section 4), so the chosen one is always visible; no hand-made style swaps.
+- Choices and toggles in any panel: `UiLay.ChoiceGroup` + `UiKit.Select` / `UiButton.Selected` (DesignSystem section 4), so the chosen one is always visible; no hand-made style swaps.
 
 ## Quest 3 pitfalls (details: INSTRUCTIONS.md section 3)
 - GUI: `OVROverlayCanvas`, source canvas on layer 30, layers 30/31 off the eye cameras; re-place after recenter.

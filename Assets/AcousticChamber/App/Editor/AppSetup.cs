@@ -49,32 +49,11 @@ namespace AcousticChamber.App.Editor
         }
 
         /// <summary>
-        /// Adds the GPL.UI test panel (UiShowcase) to the open scene, with UiRoot and UiPointer, and puts the MainHall first in
-        /// the build scene list. Temporary headset check for PB-05a; the Hall menu (PB-06) replaces it.
+        /// Adds the GPL.UI test panel (UiKitPoc: the C01 menu from the layout-based components, with hide / push back / placement
+        /// buttons) to the open scene, with UiRoot and UiPointer, and puts the MainHall first in the build scene list.
         /// </summary>
         [MenuItem("Magic/App/UI Test Panel (open scene)", priority = 50)]
         public static void AddUiTestPanel()
-        {
-            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
-            {
-                Debug.LogError("[GPL] Add the Camera Rig building block first.");
-                return;
-            }
-            var theme = EnsureUiAssets();
-            var ui = UiSetup.EnsureGroup(GroupUI);
-            UiSetup.EnsureUiRoot(ui, theme);
-            RemoveTestPanels(ui); // the test panels sit at the same spot
-            var canvas = UiSetup.CreateOverlayCanvas(ui, TestPanelName, UiShowcase.Size);
-            canvas.AddComponent<UiShowcase>();
-            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
-            EnsureMainHallFirstInBuild();
-            UiSetup.MarkSceneDirty();
-            Debug.Log("[GPL] UI test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
-        }
-
-        /// <summary>Adds the rebuilt-UiKit proof of concept (UiKitPoc: the C01 menu from the layout-based components) to the open scene.</summary>
-        [MenuItem("Magic/App/UiKit PoC Panel (open scene)", priority = 49)]
-        public static void AddKitPocPanel()
         {
             if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
             {

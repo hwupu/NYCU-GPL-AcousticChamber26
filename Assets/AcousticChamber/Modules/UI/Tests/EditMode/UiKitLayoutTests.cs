@@ -36,7 +36,7 @@ namespace GPL.UI.Tests
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_poc.Panel.Surface.transform);
         }
 
-        RectTransform Find(string path) => (RectTransform)_poc.Panel.Surface.transform.Find(path);
+        RectTransform Find(string path) => (RectTransform)_poc.Panel.Surface.Root.transform.Find(path);
 
         [Test]
         public void SurfaceAndNavigationBarSizes()
@@ -131,8 +131,10 @@ namespace GPL.UI.Tests
             panel.Depth = 1;
             Assert.AreEqual(0.94f, panel.transform.localScale.x, 0.001f);
             Assert.IsFalse(panel.GrabberVisible);
-            var dim = panel.transform.Find("Push Dim").GetComponent<Image>();
+            var dim = panel.Surface.transform.Find("Push Dim").GetComponent<Image>();
             Assert.AreEqual(UiKit.Theme.dim.a, dim.color.a, 0.001f);
+            var surface = (RectTransform)panel.Surface.transform;
+            Assert.AreEqual(surface.rect.size, ((RectTransform)dim.transform).rect.size, "the dim covers the surface, not the canvas");
             panel.Depth = 0;
             Assert.IsTrue(panel.GrabberVisible);
             panel.Shown = false;

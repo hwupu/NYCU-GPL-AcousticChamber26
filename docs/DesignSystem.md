@@ -2,6 +2,8 @@
 
 v1 (PB-16) was accepted earlier on 2026-11-05; v2 replaces its colors, button styles and dialogs after four preview rounds with the PO. The HTML reference is now the Storybook preview in [design/](design/README.md) (rebuilt 2026-11-08 on the `uikit-rebuild` branch; the old components.html / preview.html are in git history). Decision record: [ADR-0005](decisions/ADR-0005-ui-components-and-sheets.md).
 
+**2026-11-09: the components were rebuilt** (layout-based, designed in the Storybook preview; [ADR-0007](decisions/ADR-0007-uikit-rebuild.md)). Where this file and the Storybook (`design/`) differ in sizes, paddings or component names, the Storybook and the module README (`Assets/AcousticChamber/Modules/UI/README.md`) win; the principles, colors, motion and navigation rules below still hold. Sections 4 and 6 name the old builders (`UiKit.Row`, `Sheet`, `PageStack`): read them as `UiLay.Row`, `UiDialog` / `UiSheet`, `UiSurface` pages.
+
 Principles: **flat, solid, quiet.** No glass, no blur at rest, no transparency except the dim layer behind a sheet. Hierarchy comes from fill and brightness, not hue. The study is about perception: the UI must not draw attention, and nothing in the UI moves while a stimulus plays.
 
 Units: canvas units, **1 u = 1 pt**. Panels are 2 m away and the canvas scale follows the distance, so **1 u = 2 mm at 2 m ≈ 0.057°** of visual angle at any distance.
@@ -74,8 +76,8 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - Toggle buttons and one-of button sets (PB-08e, e.g. Debug "Play stimulus", "0.7 s Noisy"): borderless buttons; the active one
   (playing, chosen) has the `select` fill, hover a step lighter (`gray.pressed`); `UiButton.Selected`. Prominent and destructive
   buttons have no selected state.
-- **Code rule (every panel, test, debug and experience screen):** a one-of set is built with `UiKit.ChoiceButton` (n equal buttons in
-  a row) and shown with `UiKit.Select(buttons, i => chosen)`; a single toggle sets `UiButton.Selected`. Never swap a button's style
+- **Code rule (every panel, test, debug and experience screen):** a one-of set is built with `UiLay.ChoiceGroup` (n equal segments
+  on a track; its `out` list holds the buttons) and shown with `UiKit.Select(buttons, i => chosen)`; a single toggle sets `UiButton.Selected`. Never swap a button's style
   or colour by hand, never leave the chosen state unshown. Call `Select` after every change and once after building the panel.
   Several independent choices (ear, level) are separate sets side by side, each with its own `Select`.
 

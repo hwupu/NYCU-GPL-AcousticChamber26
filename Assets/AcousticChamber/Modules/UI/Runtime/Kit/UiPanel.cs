@@ -39,6 +39,7 @@ namespace GPL.UI
                 _shownT0 = Time.unscaledTime;
                 _shownDur = UiKit.Theme.Duration(UiKit.Theme.sheet);
                 Apply();
+                Restack(_canvas != null ? _canvas : transform.parent); // the panels of the canvas come forward / go back
             }
         }
 
@@ -141,7 +142,9 @@ namespace GPL.UI
         static void Restack(Transform canvas)
         {
             if (canvas == null) return;
-            var stack = Stack(canvas);
+            // only shown panels take part: a hidden panel (the menu while a run is on) neither pushes the others back nor is pushed
+            // back for good; it gets its depth when it is shown again (see Shown)
+            var stack = Stack(canvas).FindAll(p => p._shown);
             for (int i = 0; i < stack.Count; i++) stack[i].Depth = stack.Count - 1 - i;
             var top = stack.Count > 0 ? stack[stack.Count - 1] : null;
             if (top != null && top.Modal) UiPointer.Modal = top.transform;
@@ -175,9 +178,11 @@ namespace GPL.UI
         {
             var rt = UiKit.Fill(UiKit.Rect(canvas, name, Vector2.zero, Vector2.zero));
             var panel = rt.gameObject.AddComponent<UiPanel>();
+            panel._canvas = canvas; // so that removing the panel (Destroy) also brings the panels behind it forward
             panel._group = rt.GetComponent<CanvasGroup>();
             panel.Surface = UiSurface.Create(rt, size);
-            panel._dim = UiKit.Box(rt, "Push Dim", Vector2.zero, Vector2.zero, UiKit.Theme.dim, UiKit.Theme.panelRadius);
+            // the dim covers the surface only (a dialog narrower than the canvas must not dim outside itself)
+            panel._dim = UiKit.Box(panel.Surface.transform, "Push Dim", Vector2.zero, Vector2.zero, UiKit.Theme.dim, UiKit.Theme.panelRadius);
             UiKit.Fill(panel._dim.rectTransform);
             panel._dim.color = new Color(0f, 0f, 0f, 0f);
             panel._shownFrom = panel._shownTo = startHidden ? 0f : 1f;
@@ -205,7 +210,11 @@ namespace GPL.UI
             _group.blocksRaycasts = _shown && _depth == 0;
             float scale = Mathf.Lerp(UiKit.Theme.sheetScale, 1f, s) * Mathf.Pow(UiKit.Theme.pushScale, d);
             transform.localScale = new Vector3(scale, scale, 1f);
-            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, UiKit.Theme.dim.a * Mathf.Clamp01(d));
+            if (_dim != null)
+            {
+                _dim.color = new Color(0f, 0f, 0f, UiKit.Theme.dim.a * Mathf.Clamp01(d));
+                if (d > 0f) _dim.transform.SetAsLastSibling(); // over the pages, also those pushed after the panel was built
+            }
         }
     }
 }

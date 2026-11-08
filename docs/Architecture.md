@@ -1,6 +1,6 @@
 # Architecture — AcousticChamber26
 
-Status: **accepted in principle** (2026-11-05, PO answers in [archive/Questions-rounds-1-2.md](archive/Questions-rounds-1-2.md)); details are refined ticket by ticket. Decisions: [decisions/](decisions/).
+Status: **accepted in principle** (2026-11-05, PO answers in the git history of `docs/Questions.md`); details are refined ticket by ticket. Decisions: [decisions/](decisions/).
 
 ## 1. Goals
 1. **Exploratory lab.** Independent chambers (individual studies, explorations, demos) in one app, chosen from a Main Hall. Each chamber has its own protocol, stimuli, assets, parameters, input bindings, log schema and resume rules. Chambers are added, removed and refined over time.

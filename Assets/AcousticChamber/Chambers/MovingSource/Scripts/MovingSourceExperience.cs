@@ -25,7 +25,7 @@ namespace AcousticChamber.Chambers.MovingSource
         public const string Title = "C01 · Moving Source";
         const string Log = "[Chamber:MovingSource] ";
 
-        public static readonly Vector2 Size = new Vector2(1100f, 900f);
+        public static readonly Vector2 Size = new Vector2(1100f, 980f);
         public const float StartDistanceM = 2f, StartHeightM = 1.2f;
 
         [Header("Set by Magic > MovingSource steps")]
@@ -51,7 +51,7 @@ namespace AcousticChamber.Chambers.MovingSource
         OutputHearingLoss _output;
         GlobalActions _actions;
         ExperienceExit _exit;
-        RectTransform _window;
+        UiPanel _panel;
         TextMeshProUGUI _status;
 
         IEnumerator Start()
@@ -78,7 +78,7 @@ namespace AcousticChamber.Chambers.MovingSource
             BuildPanel();
             var overlay = GetComponent<OverlayPanel>();
             if (overlay != null) overlay.Movable = true;
-            _exit = new ExperienceExit(transform, _window, _actions, "Moving Source", Cleanup);
+            _exit = new ExperienceExit(transform, _panel, _actions, "Moving Source", Cleanup);
             grab.Init(_rig, _actions);
             grab.Grabbed += () => { _path.Stop(); Show(); };
             Apply();
@@ -115,82 +115,59 @@ namespace AcousticChamber.Chambers.MovingSource
         {
             var th = UiKit.Theme;
             ((RectTransform)transform).sizeDelta = Size;
-            _window = UiKit.Window(transform);
-            float left = -Size.x / 2f + 48f, width = Size.x - 96f, top = Size.y / 2f;
-            const float labelW = 200f;
-            float rowLeft = left + labelW + 20f, rowWidth = width - labelW - 20f;
+            _panel = UiPanel.Create(transform, "Panel", Size);
+            var surface = _panel.Surface;
+            surface.RootBack = () => _exit?.BackToHall();
+            UiNavigationBar.Create(surface, Title, UiNavigationBar.Leading.Back);
+            var body = surface.Body;
+            body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = 12f;
 
-            UiKit.Text(_window, "Title", Title, th.headingSize, new Vector2(0f, top - 60f), new Vector2(width, 70f), bold: true,
-                       align: TextAlignmentOptions.Left);
+            var names = new List<string>();
+            for (int i = 0; i < clips.Length; i++) names.Add(SoundName(i));
+            Choices(body, "Sound", names, -1, ClickSound, _soundButtons);
 
-            float y = top - 170f;
-            const float step = 95f;
+            var rooms = new List<string>();
+            foreach (var r in RoomChoices.All) rooms.Add(RoomChoices.Label(r));
+            Choices(body, "Room", rooms, 0, i => { _room = RoomChoices.All[i]; Apply(); }, _roomButtons);
 
-            Row("Sound", ref y);
-            for (int i = 0; i < clips.Length; i++)
-            {
-                int k = i;
-                string name = i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name;
-                _soundButtons.Add(Choice(name, i, clips.Length, y + step, () => ClickSound(k)));
-            }
-            Row("Room", ref y);
-            for (int i = 0; i < RoomChoices.All.Length; i++)
-            {
-                var room = RoomChoices.All[i];
-                _roomButtons.Add(Choice(RoomChoices.Label(room), i, RoomChoices.All.Length, y + step, () => { _room = room; Apply(); }));
-            }
-            Row("Distance", ref y);
-            string[] cues = { "Natural", "Flat" };
-            for (int i = 0; i < cues.Length; i++)
-            {
-                bool natural = i == 0;
-                _cueButtons.Add(Choice(cues[i], i, cues.Length, y + step, () => { _natural = natural; Apply(); }));
-            }
-            Row("Hearing", ref y);
-            // two columns: the ear (Both, Left, Right) and the level (0, -20, -40 dB)
-            float colW = (rowWidth - 32f) / 2f;
-            for (int i = 0; i < HearingConditions.Ears.Length; i++)
-            {
-                var ear = HearingConditions.Ears[i];
-                _hearingButtons.Add(UiKit.ChoiceButton(_window, HearingConditions.EarLabel(ear), i, HearingConditions.Ears.Length, rowLeft, colW, y + step,
-                                                       () => { _condition = _condition.WithEar(ear); Apply(); }));
-            }
-            for (int i = 0; i < HearingConditions.Levels.Length; i++)
-            {
-                var level = HearingConditions.Levels[i];
-                _levelButtons.Add(UiKit.ChoiceButton(_window, HearingConditions.LevelLabel(level), i, HearingConditions.Levels.Length, rowLeft + colW + 32f, colW,
-                                                      y + step, () => { _condition = _condition.WithLevel(level); Apply(); }));
-            }
-            Row("Path", ref y);
-            for (int i = 0; i < PathButtons.Length; i++)
-            {
-                var kind = PathButtons[i];
-                _pathButtons.Add(Choice(PathLabel(kind), i, PathButtons.Length + 1, y + step, () => StartPath(kind)));
-            }
-            Choice("Stop", PathButtons.Length, PathButtons.Length + 1, y + step, StopPath);
-            Row("Speed", ref y);
-            for (int i = 0; i < SourcePath.SpeedSteps.Length; i++)
-            {
-                int k = i;
-                _speedButtons.Add(Choice(SourcePath.SpeedSteps[i].ToString("0.##") + " ×", i, SourcePath.SpeedSteps.Length, y + step, () => { _speedIndex = k; Show(); }));
-            }
+            Choices(body, "Distance", new[] { "Natural", "Flat" }, 0, i => { _natural = i == 0; Apply(); }, _cueButtons);
 
-            _status = UiKit.Text(_window, "Status", "", th.smallSize, new Vector2(0f, y - 20f), new Vector2(width, 90f), color: th.text2,
-                                 align: TextAlignmentOptions.TopLeft);
+            // two groups in one row: the ear (Both, Left, Right) and the level (0, -20, -40 dB)
+            var hearing = UiLay.LabeledRow(body, "Hearing", "Hearing");
+            var ears = new List<string>();
+            foreach (var ear in HearingConditions.Ears) ears.Add(HearingConditions.EarLabel(ear));
+            UiLay.ChoiceGroup(hearing, "Ear", ears, 0, i => { _condition = _condition.WithEar(HearingConditions.Ears[i]); Apply(); }, out var earButtons);
+            _hearingButtons.AddRange(earButtons);
+            var levels = new List<string>();
+            foreach (var level in HearingConditions.Levels) levels.Add(HearingConditions.LevelLabel(level));
+            UiLay.ChoiceGroup(hearing, "Level", levels, 0, i => { _condition = _condition.WithLevel(HearingConditions.Levels[i]); Apply(); }, out var levelButtons);
+            _levelButtons.AddRange(levelButtons);
 
-            UiKit.Button(_window, "Reset Source", "Reset source", UiStyle.Gray, new Vector2(left + 160f, -top + 55f), new Vector2(320f, 0f), ResetSource);
-            UiKit.Button(_window, "Back to Hall", "Back to Hall", UiStyle.Gray, new Vector2(-left - 160f, -top + 55f), new Vector2(320f, 0f), () => _exit.BackToHall());
+            // the path (Circle, Fly-by, Approach) and a Stop button beside it
+            var path = UiLay.LabeledRow(body, "Path", "Path");
+            var pathLabels = new List<string>();
+            foreach (var kind in PathButtons) pathLabels.Add(PathLabel(kind));
+            UiLay.ChoiceGroup(path, "Path", pathLabels, -1, i => StartPath(PathButtons[i]), out var pathButtons);
+            _pathButtons.AddRange(pathButtons);
+            UiLay.Button(path, "Stop", "Stop", UiStyle.Gray, minWidth: false, onClick: StopPath);
 
-            // a row label at the current y, then the y of the next row (the row's buttons are at y + step, see the calls above)
-            void Row(string label, ref float rowY)
-            {
-                UiKit.Text(_window, label, label, th.bodySize, new Vector2(left + labelW / 2f, rowY), new Vector2(labelW, 50f), color: th.text2,
-                           align: TextAlignmentOptions.Left);
-                rowY -= step;
-            }
+            var speeds = new List<string>();
+            foreach (var s in SourcePath.SpeedSteps) speeds.Add(s.ToString("0.##") + " ×");
+            Choices(body, "Speed", speeds, _speedIndex, i => { _speedIndex = i; Show(); }, _speedButtons);
 
-            UiButton Choice(string label, int i, int n, float yy, System.Action click) =>
-                UiKit.ChoiceButton(_window, label, i, n, rowLeft, rowWidth, yy, click);
+            _status = UiKit.Text(body, "Status", "", th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
+            UiLay.Size(_status.gameObject, prefW: 0f, flexW: 1f);
+
+            var toolbar = surface.AddToolbar();
+            UiLay.Button(toolbar, "Reset Source", "Reset source", UiStyle.Gray, onClick: ResetSource);
+        }
+
+        /// <summary>A labeled row with one choice group; the group's buttons go to <paramref name="store"/>.</summary>
+        static void Choices(RectTransform body, string label, IList<string> labels, int selected, System.Action<int> changed, List<UiButton> store)
+        {
+            var row = UiLay.LabeledRow(body, label, label);
+            UiLay.ChoiceGroup(row, label, labels, selected, changed, out var buttons);
+            store.AddRange(buttons);
         }
 
         static string PathLabel(PathKind kind) => kind == PathKind.Circle ? "Circle" : kind == PathKind.FlyBy ? "Fly-by" : "Approach";

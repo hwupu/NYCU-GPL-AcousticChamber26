@@ -115,7 +115,7 @@ namespace GPL.UI
             {
                 if (l == null || !l.isActiveAndEnabled) continue;
                 if (UiPointer.Modal != null && !l.transform.IsChildOf(UiPointer.Modal)) continue;
-                if (UiLayer.InLeavingLayer(l.transform)) continue;
+                if (UiKit.InLeavingLayer(l.transform)) continue;
                 var rt = l.Viewport;
                 float denom = Vector3.Dot(ray.direction, rt.forward);
                 if (Mathf.Abs(denom) < 1e-5f) continue;

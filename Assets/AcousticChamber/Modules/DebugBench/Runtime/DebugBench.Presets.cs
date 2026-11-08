@@ -16,7 +16,7 @@ namespace GPL.DebugBench
     {
         public const string ActiveMark = "✓"; // ✓ U+2713 (Noto Sans TC has it; not ✔)
 
-        public Page OpenPresetsPage()
+        public UiPage OpenPresetsPage()
         {
             var page = _pages.Push("Presets");
             Column col = null;
@@ -24,13 +24,7 @@ namespace GPL.DebugBench
             void Build()
             {
                 if (page == null) return;
-                if (col != null)
-                {
-                    var old = col.List.gameObject;
-                    old.SetActive(false);
-                    if (Application.isPlaying) Object.Destroy(old);
-                    else Object.DestroyImmediate(old);
-                }
+                col?.Destroy();
                 var th = UiKit.Theme;
                 var store = Work.Store;
                 string active = store.ActiveName;
@@ -38,17 +32,17 @@ namespace GPL.DebugBench
 
                 col = Column.In(page);
                 col.Label("Real sessions use the active preset (" + ActiveMark + "). Tap a preset to make it active (it loads into the playground) or to delete Custom.");
-                var g = col.Group("Presets", names.Count);
+                var g = col.Group("Presets");
                 for (int i = 0; i < names.Count; i++)
                 {
                     string name = names[i];
-                    var row = UiKit.Row(g, i, name, name == active ? ActiveMark : null, () => OpenPresetSheet(name, Build),
-                                        chevron: false, sub: PresetSub(name));
-                    var mark = UiKit.RowText(row.transform, "Value");
+                    string sub = PresetSub(name);
+                    var row = UiLay.Row(g, "Row " + name, name, sub.Length > 0 ? sub : null, name == active ? ActiveMark : "", null, null,
+                                        () => OpenPresetSheet(name, Build));
+                    var mark = UiLay.RowValue(row);
                     if (mark != null) mark.color = th.text;
                 }
                 col.Label("Saved on this device in " + store.Directory + ". Copy them off with the data.");
-                col.Finish();
             }
 
             Build();
@@ -68,46 +62,33 @@ namespace GPL.DebugBench
         }
 
         /// <summary>The action sheet of one preset (× closes it without a choice).</summary>
-        Sheet OpenPresetSheet(string name, Action rebuild)
+        UiSheet OpenPresetSheet(string name, Action rebuild)
         {
             var th = UiKit.Theme;
             var store = Work.Store;
             bool active = store.ActiveName == name;
             bool isDefault = name == PresetStore.DefaultName;
-            int rows = isDefault ? 1 : 2;
 
-            const float messageHeight = 80f;
-            float groupHeight = rows * UiKit.RowHeight + (rows - 1) * th.inset + 2f * th.groupPadding;
-            var size = new Vector2(820f, Page.TopPad + th.iconButtonSize + 16f + messageHeight + 24f + groupHeight + Page.EdgePad);
-            var sheet = Sheet.Open(_canvas, "Preset " + name, Vector2.zero, size);
-            sheet.AddCloseButton();
-
-            float y = size.y / 2f - Page.TopPad - th.iconButtonSize / 2f;
-            float left = -size.x / 2f + Page.EdgePad + th.iconButtonSize + UiKit.IconTitleGap;
-            float w = size.x / 2f - Page.EdgePad - left;
-            UiKit.Text(sheet.Rect, "Title", name, th.headingSize, new Vector2(left + w / 2f, y), new Vector2(w, th.iconButtonSize),
-                       bold: true, align: TextAlignmentOptions.MidlineLeft);
-
-            float contentW = size.x - 2f * Page.EdgePad;
-            float msgTop = y - th.iconButtonSize / 2f - 16f;
+            var sheet = UiSheet.Create(_canvas, "Preset " + name, name);
             string message = (active ? "Active: new real sessions use it, and the playground is based on it." : "Not active.") +
                              (isDefault ? " Read-only: it is Config/default.params in the project." : "");
-            UiKit.Text(sheet.Rect, "Message", message, th.smallSize, new Vector2(0f, msgTop - messageHeight / 2f),
-                       new Vector2(contentW - 2f * UiKit.RowTextPad, messageHeight), color: th.text2, align: TextAlignmentOptions.TopLeft);
+            var msg = UiKit.Text(sheet.Body, "Message", message, th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
+            UiLay.Size(msg.gameObject, prefW: 0f, flexW: 1f);
 
-            float groupTop = msgTop - messageHeight - 24f;
-            var g = UiKit.Group(sheet.Rect, "Actions", new Vector2(0f, groupTop - groupHeight / 2f), contentW, rows);
-
-            var makeActive = UiKit.Row(g, 0, "Make active", active ? ActiveMark : null, () => MakeActive(name, sheet, rebuild),
-                                       chevron: false, sub: active ? "already active" : MakeActiveSub());
-            makeActive.interactable = !active;
+            var spacer = UiLay.Node(sheet.Body, "Gap");
+            UiLay.Size(spacer.gameObject, minH: 24f, prefH: 24f, flexH: 0f);
+            var g = UiLay.Section(sheet.Body, "Actions");
+            var makeActive = UiLay.Row(g, "Row Make active", "Make active", active ? "already active" : MakeActiveSub(), active ? ActiveMark : "", null, null,
+                                       () => MakeActive(name, sheet, rebuild));
+            makeActive.GetComponent<UiButton>().interactable = !active;
 
             if (!isDefault)
             {
-                var delete = UiKit.Row(g, 1, "Delete", null, () => ConfirmDeletePreset(name, sheet, rebuild), chevron: false,
-                                       sub: "removes the file from this device");
-                delete.Style = UiStyle.DestructiveText;
+                var delete = UiLay.Row(g, "Row Delete", "Delete", "removes the file from this device", null, null, null,
+                                       () => ConfirmDeletePreset(name, sheet, rebuild));
+                delete.GetComponent<UiButton>().Style = UiStyle.DestructiveText;
             }
+            sheet.Show();
             return sheet;
         }
 
@@ -118,7 +99,7 @@ namespace GPL.DebugBench
         }
 
         /// <summary>Makes <paramref name="name"/> active and loads it; confirms first when unsaved edits would be lost.</summary>
-        void MakeActive(string name, Sheet sheet, Action rebuild)
+        void MakeActive(string name, UiSheet sheet, Action rebuild)
         {
             void Go()
             {
@@ -149,7 +130,7 @@ namespace GPL.DebugBench
                 new DialogButton("Discard and switch", UiStyle.Destructive, Go));
         }
 
-        void ConfirmDeletePreset(string name, Sheet sheet, Action rebuild)
+        void ConfirmDeletePreset(string name, UiSheet sheet, Action rebuild)
         {
             var store = Work.Store;
             bool active = store.ActiveName == name;

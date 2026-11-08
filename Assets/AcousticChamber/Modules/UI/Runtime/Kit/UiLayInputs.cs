@@ -212,11 +212,12 @@ namespace GPL.UI
         public void Fit()
         {
             var surface = (RectTransform)Panel.Surface.transform;
+            var page = (RectTransform)Panel.Surface.Root.transform;
             Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(surface);
-            float h = LayoutUtility.GetPreferredHeight(surface);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(page);
+            float h = LayoutUtility.GetPreferredHeight(page);
             surface.sizeDelta = new Vector2(UiKit.Theme.dialogWidth, h);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(surface);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(page);
             Size = surface.sizeDelta;
         }
     }

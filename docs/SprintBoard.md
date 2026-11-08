@@ -1,6 +1,6 @@
 # Sprint Board
 
-One short line per ticket (status, commit / date). Details: [PromptLog.md](PromptLog.md), its [archive](archive/) and the commit messages.
+One short line per ticket (status, commit / date). Details: the commit messages.
 
 ## Sprint 0 — Setup and architecture (2026-11-05) — closed
 | Ticket | Status | Note |
@@ -36,4 +36,4 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 | PB-12 HiddenSource chamber (C02) | Built, headset check open | experience chamber: custom menu, floor-locked guess sphere on the active ray, A confirms, line + azimuth / distance error; run Magic > HiddenSource 1-2 |
 | Panel move handle | Built, headset check open | `PanelMover` pill handle (3D object) below the chamber menu and experience panels; rebuild in the canvas rolled back at PO request 2026-11-08 |
 | Housekeeping 2026-11-08 | Done | `UiButton.Selected` in all test / experience panels, `UiKit.ChoiceButton` / `Select`, C04 relabel, C00 hidden, HearingLoss relabelled C03 |
-| UiKit rebuild (branch uikit-rebuild) | In progress | Storybook design committed (9c70bce). Unity port, big bang chosen: U1 done (theme v3 tokens, icon PNGs via `pnpm icons`, UiIcon/UiIconSet; 284 tests pass); U2-PoC done (UiKitPoc: C01 menu from layout-based UiPanel/Surface/NavigationBar/Section/Row/ChoiceGroup/Button; 291 tests), PoC approved and committed (265670e); U2a in progress: switch row, text field, stepper, dialog, number pad (a42e005), panel stack (modal dialogs push the window back, Close) done, list and callout done (302 tests); U2a complete; next U3 migration (Stop dialog with it) |
+| UiKit rebuild (branch uikit-rebuild) | Migration done, manual test pending | Storybook design (9c70bce); U1 tokens and icons; PoC (265670e); U2a components (a42e005, c4fda22); U3 every panel on the layout kit (Hall, chamber menu, Debug bench, experience chambers, protocol screens, test panels, dialogs), old builders deleted (ADR-0007); 314 tests pass; headset check open (icons, fonts, grabber, panels) |

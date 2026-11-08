@@ -144,6 +144,26 @@ namespace GPL.UI.Tests
         }
 
         [Test]
+        public void MenuHiddenDuringARunComesBackAtFullDepthAfterDialogsAndScreensAreGone()
+        {
+            // the chamber menu (hidden while a run is on), a protocol screen on the same canvas, then the Stop dialog and the choice
+            var menu = UiPanel.Create(_canvas.transform, "Menu", new Vector2(1000f, 700f));
+            menu.Shown = false;
+            var screen = UiPanel.Create(_canvas.transform, "Screen", new Vector2(1000f, 700f));
+            var d = UiDialog.Create(_canvas.transform, "Dialog", "Stop?", "Sure?");
+            d.Show();
+            Assert.AreEqual(d.Panel.transform, UiPointer.Modal);
+            d.Close(); // Drop out: the dialog closes ...
+            Object.DestroyImmediate(screen.gameObject); // ... the run ends and its screen is removed (Destroy, not Close)
+            Assert.IsNull(UiPointer.Modal);
+            menu.Shown = true; // the menu returns
+            Assert.AreEqual(0, menu.Depth, "the menu is not left pushed back");
+            Assert.IsTrue(menu.GetComponent<CanvasGroup>().blocksRaycasts, "and takes the ray again");
+            Assert.AreEqual(1f, menu.transform.localScale.x, 1e-4f);
+            Assert.IsFalse(UiKit.InLeavingLayer(menu.Surface.Body));
+        }
+
+        [Test]
         public void DialogIs820WideSizedByContentWithActionsAtTheRight()
         {
             var d = UiDialog.Create(_canvas.transform, "Dialog", "Stop the session?", "Your progress is saved.");

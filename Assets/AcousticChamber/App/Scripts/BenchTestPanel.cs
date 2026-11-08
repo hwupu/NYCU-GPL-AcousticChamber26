@@ -43,8 +43,8 @@ namespace AcousticChamber.App
             var canvas = (RectTransform)transform;
             UiKit.Clear(canvas);
             canvas.sizeDelta = Size;
-            var window = UiKit.Window(canvas);
-            var pages = PageStack.On(window);
+            var panel = UiPanel.Create(canvas, "Panel", Size);
+            var pages = panel.Surface;
             pages.RootBack = () => Debug.Log("[GPL] BenchTestPanel: Back (would return to the Hall)");
 
             var schema = DemoSchema();
@@ -59,12 +59,12 @@ namespace AcousticChamber.App
                 ChamberSections = col =>
                 {
                     col.Label("Test playback (not saved)");
-                    var p = col.Group("Playback", 2);
-                    UiKit.SwitchRow(p, 0, "Play stimulus", "2 s on, 1 s off, at the current position", _stim, on => { _stim = on; _bench.SetStatus(on ? "Stimulus playing (demo)." : "Stimulus stopped."); });
-                    UiKit.SwitchRow(p, 1, "Play background", "loops while on", _bg, on => { _bg = on; _bench.SetStatus(on ? "Background playing (demo)." : "Background stopped."); });
+                    var p = col.Group("Playback");
+                    UiLay.SwitchRow(p, "Play stimulus", "Play stimulus", "2 s on, 1 s off, at the current position", _stim, on => { _stim = on; _bench.SetStatus(on ? "Stimulus playing (demo)." : "Stimulus stopped."); });
+                    UiLay.SwitchRow(p, "Play background", "Play background", "loops while on", _bg, on => { _bg = on; _bench.SetStatus(on ? "Background playing (demo)." : "Background stopped."); });
                     col.Label("Display (Debug only, not saved)");
-                    var d = col.Group("Display", 1);
-                    UiKit.SwitchRow(d, 0, "Show audio sphere", "always, not only after the answer", _sphere, on => { _sphere = on; _bench.SetStatus(on ? "Audio sphere always visible." : "Audio sphere only after the answer."); });
+                    var d = col.Group("Display");
+                    UiLay.SwitchRow(d, "Show audio sphere", "Show audio sphere", "always, not only after the answer", _sphere, on => { _sphere = on; _bench.SetStatus(on ? "Audio sphere always visible." : "Audio sphere only after the answer."); });
                     col.Label("Test data (bench test only)");
                     col.Buttons("Test data", ("Create 3 demo data files", UiStyle.Borderless, () =>
                     {
@@ -78,14 +78,14 @@ namespace AcousticChamber.App
             _bench.RunRequested += () => Debug.Log("[GPL] BenchTestPanel: run with " + work.Label + " hash " + work.Values.Hash());
 
             // root page: a stand-in for the chamber menu
-            var menu = pages.Push("C00 · Bench test", debugTag: true);
-            var r = menu.Rect;
-            float x = -Size.x / 2f + Page.EdgePad + 320f;
-            _preset = UiKit.Text(r, "Preset", "", th.smallSize, new Vector2(x, 160f), new Vector2(640f, 40f), color: th.text2,
-                                 align: TextAlignmentOptions.Left);
-            UiKit.Button(r, "Start", "Start", UiStyle.Prominent, new Vector2(x - 110f, 70f), new Vector2(420f, 0f),
-                         () => Debug.Log("[GPL] BenchTestPanel: Start would use the active preset " + store.ActiveName));
-            UiKit.Button(r, "Debug", "Debug", UiStyle.Gray, new Vector2(x - 110f, -30f), new Vector2(420f, 0f), () => _bench.OpenDebugPage());
+            UiNavigationBar.Create(pages, "C00 · Bench test", UiNavigationBar.Leading.Back, debugTag: true);
+            var menu = pages.Root;
+            var body = menu.Body;
+            body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = th.gap;
+            _preset = TestPanelKit.Text(body, "Preset", "", th.smallSize, th.text2);
+            var start = TestPanelKit.Wide(body, "Start", "Start", UiStyle.Prominent,
+                                          () => Debug.Log("[GPL] BenchTestPanel: Start would use the active preset " + store.ActiveName));
+            var debug = TestPanelKit.Wide(body, "Debug", "Debug", UiStyle.Gray, () => _bench.OpenDebugPage());
             menu.Returned += () => ShowPreset(store);
             ShowPreset(store);
         }

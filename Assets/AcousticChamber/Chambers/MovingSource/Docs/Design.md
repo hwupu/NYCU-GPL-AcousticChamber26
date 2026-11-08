@@ -44,7 +44,7 @@ Speed      [0.25 ×] [0.5 ×] [1 ×] [2 ×] [4 ×]
 Point at the orb and press the grip to move it.
 [Reset source]                                   [Back to Hall]
 ```
-Chosen buttons use `Selected` (built with `UiKit.ChoiceButton` / `UiKit.Select`).
+Chosen buttons use `Selected` (built with `UiLay.ChoiceGroup` / `UiKit.Select`).
 
 ## Leaving
 **Back to Hall** or **Y** → dialog "Leave Moving Source?" **Back to Hall / Keep going** (time and audio frozen). The output

@@ -120,22 +120,46 @@ namespace GPL.DebugBench.Tests
             Assert.AreEqual(2, WorkingCopy.Decimals(s.Get("gain_db")));
         }
 
+        /// <summary>A panel on the canvas with the chamber menu as its root page (what ChamberMenu does).</summary>
+        static UiSurface Surface(GameObject canvas)
+        {
+            UiKit.MotionSuppressed = true;
+            ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
+            var panel = UiPanel.Create(canvas.transform, "Panel", new Vector2(1000f, 700f));
+            UiNavigationBar.Create(panel.Surface, "Menu", UiNavigationBar.Leading.Back);
+            return panel.Surface;
+        }
+
+        static string LabelText(Component b)
+        {
+            var t = b.GetComponentInChildren<TextMeshProUGUI>(true); // icon-only buttons have no text
+            return t != null ? t.text : null;
+        }
+
+        static void Layout(UiSurface s)
+        {
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)s.Top.transform);
+        }
+
+        [TearDown]
+        public void MotionOn() => UiKit.MotionSuppressed = false;
+
         [Test]
         public void PracticeButtonFollowsAvailability_ChamberSectionsSitBetweenParametersAndData()
         {
             var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
             try
             {
-                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
-                var pages = PageStack.On(UiKit.Window(canvas.transform));
-                pages.Push("Menu");
+                var pages = Surface(canvas);
                 var bench = new DebugBench(pages, canvas.transform, new WorkingCopy(_store)) { PracticeAvailable = false };
                 bool practiced = false, shown = false;
                 bench.PracticeRequested += () => practiced = true;
                 bench.ChamberSections = col => col.Buttons("Dot", ("Show dot", UiStyle.Borderless, () => shown = true));
 
                 var debug = bench.OpenDebugPage();
-                Button Find(string label) => debug.GetComponentsInChildren<Button>(true).Single(b => UiKit.LabelOf(b).text == label);
+                Layout(pages);
+                Button Find(string label) => debug.GetComponentsInChildren<Button>(true).Single(b => LabelText(b) == label);
                 Assert.IsFalse(Find("Practice trial").interactable, "no practice trial in the chamber: inactive");
                 Find("Show dot").onClick.Invoke();
                 Assert.IsTrue(shown);
@@ -160,44 +184,44 @@ namespace GPL.DebugBench.Tests
             var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
             try
             {
-                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
-                var window = UiKit.Window(canvas.transform);
-                var pages = PageStack.On(window);
-                pages.Push("Menu");
+                var pages = Surface(canvas);
                 var w = new WorkingCopy(_store);
                 var bench = new DebugBench(pages, canvas.transform, w);
                 bool ran = false;
                 bench.RunRequested += () => ran = true;
 
                 var debug = bench.OpenDebugPage();
-                Button Find(Page p, string label) => p.GetComponentsInChildren<Button>(true).Single(b => UiKit.LabelOf(b).text == label);
+                Layout(pages);
+                Button Find(UiPage p, string label) => p.GetComponentsInChildren<Button>(true).Single(b => LabelText(b) == label);
                 Find(debug, "Run experiment trials").onClick.Invoke();
                 Assert.IsTrue(ran);
                 var run = (RectTransform)Find(debug, "Run experiment trials").transform;
                 var practice = (UiButton)Find(debug, "Practice trial");
                 Assert.AreEqual(UiStyle.Borderless, practice.Style, "not the main action: fill on hover only");
                 Assert.IsTrue(practice.InGroup);
-                float gap = ((RectTransform)practice.transform).anchoredPosition.x - run.anchoredPosition.x - run.sizeDelta.x;
-                Assert.AreEqual(UiKit.Theme.groupPadding, gap, 1e-3f, "buttons in a group are 8 u apart");
+                var pr = (RectTransform)practice.transform;
+                float gap = pr.localPosition.x - run.localPosition.x - run.rect.width;
+                Assert.AreEqual(UiKit.Theme.groupPadding, gap, 0.5f, "buttons in a group are 8 u apart");
 
                 Find(debug, "Playground").onClick.Invoke();
                 var parameters = pages.Top;
+                Layout(pages);
                 Assert.AreEqual("Parameters", parameters.Title);
                 var row = parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials");
-                var value = UiKit.RowText(row, "Value");
+                var value = UiLay.RowValue(row);
                 Assert.AreEqual("6", value.text);
-                var plus = row.Find("Plus").GetComponent<UiButton>();
+                var plus = row.Find("Stepper/Plus").GetComponent<UiButton>();
                 Assert.AreEqual(UiStyle.Borderless, plus.Style, "steppers: fill on hover only");
                 Assert.IsTrue(plus.InGroup);
                 plus.onClick.Invoke();
                 Assert.AreEqual("7", value.text, "the row follows the working copy");
-                Assert.AreEqual("Default: 6", UiKit.RowText(row, "Sub").text);
+                Assert.AreEqual("Default: 6", UiLay.RowSubtitle(row).text);
                 Assert.IsTrue(Find(parameters, "Revert").interactable);
                 Assert.IsTrue(Find(parameters, "Save as Custom").interactable);
 
                 Find(parameters, "Revert").onClick.Invoke();
                 Assert.AreEqual("6", value.text);
-                Assert.IsFalse(UiKit.RowText(row, "Sub").gameObject.activeSelf, "no secondary line when not edited and no description");
+                Assert.IsFalse(UiLay.RowSubtitle(row).gameObject.activeSelf, "no secondary line when not edited and no description");
 
                 var fixation = parameters.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Fixation");
                 var sw = fixation.GetComponentInChildren<UiSwitch>();
@@ -205,7 +229,7 @@ namespace GPL.DebugBench.Tests
                 fixation.onClick.Invoke();
                 Assert.IsFalse(w.Values.GetBool("fixation"), "the whole row toggles the parameter");
                 Assert.IsFalse(sw.On);
-                Assert.AreEqual("Default: On", UiKit.RowText(fixation.transform, "Sub").text);
+                Assert.AreEqual("Default: On", UiLay.RowSubtitle(fixation.transform).text);
 
                 parameters.BackButton.onClick.Invoke();
                 Assert.AreEqual(debug, pages.Top);
@@ -234,19 +258,18 @@ namespace GPL.DebugBench.Tests
             var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
             try
             {
-                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
-                var pages = PageStack.On(UiKit.Window(canvas.transform));
-                pages.Push("Menu");
+                var pages = Surface(canvas);
                 var w = new WorkingCopy(_store);
                 var bench = new DebugBench(pages, canvas.transform, w);
                 UiButton Named(Component root, string name) => root.GetComponentsInChildren<UiButton>(true).Single(b => b.name == name);
-                UiButton Labeled(Component root, string label) => root.GetComponentsInChildren<UiButton>(true).Single(b => UiKit.LabelOf(b).text == label);
+                UiButton Labeled(Component root, string label) => root.GetComponentsInChildren<UiButton>(true).Single(b => LabelText(b) == label);
+                int windows = UiPanel.Stack(canvas.transform).Count; // the menu panel; dialogs and sheets lie on top of it
 
                 // Parameters: no Custom yet, Save as Custom creates it without asking and makes it active
                 var parameters = bench.OpenParametersPage();
                 var save = Labeled(parameters, DebugBench.SaveAsLabel);
                 Assert.IsFalse(save.interactable, "nothing edited");
-                parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials").Find("Plus").GetComponent<UiButton>().onClick.Invoke();
+                parameters.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row Trials").Find("Stepper/Plus").GetComponent<UiButton>().onClick.Invoke();
                 Assert.IsTrue(save.interactable);
                 save.onClick.Invoke();
                 Assert.IsNull(ModalDialog.Current, "creating Custom needs no confirmation");
@@ -264,11 +287,11 @@ namespace GPL.DebugBench.Tests
                 // Presets: ✓ on Custom; Default's sheet has only Make active
                 var presets = bench.OpenPresetsPage();
                 UiButton RowOf(string name) => Named(pages.Top, "Row " + name);
-                Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowText(RowOf("Custom").transform, "Value").text);
-                Assert.IsNull(UiKit.RowText(RowOf("Default").transform, "Value"), "not active: no mark");
-                StringAssert.Contains("playground", UiKit.RowText(RowOf("Custom").transform, "Sub").text);
+                Assert.AreEqual(DebugBench.ActiveMark, UiLay.RowValue(RowOf("Custom").transform).text);
+                Assert.IsEmpty(UiLay.RowValue(RowOf("Default").transform).text, "not active: no mark");
+                StringAssert.Contains("playground", UiLay.RowSubtitle(RowOf("Custom").transform).text);
                 RowOf("Default").onClick.Invoke();
-                var sheet = Sheet.Top(canvas.transform);
+                var sheet = UiPanel.Top(canvas.transform);
                 var actions = sheet.GetComponentsInChildren<UiButton>(true).Where(b => b.name.StartsWith("Row ")).Select(b => b.name).ToArray();
                 CollectionAssert.AreEqual(new[] { "Row Make active" }, actions);
 
@@ -276,24 +299,24 @@ namespace GPL.DebugBench.Tests
                 Assert.IsTrue(w.Step("trials", -1));
                 sheet.Close();
                 RowOf("Default").onClick.Invoke();
-                Named(Sheet.Top(canvas.transform), "Row Make active").onClick.Invoke();
+                Named(UiPanel.Top(canvas.transform), "Row Make active").onClick.Invoke();
                 Assert.IsNotNull(ModalDialog.Current, "unsaved edits: confirm first");
                 Labeled(ModalDialog.Current, "Discard and switch").onClick.Invoke();
                 Assert.AreEqual("Default", _store.ActiveName);
                 Assert.AreEqual("Default", w.Source);
                 Assert.AreEqual(6, w.Values.GetInt("trials"));
-                Assert.AreEqual(DebugBench.ActiveMark, UiKit.RowText(RowOf("Default").transform, "Value").text, "the page is rebuilt");
-                Assert.AreEqual(0, Sheet.Stack(canvas.transform).Count, "the sheets are closed");
+                Assert.AreEqual(DebugBench.ActiveMark, UiLay.RowValue(RowOf("Default").transform).text, "the page is rebuilt");
+                Assert.AreEqual(windows, UiPanel.Stack(canvas.transform).Count, "the sheets are closed");
 
                 // Make Custom active without edits: no confirmation
                 RowOf("Custom").onClick.Invoke();
-                Named(Sheet.Top(canvas.transform), "Row Make active").onClick.Invoke();
+                Named(UiPanel.Top(canvas.transform), "Row Make active").onClick.Invoke();
                 Assert.AreEqual("Custom", w.Source);
                 Assert.AreEqual(8, w.Values.GetInt("trials"));
 
                 // Delete Custom (active): confirm; Default becomes active
                 RowOf("Custom").onClick.Invoke();
-                var del = Named(Sheet.Top(canvas.transform), "Row Delete");
+                var del = Named(UiPanel.Top(canvas.transform), "Row Delete");
                 Assert.AreEqual(UiStyle.DestructiveText, del.Style);
                 del.onClick.Invoke();
                 Labeled(ModalDialog.Current, "Delete").onClick.Invoke();
@@ -301,7 +324,7 @@ namespace GPL.DebugBench.Tests
                 Assert.AreEqual("Default", _store.ActiveName);
                 Assert.AreEqual(presets, pages.Top);
                 Assert.IsFalse(pages.Top.GetComponentsInChildren<UiButton>(true).Any(b => b.name == "Row Custom"));
-                Assert.AreEqual(0, Sheet.Stack(canvas.transform).Count);
+                Assert.AreEqual(windows, UiPanel.Stack(canvas.transform).Count);
             }
             finally { Object.DestroyImmediate(canvas); }
         }
@@ -326,32 +349,29 @@ namespace GPL.DebugBench.Tests
                 Directory.CreateDirectory(Path.Combine(data, "presets"));
                 File.WriteAllText(Path.Combine(data, "presets", "Custom.params"), "x");
 
-                ((RectTransform)canvas.transform).sizeDelta = new Vector2(1000f, 700f);
-                var pages = PageStack.On(UiKit.Window(canvas.transform));
-                pages.Push("Menu");
+                var pages = Surface(canvas);
                 var bench = new DebugBench(pages, canvas.transform, new WorkingCopy(_store)) { Files = new DataFiles(data, "C00") };
-                UiButton Labeled(Component root, string label) => root.GetComponentsInChildren<UiButton>(true).Single(b => UiKit.LabelOf(b).text == label);
+                UiButton Labeled(Component root, string label) => root.GetComponentsInChildren<UiButton>(true).Single(b => LabelText(b) == label);
                 RectTransform RowOf(string baseName) => pages.Top.GetComponentsInChildren<RectTransform>(true).Single(t => t.name == "Row " + baseName);
                 TextMeshProUGUI DialogText(string name) => ModalDialog.Current.GetComponentsInChildren<TextMeshProUGUI>(true).First(t => t.name == name);
 
                 var debug = bench.OpenDebugPage();
                 var dataRow = debug.GetComponentsInChildren<UiButton>(true).Single(b => b.name == "Row Log files");
-                Assert.AreEqual("4 files  ›", UiKit.RowText(dataRow.transform, "Value").text);
+                Assert.AreEqual("4 files", UiLay.RowValue(dataRow.transform).text);
                 dataRow.onClick.Invoke();
                 var page = pages.Top;
                 Assert.AreEqual("Log files", page.Title);
                 string s2 = DataFileNames.BaseName(t0.AddMinutes(10), "C00", "S0002", false);
-                Assert.AreEqual(s2, UiKit.RowText(RowOf(s2), "Label").text, "the file name is the row title");
-                Assert.IsNull(UiKit.RowText(RowOf(s2), "Sub"), "one line: no description");
-                var label = UiKit.RowText(RowOf(s2), "Label");
-                Assert.AreEqual(UiKit.OpticalLift * label.fontSize, label.rectTransform.offsetMin.y, 0.01f,
-                                "the file name is vertically centered (one line: optical lift only)");
+                Assert.AreEqual(s2, UiLay.RowTitle(RowOf(s2)).text, "the file name is the row title");
+                Assert.IsNull(UiLay.RowSubtitle(RowOf(s2)), "one line: no description");
                 string dbg = DataFileNames.BaseName(t0.AddMinutes(30), "C00", "", true);
-                Assert.AreEqual(dbg, UiKit.RowText(RowOf(dbg), "Label").text);
+                Assert.AreEqual(dbg, UiLay.RowTitle(RowOf(dbg)).text);
 
                 // Delete one: confirm first (Cancel keeps it)
                 var del = RowOf(s2).Find("Delete").GetComponent<UiButton>();
                 Assert.AreEqual(UiStyle.DestructiveText, del.Style);
+                Assert.IsNull(del.GetComponentInChildren<TextMeshProUGUI>(), "an icon button: no label");
+                Assert.IsNotNull(del.GetComponentInChildren<UiIcon>(), "the trash icon");
                 del.onClick.Invoke();
                 Assert.AreEqual("Delete S0002's session?", DialogText("Title").text);
                 StringAssert.StartsWith("The CSV and session file are removed", DialogText("Message").text);
@@ -376,7 +396,7 @@ namespace GPL.DebugBench.Tests
                 Assert.IsFalse(all.interactable, "nothing left to delete");
 
                 page.BackButton.onClick.Invoke();
-                Assert.AreEqual("none  ›", UiKit.RowText(dataRow.transform, "Value").text);
+                Assert.AreEqual("none", UiLay.RowValue(dataRow.transform).text);
             }
             finally { Object.DestroyImmediate(canvas); }
         }
