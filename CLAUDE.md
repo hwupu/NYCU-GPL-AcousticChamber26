@@ -6,7 +6,7 @@ Guide for AI coding agents. `AGENTS.md` is a git symlink to this file (Windows: 
 Exploratory acoustic-perception lab in VR (Meta Quest 3, Unity 6000.6.6f1, URP, OpenXR, Meta XR Core SDK 207.0.1, Meta XR Audio SDK 85.0.0). A **Main Hall** lists independent **chambers** (one experiment design each: stimuli, parameters, log schema, resume rules). Every study chamber opens with the same menu (Study ID, Start, Debug, Back to Hall); a chamber in development is used through Debug. Experience chambers (no data) have their own panel (ADR-0006). Shared features are portable modules; anything chamber-specific stays in the chamber folder. **All our files live under `Assets/AcousticChamber/`.**
 
 Read before coding: [docs/Architecture.md](docs/Architecture.md) (layout section 2, logging section 10), [docs/decisions/](docs/decisions/), open [docs/Questions.md](docs/Questions.md), [docs/references/INSTRUCTIONS.md](docs/references/INSTRUCTIONS.md) (binding; Quest pitfalls section 3), [docs/DesignSystem.md](docs/DesignSystem.md) for UI. Reference implementation `../115A-535655-HumPer-HW2`: port and generalize, do not re-invent.
-Do not read docs/references/HLSIM_GUIDELINES.md, docs/design/components.html or docs/archive/ unless the task needs them.
+Do not read docs/references/HLSIM_GUIDELINES.md or docs/archive/ unless the task needs them. UI is designed first in the Storybook preview `docs/design/` (pnpm; [README](docs/design/README.md)), then built in Unity.
 
 ## Process
 - The user is the Product Owner (PO); you are Scrum Master and engineer. Ask before coding when an experimental parameter is unspecified (propose a default). Plan non-trivial work and get approval.

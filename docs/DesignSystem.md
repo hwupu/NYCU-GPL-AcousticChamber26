@@ -1,6 +1,6 @@
 # Design System (v2, accepted 2026-11-05, PB-16 → PB-17/18)
 
-v1 (PB-16) was accepted earlier on 2026-11-05; v2 replaces its colors, button styles and dialogs after four preview rounds with the PO. Interactive reference: [design/components.html](design/components.html) (open in a browser; the mouse stands in for the controller ray). Since v3 (2026-11-07) it mirrors the built screens and names every element with its run-time GameObject name (hover shows the Hierarchy path; section 0 is the shared vocabulary). v1 is in git history (this file, and [design/preview.html](design/preview.html): HW2 vs v1). Decision record: [ADR-0005](decisions/ADR-0005-ui-components-and-sheets.md).
+v1 (PB-16) was accepted earlier on 2026-11-05; v2 replaces its colors, button styles and dialogs after four preview rounds with the PO. The HTML reference is now the Storybook preview in [design/](design/README.md) (rebuilt 2026-11-08 on the `uikit-rebuild` branch; the old components.html / preview.html are in git history). Decision record: [ADR-0005](decisions/ADR-0005-ui-components-and-sheets.md).
 
 Principles: **flat, solid, quiet.** No glass, no blur at rest, no transparency except the dim layer behind a sheet. Hierarchy comes from fill and brightness, not hue. The study is about perception: the UI must not draw attention, and nothing in the UI moves while a stimulus plays.
 
