@@ -172,7 +172,9 @@ namespace GPL.UI
         public static UiDialog Create(Transform canvas, string name, string title, string message = null)
         {
             var th = UiKit.Theme;
-            var d = new UiDialog { Panel = UiPanel.Create(canvas, name, new Vector2(th.dialogWidth, 400f)) };
+            var d = new UiDialog { Panel = UiPanel.Create(canvas, name, new Vector2(th.dialogWidth, 400f), startHidden: true) };
+            d.Panel.Modal = true;
+            d.Panel.HasGrabber = false;
             var body = d.Panel.Surface.Body;
             var content = UiLay.Node(body, "Content");
             UiLay.V(content.gameObject, 0f, UiLay.Pad(0, 48, 0, 28), TextAnchor.UpperLeft);
@@ -195,6 +197,16 @@ namespace GPL.UI
             d.Panel.Surface.Finish();
             return d;
         }
+
+        /// <summary>Measures the content and opens the dialog in place on top of the canvas's panels (pushed back); call after adding the actions.</summary>
+        public void Show()
+        {
+            Fit();
+            Panel.Present();
+        }
+
+        /// <summary>Closes the dialog: the panels behind come forward, then it fades out.</summary>
+        public void Close() => Panel.Close();
 
         /// <summary>Re-measures the content and sets the surface height; call after adding the actions.</summary>
         public void Fit()

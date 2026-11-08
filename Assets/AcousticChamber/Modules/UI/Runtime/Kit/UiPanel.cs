@@ -10,6 +10,7 @@ namespace GPL.UI
     /// outside the canvas) reads <see cref="GrabberVisible"/> and <see cref="Alpha"/>, so it hides and fades with the panel.
     /// Put it under an overlay canvas that is sized like the surface.
     /// </summary>
+    [ExecuteAlways] // OnDestroy (Abandoned) also in edit mode / EditMode tests
     [RequireComponent(typeof(CanvasGroup))]
     public class UiPanel : MonoBehaviour
     {
@@ -57,8 +58,95 @@ namespace GPL.UI
             }
         }
 
+        /// <summary>False for dialogs and sheets: they have no move handle.</summary>
+        public bool HasGrabber { get; set; } = true;
+
+        /// <summary>True for a dialog or sheet: while it is the top panel of its canvas, only it takes the ray (<see cref="UiPointer.Modal"/>).</summary>
+        public bool Modal { get; set; }
+
+        /// <summary>True once <see cref="Close"/> was called (the panel may still be fading out).</summary>
+        public bool IsClosing => _closing;
+
+        /// <summary>Raised by <see cref="Close"/>, after the panels behind have come forward.</summary>
+        public event System.Action Closed;
+
+        /// <summary>Raised when the panel is destroyed without <see cref="Close"/> (e.g. its canvas or scene unloaded).</summary>
+        public event System.Action Abandoned;
+
+        bool _closing;
+        Transform _canvas;
+
         /// <summary>True while the move handle may show: in front, and shown or still fading out.</summary>
-        public bool GrabberVisible => _depth == 0 && (_shown || Alpha > 0.01f);
+        public bool GrabberVisible => HasGrabber && _depth == 0 && (_shown || Alpha > 0.01f);
+
+        /// <summary>
+        /// Makes the panel appear in place (fade and scale from <c>sheetScale</c>) on top of the panels of its canvas, which are
+        /// pushed back. Create it with <c>startHidden: true</c> first.
+        /// </summary>
+        public void Present()
+        {
+            _canvas = transform.parent;
+            Shown = true;
+            Restack(_canvas);
+        }
+
+        /// <summary>Closes the panel: the panels behind come forward, then it fades out and is destroyed.</summary>
+        public void Close()
+        {
+            if (this == null || _closing) return;
+            _closing = true;
+            Restack(_canvas != null ? _canvas : transform.parent);
+            Closed?.Invoke();
+            Shown = false;
+            if (!Application.isPlaying || UiKit.Theme.Duration(UiKit.Theme.sheet) <= 0f) DestroySelf();
+        }
+
+        void DestroySelf()
+        {
+            if (this == null) return;
+            if (Application.isPlaying) Destroy(gameObject);
+            else DestroyImmediate(gameObject);
+        }
+
+        void OnDestroy()
+        {
+            if (_closing) return;
+            _closing = true;
+            if (_canvas != null) Restack(_canvas);
+            else if (UiPointer.Modal == transform) UiPointer.Modal = null;
+            Abandoned?.Invoke();
+        }
+
+        /// <summary>The open (not closing) panels of <paramref name="canvas"/>, bottom to top.</summary>
+        public static System.Collections.Generic.List<UiPanel> Stack(Transform canvas)
+        {
+            var list = new System.Collections.Generic.List<UiPanel>();
+            if (canvas == null) return list;
+            foreach (Transform child in canvas)
+            {
+                var p = child.GetComponent<UiPanel>();
+                if (p != null && !p._closing) list.Add(p);
+            }
+            return list;
+        }
+
+        /// <summary>The top open panel of <paramref name="canvas"/>, or null.</summary>
+        public static UiPanel Top(Transform canvas)
+        {
+            var stack = Stack(canvas);
+            return stack.Count > 0 ? stack[stack.Count - 1] : null;
+        }
+
+        /// <summary>Gives every open panel its depth (the top one is 0) and points <see cref="UiPointer.Modal"/> at the top panel if it is modal.</summary>
+        static void Restack(Transform canvas)
+        {
+            if (canvas == null) return;
+            var stack = Stack(canvas);
+            for (int i = 0; i < stack.Count; i++) stack[i].Depth = stack.Count - 1 - i;
+            var top = stack.Count > 0 ? stack[stack.Count - 1] : null;
+            if (top != null && top.Modal) UiPointer.Modal = top.transform;
+            else if (UiPointer.Modal == null || UiPointer.Modal.IsChildOf(canvas)) UiPointer.Modal = null;
+        }
 
         /// <summary>Opacity of the panel (0 to 1), also applied to the move handle.</summary>
         public float Alpha => _group != null ? _group.alpha : 1f;
@@ -83,7 +171,7 @@ namespace GPL.UI
         PlacementMode _placement = PlacementMode.Below8;
 
         /// <summary>Builds the panel root under <paramref name="canvas"/> (filling it) with its surface of <paramref name="size"/> u.</summary>
-        public static UiPanel Create(Transform canvas, string name, Vector2 size)
+        public static UiPanel Create(Transform canvas, string name, Vector2 size, bool startHidden = false)
         {
             var rt = UiKit.Fill(UiKit.Rect(canvas, name, Vector2.zero, Vector2.zero));
             var panel = rt.gameObject.AddComponent<UiPanel>();
@@ -92,7 +180,9 @@ namespace GPL.UI
             panel._dim = UiKit.Box(rt, "Push Dim", Vector2.zero, Vector2.zero, UiKit.Theme.dim, UiKit.Theme.panelRadius);
             UiKit.Fill(panel._dim.rectTransform);
             panel._dim.color = new Color(0f, 0f, 0f, 0f);
-            panel._shownFrom = panel._shownTo = 1f;
+            panel._shownFrom = panel._shownTo = startHidden ? 0f : 1f;
+            panel._shown = !startHidden;
+            panel.Apply();
             return panel;
         }
 
@@ -101,7 +191,11 @@ namespace GPL.UI
             if (_group == null) _group = GetComponent<CanvasGroup>();
         }
 
-        void LateUpdate() => Apply();
+        void LateUpdate()
+        {
+            Apply();
+            if (_closing && _shownValue <= 0.001f) DestroySelf(); // faded out
+        }
 
         void Apply()
         {

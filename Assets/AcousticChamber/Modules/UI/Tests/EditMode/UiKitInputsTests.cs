@@ -119,6 +119,31 @@ namespace GPL.UI.Tests
         }
 
         [Test]
+        public void DialogPushesTheWindowBackTakesTheRayAndClosesCleanly()
+        {
+            var window = UiPanel.Create(_canvas.transform, "Window", new Vector2(1000f, 800f));
+            var d = UiDialog.Create(_canvas.transform, "Dialog", "Stop?", "Sure?");
+            var ok = UiLay.Button(d.Actions, "Ok", "OK", UiStyle.Prominent, minWidth: false);
+            bool closedRaised = false;
+            d.Panel.Closed += () => closedRaised = true;
+            d.Show();
+            Assert.AreEqual(1, window.Depth, "the window is pushed back");
+            Assert.AreEqual(0, d.Panel.Depth);
+            Assert.AreEqual(d.Panel.transform, UiPointer.Modal, "only the dialog takes the ray");
+            Assert.IsFalse(d.Panel.GrabberVisible, "a dialog has no move handle");
+            Assert.IsFalse(window.GrabberVisible, "the pushed-back window hides its handle");
+            Assert.AreEqual(UiKit.Theme.pushScale, window.transform.localScale.x, 0.001f);
+            Assert.AreEqual(2, UiPanel.Stack(_canvas.transform).Count);
+
+            d.Close();
+            Assert.IsTrue(closedRaised);
+            Assert.AreEqual(0, window.Depth, "the window comes forward");
+            Assert.IsNull(UiPointer.Modal);
+            Assert.IsTrue(window.GrabberVisible);
+            Assert.AreEqual(1, UiPanel.Stack(_canvas.transform).Count);
+        }
+
+        [Test]
         public void DialogIs820WideSizedByContentWithActionsAtTheRight()
         {
             var d = UiDialog.Create(_canvas.transform, "Dialog", "Stop the session?", "Your progress is saved.");
