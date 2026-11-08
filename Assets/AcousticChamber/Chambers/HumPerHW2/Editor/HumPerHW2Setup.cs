@@ -25,7 +25,7 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
         const string Log = "[Chamber:HumPerHW2] ";
 
         /// <summary>
-        /// Step 1 (PB-08d-1): the ChamberDefinition (C01), the scene (a copy of MainHall, so it has the same Camera Rig; the Hall
+        /// Step 1 (PB-08d-1): the ChamberDefinition (C04), the scene (a copy of MainHall, so it has the same Camera Rig; the Hall
         /// panel removed), Config/default.params (written once) and the chamber menu with HumPerHW2Chamber; then Sync Chambers.
         /// Opens the scene (asks to save the current one first) and saves it.
         /// </summary>
@@ -55,7 +55,7 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             if (hall != null) Object.DestroyImmediate(hall.gameObject);
 
             var text = ChamberSetup.EnsureDefaultParams(DefaultParamsPath,
-                HumPerHW2Chamber.CreateDefaults().Serialize("HumPerHW2 (C01) preset Default. Design: Docs/Design.md"));
+                HumPerHW2Chamber.CreateDefaults().Serialize("HumPerHW2 (C04) preset Default. Design: Docs/Design.md"));
             if (ChamberSetup.AddChamberMenu<HumPerHW2Chamber>(def, text) == null) return;
             EditorSceneManager.SaveOpenScenes();
             AssetDatabase.SaveAssets();
@@ -466,7 +466,7 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             {
                 def = ScriptableObject.CreateInstance<ChamberDefinition>();
                 def.id = HumPerHW2Chamber.Id;
-                def.label = "C01";
+                def.label = "C04";
                 def.title = "HumPerHW2";
                 def.description = "Ventriloquist effect: match a sound to a picture in quiet, noisy and reverberant rooms (HW2 rebuilt).";
                 def.version = "0.1";

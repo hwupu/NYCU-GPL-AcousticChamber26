@@ -1,4 +1,4 @@
-# HumPerHW2 (C01) — Analysis plan
+# HumPerHW2 (C04) — Analysis plan
 
 **Status:** approved by the PO (PB-08a, 2026-11-07). The analysis is done outside the repo (no scripts, PO decision Q14).
 

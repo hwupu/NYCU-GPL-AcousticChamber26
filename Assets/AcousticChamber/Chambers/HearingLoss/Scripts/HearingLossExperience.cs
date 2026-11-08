@@ -21,7 +21,7 @@ namespace AcousticChamber.Chambers.HearingLoss
     public class HearingLossExperience : MonoBehaviour
     {
         public const string Id = "HearingLoss";
-        public const string Title = "C02 · Hearing Loss";
+        public const string Title = "C03 · Hearing Loss";
         const string Log = "[Chamber:HearingLoss] ";
 
         public static readonly Vector2 Size = new Vector2(1100f, 900f);
@@ -72,6 +72,8 @@ namespace AcousticChamber.Chambers.HearingLoss
             for (int i = 0; i < _tones.Length; i++) _tones[i] = MakeTone(ExperienceState.ToneHz[i]);
             source.loop = true;
             BuildPanel();
+            var overlay = GetComponent<OverlayPanel>();
+            if (overlay != null) overlay.Movable = true;
             Apply();
 
             // the speaker waits for a valid head pose, then stands 2 m ahead on the floor (room-fixed from then on)
@@ -163,13 +165,8 @@ namespace AcousticChamber.Chambers.HearingLoss
                            align: TextAlignmentOptions.Left);
 
             // the i-th of n equal buttons across the panel width at height y
-            UiButton Choice(Transform parent, string label, int i, int n, float y, System.Action click)
-            {
-                float gap = 16f, w = (width - gap * (n - 1)) / n;
-                var b = UiKit.Button(parent, label, label, UiStyle.Gray, new Vector2(left + w / 2f + i * (w + gap), y), new Vector2(w, 0f), click);
-                ((RectTransform)b.transform).sizeDelta = new Vector2(w, ((RectTransform)b.transform).sizeDelta.y);
-                return b;
-            }
+            UiButton Choice(Transform parent, string label, int i, int n, float y, System.Action click) =>
+                UiKit.ChoiceButton(parent, label, i, n, left, width, y, click);
         }
 
         /// <summary>Click on a tone or recording: a new sound plays from the start; the playing one pauses; a paused one resumes.</summary>
@@ -197,13 +194,13 @@ namespace AcousticChamber.Chambers.HearingLoss
 
         string NameOf(int sound) => sound < 0 ? "nothing" : UiKit.LabelOf(_soundButtons[sound]).text;
 
-        /// <summary>Pushes the state to the output and the panel. The sound playing is white; a paused one is gray again.</summary>
+        /// <summary>Pushes the state to the output and the panel. The sound playing is Selected; a paused one is normal again.</summary>
         void Apply()
         {
             if (_output != null) _output.SetProfile(_state.Profile);
-            for (int i = 0; i < _soundButtons.Count; i++) _soundButtons[i].Style = i == _state.Sound && _state.Playing ? UiStyle.Prominent : UiStyle.Gray;
-            for (int i = 0; i < _earButtons.Count; i++) _earButtons[i].Style = ExperienceState.Ears[i] == _state.Ear ? UiStyle.Prominent : UiStyle.Gray;
-            for (int i = 0; i < _levelButtons.Count; i++) _levelButtons[i].Style = ExperienceState.Levels[i] == _state.Level ? UiStyle.Prominent : UiStyle.Gray;
+            UiKit.Select(_soundButtons, i => i == _state.Sound && _state.Playing);
+            UiKit.Select(_earButtons, i => ExperienceState.Ears[i] == _state.Ear);
+            UiKit.Select(_levelButtons, i => ExperienceState.Levels[i] == _state.Level);
             string playing = _state.Sound < 0 ? "Click a tone or a recording to play it; click it again to pause."
                            : (_state.Playing ? "Playing " : "Paused ") + NameOf(_state.Sound) + ".";
             if (_status != null) _status.text = _state.Status() + "  " + playing + "\nPoint at the speaker and hold the trigger to move it.";
@@ -213,7 +210,9 @@ namespace AcousticChamber.Chambers.HearingLoss
         void ResetSpeaker()
         {
             if (speaker == null) return;
-            speaker.PlaceInFront(_rig != null ? _rig.centerEyeAnchor : null, StartDistanceM);
+            // 0 deg az = the rig's forward; the panel is to the left, so the head often looks away from it
+            if (_rig != null) speaker.PlaceAhead(_rig.centerEyeAnchor.position, _rig.transform.eulerAngles.y, StartDistanceM);
+            else speaker.PlaceInFront(null, StartDistanceM);
         }
 
         // ---- leaving -------------------------------------------------------------------------------------------------

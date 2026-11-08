@@ -23,6 +23,7 @@ at all (the Reflection mixer, the audio build-settings guard). Ported and genera
 | `Core/WavLevel.cs` | RMS dBFS of a WAV file on disk (PCM 16 / 24 / 32, float 32, EXTENSIBLE), same value as `ClipLevels.RmsDbfs`; lets long clips stream (GetData does not work on Streaming clips) |
 | `Core/AudioLevelMath.cs` | RMS dBFS, power sum of uncorrelated sources, gain → dB; `Silent` = -200 |
 | `Runtime/ShoeboxRoom.cs` | room size (one size for the visual room and the shoebox), V/S |
+| `Core/RoomChoice.cs` | `RoomChoice` Dry / Room (0.7 s) / Hall (2.2 s) and their RT60 (experience chambers); `ReverbTuner.Apply(choice)` / `SetDry()` |
 | `Runtime/ReverbTuner.cs` | `SetRt60(s)` (uniform coefficient from the table, pushed to the plugin every frame, the shoebox component disabled), `SetReflection(r)`, `UsePreset()`, `ExpectedRt60()`, `PresetRt60()`, `Note()` for the log, `Describe()` for a Debug status |
 | `Runtime/Rt60Meter.cs` | on the AudioListener: `Measure(probe, expectedRt60, silenceOthers, done)` plays an impulse through the probe source and records the final mix (`OnAudioFilterRead`), about 5 s |
 | `Runtime/ClipLevels.cs` | clip RMS dBFS (needs Decompress On Load), source level = RMS + gain boost + volume |

@@ -55,10 +55,17 @@ namespace GPL.UI
             y -= 100f;
             UiKit.Button(root, "Stop Dialog", "Stop dialog (Y)", UiStyle.Borderless, new Vector2(rightX, y), new Vector2(w, 0f), OpenStopDialog);
             y -= 100f;
-            var english = UiKit.Button(root, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Gray, new Vector2(rightX - 106f, y), new Vector2(0f, 0f),
-                                       () => { Loc.Set(UiLanguage.English); SetStatus("Language: English"); });
-            var chinese = UiKit.Button(root, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Gray, new Vector2(rightX + 106f, y), new Vector2(0f, 0f),
-                                       () => { Loc.Set(UiLanguage.Chinese); SetStatus("Language: 中文"); });
+            UiButton english = null, chinese = null;
+            void ShowLanguage()
+            {
+                english.Selected = Loc.Current == UiLanguage.English;
+                chinese.Selected = Loc.Current == UiLanguage.Chinese;
+            }
+            english = UiKit.Button(root, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Gray, new Vector2(rightX - 106f, y), new Vector2(0f, 0f),
+                                   () => { Loc.Set(UiLanguage.English); ShowLanguage(); SetStatus("Language: English"); });
+            chinese = UiKit.Button(root, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Gray, new Vector2(rightX + 106f, y), new Vector2(0f, 0f),
+                                   () => { Loc.Set(UiLanguage.Chinese); ShowLanguage(); SetStatus("Language: 中文"); });
+            ShowLanguage();
             // side by side: narrower than the minimum width on purpose
             ((RectTransform)english.transform).sizeDelta = ((RectTransform)chinese.transform).sizeDelta = new Vector2(208f, th.buttonHeight);
             y -= 100f;
@@ -160,7 +167,9 @@ namespace GPL.UI
 
         void ShowMotion()
         {
-            if (_motion != null) _motion.Label.text = UiKit.Theme.reduceMotion ? "Motion: off" : "Motion: on";
+            if (_motion == null) return;
+            _motion.Label.text = UiKit.Theme.reduceMotion ? "Motion: off" : "Motion: on";
+            _motion.Selected = !UiKit.Theme.reduceMotion;
         }
 
         void SetStatus(string s)

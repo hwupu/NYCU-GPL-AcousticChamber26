@@ -12,11 +12,17 @@ EditorBuildSettings:
     path: Assets/AcousticChamber/Chambers/_Template/Scenes/_Template.unity
     guid: f22334caa72933e4b8a5cc5749ef08ac
   - enabled: 1
-    path: Assets/AcousticChamber/Chambers/HumPerHW2/Scenes/HumPerHW2.unity
-    guid: 79a197b0c0f6c6c4a9ecb77b86b224b8
+    path: Assets/AcousticChamber/Chambers/MovingSource/Scenes/MovingSource.unity
+    guid: 11c98f11d16177c4996601def0c75e85
+  - enabled: 1
+    path: Assets/AcousticChamber/Chambers/HiddenSource/Scenes/HiddenSource.unity
+    guid: ead6015aa9903144993b593d4d232b28
   - enabled: 1
     path: Assets/AcousticChamber/Chambers/HearingLoss/Scenes/HearingLoss.unity
     guid: 85acbb5d10770354c9549a3637eeeabf
+  - enabled: 1
+    path: Assets/AcousticChamber/Chambers/HumPerHW2/Scenes/HumPerHW2.unity
+    guid: 79a197b0c0f6c6c4a9ecb77b86b224b8
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a686590cc9b5e9542aac306051ba0b51, type: 2}

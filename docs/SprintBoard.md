@@ -32,3 +32,7 @@ One short line per ticket (status, commit / date). Details: [PromptLog.md](Promp
 | PB-10 HearingLoss chamber | Done | experience chamber (ADR-0006): panel, floor-drag speaker, dry; PO verified 2026-11-08; panel fix: Normal hearing + auto levels |
 | PB-13 New-chamber tooling | Done | `Magic > App > New Chamber...` (ChamberCopy rules + NewChamber window); PO verified 2026-11-08 |
 | PB-14 Native keyboard on Quest | Deferred (PO: later stage) | `NativeKeyboardEntry` + Keyboard Test Panel; likely cause GameActivity entry point; test matrix in docs/references/Keyboard.md |
+| PB-11 MovingSource chamber (C01) | Built, headset check open | experience chamber: grip-grab + Circle / Fly-by / Approach with 5 speeds, room, distance cue, hearing selector; run Magic > MovingSource 1-2 |
+| PB-12 HiddenSource chamber (C02) | Built, headset check open | experience chamber: custom menu, floor-locked guess sphere on the active ray, A confirms, line + azimuth / distance error; run Magic > HiddenSource 1-2 |
+| Panel move handle | Built, headset check open | `PanelMover` pill handle (3D object) below the chamber menu and experience panels; rebuild in the canvas rolled back at PO request 2026-11-08 |
+| Housekeeping 2026-11-08 | Done | `UiButton.Selected` in all test / experience panels, `UiKit.ChoiceButton` / `Select`, C04 relabel, C00 hidden, HearingLoss relabelled C03 |

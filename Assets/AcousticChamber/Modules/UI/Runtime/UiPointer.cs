@@ -55,8 +55,15 @@ namespace GPL.UI
             if (Hovered != null) SetHover(null);
         }
 
+        /// <summary>The ray of the active controller (the hand that last pulled its trigger; right by default), valid this frame.</summary>
+        public static Ray ActiveRay { get; private set; }
+
+        /// <summary>False when there is no pointer, no controller yet, or the pointer is idle (no UI and no ray target in the scene).</summary>
+        public static bool HasActiveRay { get; private set; }
+
         void Update()
         {
+            HasActiveRay = false;
             var targets = Selectable.allSelectablesArray;
             if (_held != null && Modal != null) ReleaseHeld(); // a sheet opened while dragging
             bool any = _held != null || (Modal == null && RayTargets.All.Count > 0);
@@ -85,6 +92,8 @@ namespace GPL.UI
             }
 
             var ray = new Ray(origin.position, origin.forward);
+            ActiveRay = ray;
+            HasActiveRay = true;
 
             // a held 3D target owns the trigger until it is released
             if (_held != null)

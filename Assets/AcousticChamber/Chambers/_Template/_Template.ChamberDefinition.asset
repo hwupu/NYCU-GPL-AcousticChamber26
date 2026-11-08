@@ -19,4 +19,4 @@ MonoBehaviour:
   thumbnail: {fileID: 0}
   scenePath: Assets/AcousticChamber/Chambers/_Template/Scenes/_Template.unity
   version: 0.1
-  enabled: 1
+  enabled: 0

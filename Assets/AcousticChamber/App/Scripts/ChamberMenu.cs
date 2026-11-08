@@ -57,6 +57,19 @@ namespace AcousticChamber.App
 
         void Start() => Build();
 
+        OverlayPanel _overlay;
+        bool _movable;
+
+        /// <summary>The participant can move the menu (handle below it) except while a run is on (PO 2026-11-08).</summary>
+        void LateUpdate()
+        {
+            if (_overlay == null) _overlay = GetComponent<OverlayPanel>();
+            bool movable = _run == null;
+            if (_overlay == null || movable == _movable) return;
+            _movable = movable;
+            _overlay.Movable = movable;
+        }
+
         public void Build()
         {
             UiStrings.EnsureRegistered();

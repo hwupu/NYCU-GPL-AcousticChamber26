@@ -18,7 +18,7 @@ using UnityEngine;
 namespace AcousticChamber.Chambers.HumPerHW2
 {
     /// <summary>
-    /// HumPerHW2 (C01, Docs/Design.md): HW2's ventriloquist task on the modules. Onboarding (stock stages), a repeatable
+    /// HumPerHW2 (C04, Docs/Design.md): HW2's ventriloquist task on the modules. Onboarding (stock stages), a repeatable
     /// practice, three condition blocks of six trials in the session's condition order, thanks.
     /// PB-08d-1: schema, log columns, plan and the condition order; the practice, the trial and the acoustics follow in 08d-3.
     /// </summary>
@@ -508,17 +508,10 @@ namespace AcousticChamber.Chambers.HumPerHW2
         void RefreshDebugButtons()
         {
             string[] rooms = { Conditions.Quiet, Conditions.Noisy, Conditions.Reverb, PresetMode };
-            Select(_roomButtons, i => _debugRoom == rooms[i]);
-            Select(_measureButtons, _ => _measuring);
-            Select(_playButtons, i => i == 0 ? pulse != null && pulse.Playing : background != null && background.Playing && !background.Paused);
-            Select(_sphereButtons, i => (i == 1) == SphereAlwaysVisible);
-        }
-
-        static void Select(UiButton[] buttons, System.Func<int, bool> on)
-        {
-            if (buttons == null) return;
-            for (int i = 0; i < buttons.Length; i++)
-                if (buttons[i] != null) buttons[i].Selected = on(i); // destroyed with the page: Unity null
+            UiKit.Select(_roomButtons, i => _debugRoom == rooms[i]);
+            UiKit.Select(_measureButtons, _ => _measuring);
+            UiKit.Select(_playButtons, i => i == 0 ? pulse != null && pulse.Playing : background != null && background.Playing && !background.Paused);
+            UiKit.Select(_sphereButtons, i => (i == 1) == SphereAlwaysVisible);
         }
 
         /// <summary>Q47: back to the chamber menu stops the test sound and the background and returns the room to Quiet.</summary>

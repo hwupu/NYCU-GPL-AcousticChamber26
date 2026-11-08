@@ -1,4 +1,4 @@
-# HearingLoss (C02) — Brief
+# HearingLoss (C03) — Brief
 
 **Status:** built from the PO's answers (PB-10 planning, 2026-11-07); waiting for the headset check.
 
@@ -16,5 +16,5 @@ does to everyday sounds, on both ears or on one ear, and moves the sound around 
 The loss is applied to the app's final left/right output (`GPL.HearingLoss`, PB-09). It models audibility only; see the module
 README for the limits (deep cuts are wide, levels are digital, no recruitment).
 
-Chamber ID `HearingLoss`, label `C02`, folder `Chambers/HearingLoss`. Docs: [Design](Design.md), [SceneSetup](SceneSetup.md).
+Chamber ID `HearingLoss`, label `C03`, folder `Chambers/HearingLoss`. Docs: [Design](Design.md), [SceneSetup](SceneSetup.md).
 No DataFormat / AnalysisPlan (no data).

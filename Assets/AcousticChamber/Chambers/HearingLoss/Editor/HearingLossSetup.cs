@@ -43,7 +43,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         public const float EmitterHeightM = 0.3f;
 
         /// <summary>
-        /// Step 1: the ChamberDefinition (C02), the scene (a copy of MainHall, the Hall panel removed), the experience panel (an
+        /// Step 1: the ChamberDefinition (C03), the scene (a copy of MainHall, the Hall panel removed), the experience panel (an
         /// overlay canvas 35° to the left of straight ahead with HearingLossExperience), Global Actions, the pointer and the scene
         /// fade; then Sync Chambers. Opens the scene (asks to save the current one first) and saves it.
         /// </summary>
@@ -227,7 +227,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
             {
                 def = ScriptableObject.CreateInstance<ChamberDefinition>();
                 def.id = HearingLossExperience.Id;
-                def.label = "C02";
+                def.label = "C03";
                 def.title = "Hearing Loss";
                 def.description = "Experience simulated hearing loss on one or both ears while you move a sound around you.";
                 def.version = "0.1";

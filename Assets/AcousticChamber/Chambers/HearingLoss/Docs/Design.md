@@ -1,4 +1,4 @@
-# HearingLoss (C02) — Design
+# HearingLoss (C03) — Design
 
 **Status:** PO answers of 2026-11-07 (PB-10 planning), panel redone 2026-11-08 (like the Hearing Loss Test Panel); items marked *(default)* were proposed by the agent and not objected to.
 
@@ -33,7 +33,7 @@
 
 ## Panel (English only)
 ```
-C02 · Hearing Loss
+C03 · Hearing Loss
 Hearing condition (loss on)
 [Both ears] [Left ear] [Right ear]
 Hearing loss

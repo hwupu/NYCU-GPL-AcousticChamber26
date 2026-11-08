@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.MovingSource.Editor",
+    "rootNamespace": "AcousticChamber.Chambers.MovingSource.Editor",
+    "references": ["AcousticChamber.Chambers.MovingSource", "AcousticChamber.Chambers.MovingSource.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "GPL.SpatialSources", "GPL.HearingLoss", "Meta.XR.Audio", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -11,6 +11,7 @@ Simulator (HLSim v4.0.29.0) as decoded in `docs/references/HLSIM_GUIDELINES.md`;
 |---|---|
 | `Core/ANSIS344.cs` | `ANSIS344.Apply(PredictionParameters)` → `int[10]` dB HL (−80…+12), float32-faithful; `PredictionParameters` (HLSim defaults: male, 55 y, 25 y at 95 dB(A), fractile 0.5); `HearingLossLevel`; `HearingPresets` Mild / Moderate / Severe (noise notch, −20 / −30 / −40 dB at 4 kHz) |
 | `Core/HearingLossState.cs` | the HLSim state machine: `Set(level, prediction)`, `SetManualBand(i, db)` and `ResetManual()` (Manual only; values come back when Manual is selected again), `Changed` |
+| `Core/HearingCondition.cs` | `HearingCondition` = ear (Both / Left / Right) + level (0 / -20 / -40 dB; 0 dB = normal), with `HearingConditions.Ears`, `Levels`, `Profile`, `Label` (MovingSource, HiddenSource: two button columns) |
 | `Core/HearingProfile.cs` | immutable `{ Left[10], Right[10] }`; `For(Ear.Both/Left/Right, preset or bands)` (unilateral = other ear normal); `Note()` / `Parse()` = `L=0,0,0,0,-5,-10,-10,-20,-10,0;R=0,…` for presets and logs |
 | `Core/PeakingBiquad.cs` | `PeakingBiquad` (Audio EQ Cookbook peaking = Web Audio "peaking", TDF-II, double; `ResponseDb(f, fs)` analytic); `EarFilterBank` (10 in series, `DefaultQ` = {24,12,…,12}, `SetGains`, `SetSampleRate`, `Process(interleaved, channels, channel)`, all-zero gains = bit-exact pass-through) |
 | `Core/ToneGenerator.cs` | sine test tone on Left / Right / Both with 10 ms fades, allocation-free |

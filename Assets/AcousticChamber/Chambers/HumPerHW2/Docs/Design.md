@@ -1,4 +1,4 @@
-# HumPerHW2 (C01) — Design
+# HumPerHW2 (C04) — Design
 
 **Status:** approved by the PO (PB-08a, 2026-11-07). Source: HW2 `Docs/ExperimentDesign.md` (protocol of 2026-10-18,
 PB-26..30) and the PO answers Q19-Q28 (archive). Differences from HW2 are marked **(new)**.

@@ -84,6 +84,10 @@ namespace GPL.SpatialSources
             PlaceAt(origin + fwd.normalized * distanceM);
         }
 
+        /// <summary>On the floor <paramref name="distanceM"/> from <paramref name="origin"/> at yaw <paramref name="yawDeg"/> (0 deg az = the rig's forward, not the gaze).</summary>
+        public void PlaceAhead(Vector3 origin, float yawDeg, float distanceM) =>
+            PlaceAt(origin + Quaternion.Euler(0f, yawDeg, 0f) * Vector3.forward * distanceM);
+
         /// <summary>Horizontal distance (m) and azimuth (deg, lab convention relative to the centre's yaw) of the object.</summary>
         public void Polar(out float distanceM, out float azimuthDeg)
         {

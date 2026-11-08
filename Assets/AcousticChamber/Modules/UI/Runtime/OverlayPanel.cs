@@ -21,6 +21,8 @@ namespace GPL.UI
         public const int OverlayRenderLayer = 31;
         /// <summary>Canvas scale per meter of distance (0.002 at 2 m, the HW2 scale).</summary>
         public const float ScalePerMeter = 0.001f;
+        /// <summary>The panel (and its move handle) stays at least this far above the floor (m); lifted when needed.</summary>
+        public const float MinClearanceM = 0.15f;
 
         public float distanceM = 2f;
         [Tooltip("Panel center below eye level (deg). Negative = above.")]
@@ -33,6 +35,21 @@ namespace GPL.UI
         [Tooltip("Head must be this far above the rig origin before placing (m).")]
         public float minHeadHeightM = 0.3f;
         public float maxWaitSec = 5f;
+
+        /// <summary>
+        /// True = the participant can move the panel with the handle below it (<see cref="PanelMover"/>). Set at run time by
+        /// the chamber menus and experience panels; the chosen yaw / pitch stay for the visit (also after a recenter).
+        /// </summary>
+        public bool Movable
+        {
+            get => GetComponent<PanelMover>() != null;
+            set
+            {
+                var mover = GetComponent<PanelMover>();
+                if (value && mover == null) gameObject.AddComponent<PanelMover>();
+                else if (!value && mover != null) Destroy(mover);
+            }
+        }
 
         /// <summary>Raised after every placement (start, recenter, manual).</summary>
         public event Action Placed;
@@ -92,8 +109,15 @@ namespace GPL.UI
             var head = _rig.centerEyeAnchor.position;
             var yaw = Quaternion.Euler(0f, _rig.transform.eulerAngles.y, 0f);
             var rot = yaw * Quaternion.Euler(0f, yawOffsetDeg, 0f) * Quaternion.Euler(pitchDownDeg, 0f, 0f); // +X pitch tilts forward downward
-            transform.SetPositionAndRotation(head + rot * Vector3.forward * distanceM + Vector3.up * heightOffsetM, rot);
-            transform.localScale = Vector3.one * (ScalePerMeter * distanceM);
+            float scale = ScalePerMeter * distanceM;
+            Vector3 pos = head + rot * Vector3.forward * distanceM + Vector3.up * heightOffsetM;
+            // a tall panel (or its move handle below it) must stay above the floor: lift it when its lowest point would go under
+            float halfHeight = ((RectTransform)transform).rect.height / 2f + (Movable ? PanelMover.EdgeGap + PanelMover.PillLength / 8f + 40f : 0f);
+            float lowest = pos.y + (rot * Vector3.down).y * halfHeight * scale;
+            float floor = _rig.transform.position.y + MinClearanceM;
+            if (lowest < floor) pos.y += floor - lowest;
+            transform.SetPositionAndRotation(pos, rot);
+            transform.localScale = Vector3.one * scale;
             Placed?.Invoke();
         }
 

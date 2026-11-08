@@ -34,6 +34,7 @@ Do not read docs/references/HLSIM_GUIDELINES.md, docs/design/components.html or 
 - Root groups `XR`, `Audio`, `Stimuli`, `Experiment`, `Environment`, `UI` (identity transforms). Console prefix `[GPL]` / `[Chamber:<Id>]`.
 - Asmdefs `GPL.<Module>[.Core|.Editor|.Tests]`, `AcousticChamber.Chambers.<Id>[.Core|.Editor|.Tests]`, `AcousticChamber.App`.
 - Write code with the file tools, not heredocs or `sed`.
+- Choices and toggles in any panel: `UiKit.ChoiceButton` + `UiKit.Select` / `UiButton.Selected` (DesignSystem section 4), so the chosen one is always visible; no hand-made style swaps.
 
 ## Quest 3 pitfalls (details: INSTRUCTIONS.md section 3)
 - GUI: `OVROverlayCanvas`, source canvas on layer 30, layers 30/31 off the eye cameras; re-place after recenter.

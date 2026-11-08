@@ -169,6 +169,34 @@ namespace GPL.UI
             return button;
         }
 
+        /// <summary>
+        /// The <paramref name="index"/>-th of <paramref name="count"/> equal segments (borderless, on a raised track) in a row that spans
+        /// <paramref name="width"/> from <paramref name="left"/> (canvas x of the row's left edge) at height <paramref name="y"/>.
+        /// Show the state with <see cref="Select"/>.
+        /// </summary>
+        public static UiButton ChoiceButton(Transform parent, string label, int index, int count, float left, float width, float y,
+                                            Action onClick, float gap = 16f)
+        {
+            float w = (width - gap * (count - 1)) / count;
+            // segmented control (DesignSystem): a raised track behind the row, borderless segments, the chosen one filled with `select`
+            if (index == 0)
+                Box(parent, "Choice Track", new Vector2(left + width / 2f, y), new Vector2(width + 8f, Theme.buttonHeight + 8f), Theme.raised,
+                    (Theme.buttonHeight + 8f) / 2f);
+            var b = Button(parent, label, label, UiStyle.Borderless, new Vector2(left + w / 2f + index * (w + gap), y), new Vector2(w, 0f), onClick);
+            b.InGroup = true;
+            var rt = (RectTransform)b.transform;
+            rt.sizeDelta = new Vector2(w, rt.sizeDelta.y); // narrower than the minimum width on purpose
+            return b;
+        }
+
+        /// <summary>Sets <see cref="UiButton.Selected"/> on each button by index (null and destroyed buttons are skipped).</summary>
+        public static void Select(System.Collections.Generic.IList<UiButton> buttons, Func<int, bool> on)
+        {
+            if (buttons == null) return;
+            for (int i = 0; i < buttons.Count; i++)
+                if (buttons[i] != null) buttons[i].Selected = on(i);
+        }
+
         /// <summary>A button whose label follows the current language.</summary>
         public static UiButton LocButton(Transform parent, string name, string key, UiStyle style, Vector2 pos, Vector2 size,
                                          Action onClick = null)

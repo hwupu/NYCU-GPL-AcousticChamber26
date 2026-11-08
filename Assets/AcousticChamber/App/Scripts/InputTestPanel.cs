@@ -19,7 +19,7 @@ namespace AcousticChamber.App
 
         StopDialogHost _host;
         GlobalActions _actions;
-        UiButton _sessionButton, _modeButton;
+        UiButton _sessionButton, _modeButton, _englishButton, _chineseButton;
         TextMeshProUGUI _clock, _live, _status;
         bool _running, _debug;
         float _sessionTime;
@@ -59,10 +59,10 @@ namespace AcousticChamber.App
             y -= 100f;
             _modeButton = UiKit.Button(root, "Mode", "", UiStyle.Gray, new Vector2(leftX, y), new Vector2(w, 0f), ToggleMode);
             y -= 100f;
-            UiKit.Button(root, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Gray, new Vector2(leftX - 110f, y), new Vector2(200f, 0f),
-                         () => Loc.Set(UiLanguage.English));
-            UiKit.Button(root, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Gray, new Vector2(leftX + 110f, y), new Vector2(200f, 0f),
-                         () => Loc.Set(UiLanguage.Chinese));
+            _englishButton = UiKit.Button(root, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Gray, new Vector2(leftX - 110f, y), new Vector2(200f, 0f),
+                                          () => { Loc.Set(UiLanguage.English); Refresh(); });
+            _chineseButton = UiKit.Button(root, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Gray, new Vector2(leftX + 110f, y), new Vector2(200f, 0f),
+                                          () => { Loc.Set(UiLanguage.Chinese); Refresh(); });
             foreach (var n in new[] { "English", "Chinese" }) ((RectTransform)root.Find(n)).sizeDelta = new Vector2(200f, th.buttonHeight);
             y -= 100f;
             UiKit.Button(root, "Open Stop Dialog", "Open Stop dialog", UiStyle.Borderless, new Vector2(leftX, y), new Vector2(w, 0f), () => _host.Open());
@@ -132,6 +132,9 @@ namespace AcousticChamber.App
             UiKit.LabelOf(_sessionButton).text = _running ? "Session: running (stop)" : "Session: off (start)";
             _sessionButton.Style = _running ? UiStyle.Destructive : UiStyle.Prominent;
             UiKit.LabelOf(_modeButton).text = _debug ? "Mode: Debug run" : "Mode: Real session";
+            _modeButton.Selected = _debug;
+            _englishButton.Selected = Loc.Current == UiLanguage.English;
+            _chineseButton.Selected = Loc.Current == UiLanguage.Chinese;
         }
 
         void SetStatus(string s)

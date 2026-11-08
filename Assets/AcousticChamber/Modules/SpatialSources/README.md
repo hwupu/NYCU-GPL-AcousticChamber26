@@ -23,7 +23,8 @@ the rig forward (the rig stays at identity, GPL.Homing).
 | `Runtime/PulseTrain.cs` | plays the source's clip as a pulse train (`Play(onS, offS)`, `Stop()`), scaled time (the Stop dialog holds it) |
 | `Runtime/BackgroundBed.cs` | looping sources placed once (`Begin(origin, yaw, radius, azimuths)`) and then held in place every frame; `End`, `Pause(bool)`, `LevelDbfs` (power sum; from `clipLevelsDbfs` measured in the Editor with GPL.Acoustics `WavLevel`, so long clips can stream, or measured in Awake with Decompress On Load), `Note(listener)` = `bg1=-2,0,0;bg2=2,0,0;bg3=0,0,-2 spatial=1` |
 | `Core/FloorDrag.cs` | pure: where a ray meets the floor (or the far point when it points above the horizon), clamp to a ring [min, max] around the listener, ray-sphere pick |
-| `Runtime/FloorDragSource.cs` | a sound object on the floor dragged with the GPL.UI pointer (`IRayTarget`, trigger held): follows the ray's floor point, 0.5-6 m from `center` (the head), faces it, tints `tinted` renderers on hover / hold, `PlaceInFront(head, m)`, `PlaceAt(p)`, `Polar(out m, out az)`, `Grabbed` / `Released`; room-fixed (PB-10) |
+| `Runtime/DistanceCue.cs` | `DistanceCue.Apply(source, natural)`: inverse-distance rolloff or the lab's flat rolloff |
+| `Runtime/FloorDragSource.cs` | a sound object on the floor dragged with the GPL.UI pointer (`IRayTarget`, trigger held): follows the ray's floor point, 0.5-6 m from `center` (the head), faces it, tints `tinted` renderers on hover / hold, `PlaceInFront(head, m)` (along the gaze), `PlaceAhead(origin, yawDeg, m)` (along the rig's forward), `PlaceAt(p)`, `Polar(out m, out az)`, `Grabbed` / `Released`; room-fixed (PB-10) |
 | `Runtime/SourceMarker.cs` | Debug marker (an unlit sphere): follows a target or is pinned at a point; save it inactive |
 
 Not built yet (Architecture section 4; added when a chamber needs them): constrained random placement, trajectories,

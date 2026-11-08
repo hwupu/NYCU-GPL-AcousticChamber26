@@ -44,10 +44,34 @@ namespace GPL.Acoustics
             Debug.Log("[GPL] Reverb: " + RoomModelingStatus);
         }
 
+        /// <summary>True after <see cref="SetDry"/> until the next <see cref="SetRt60"/>.</summary>
+        public bool Dry { get; private set; }
+
+        /// <summary>Applies an experience chamber's room: Dry = no room modeling and no late reverb, else the room's RT60.</summary>
+        public void Apply(RoomChoice choice)
+        {
+            if (choice == RoomChoice.Dry) SetDry();
+            else SetRt60(RoomChoices.Rt60(choice));
+        }
+
+        /// <summary>Switches room modeling and late reverberation off: the sources sound dry (the mixer effect stays in the path).</summary>
+        public void SetDry()
+        {
+            Custom = false; // Update stops pushing the room
+            Dry = true;
+            var plugin = MetaXRAudioNativeInterface.Interface;
+            int roomResult = plugin.SetEnabled((int)EnableFlag.SIMPLE_ROOM_MODELING, false);
+            int lateResult = plugin.SetEnabled((int)EnableFlag.LATE_REVERBERATION, false);
+            RoomModelingStatus = "room_modeling=" + (roomResult == 0 ? "off" : "failed_" + roomResult) +
+                                 " late_reverb=" + (lateResult == 0 ? "off" : "failed_" + lateResult);
+            Debug.Log("[GPL] Reverb: dry (" + RoomModelingStatus + ")");
+        }
+
         /// <summary>Uniform coefficient for a target RT60 (s) from the calibration table, scaled to this room's V/S.</summary>
         public void SetRt60(float seconds)
         {
             if (room == null) { Debug.LogWarning("[GPL] Reverb: no shoebox component assigned"); return; }
+            if (Dry) { Dry = false; EnableRoomModeling(); }
             TargetRt60 = Mathf.Max(0.05f, seconds);
             ApplyUniform((float)Calibration.ReflectionForRt60(TargetRt60, VolumeOverSurface()));
             Debug.Log("[GPL] Reverb: " + Note());

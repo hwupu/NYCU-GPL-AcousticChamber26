@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HiddenSource.Core",
+    "rootNamespace": "AcousticChamber.Chambers.HiddenSource",
+    "references": ["GPL.HearingLoss.Core", "GPL.Acoustics.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

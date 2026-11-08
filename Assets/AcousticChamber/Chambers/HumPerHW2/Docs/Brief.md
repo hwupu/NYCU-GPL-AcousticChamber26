@@ -1,4 +1,4 @@
-# HumPerHW2 (C01) — Brief
+# HumPerHW2 (C04) — Brief
 
 **Status:** approved by the PO (PB-08a, 2026-11-07).
 
@@ -16,7 +16,7 @@ to the picture estimates the tolerated audio-visual disparity (method of adjustm
 Conditions (within subject, 6 trials each): **Quiet** (RT60 0.3 s, no background), **Noisy** (RT60 0.7 s, three background
 recordings), **Reverb** (RT60 2.2 s, the same background).
 
-Chamber ID `HumPerHW2`, label `C01`, folder `Chambers/HumPerHW2`. Docs: [Design](Design.md), [DataFormat](DataFormat.md),
+Chamber ID `HumPerHW2`, label `C04`, folder `Chambers/HumPerHW2`. Docs: [Design](Design.md), [DataFormat](DataFormat.md),
 [AnalysisPlan](AnalysisPlan.md).
 
 New modules extracted from HW2 for this chamber (PB-08b, c): `GPL.Acoustics`, `GPL.SpatialSources`, `GPL.Responses`.

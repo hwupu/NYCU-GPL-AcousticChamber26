@@ -1,9 +1,9 @@
-# HumPerHW2 (C01) — Headset test (PB-08e)
+# HumPerHW2 (C04) — Headset test (PB-08e)
 
 Standalone build on the Quest 3 (not Link: the Android audio plugin is the one to check). Headset volume at the target step (8)
 unless a step says otherwise. Tick each line; note anything odd with the time, so it can be found in the CSV.
 
-## 1. Debug page (Hall > C01 > Debug)
+## 1. Debug page (Hall > C04 > Debug)
 | # | Do | Expect |
 |---|---|---|
 | 1 | Acoustics **0.3 s Quiet**, then **Play stimulus** | white-noise pulses (2 s on, 1 s off) straight ahead at 2 m, radio picture in front of them at eye height, nearly dry |

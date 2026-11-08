@@ -90,22 +90,17 @@ namespace AcousticChamber.App
             void Label(string text, float y) =>
                 UiKit.Text(_window, text, text, th.smallSize, new Vector2(0f, y), new Vector2(width, 40f), color: th.text2, align: TextAlignmentOptions.Left);
 
-            UiButton Choice(string label, int i, int n, float y, System.Action click)
-            {
-                float gap = 16f, w = (width - gap * (n - 1)) / n;
-                var b = UiKit.Button(_window, label, label, UiStyle.Gray, new Vector2(left + w / 2f + i * (w + gap), y), new Vector2(w, 0f), click);
-                ((RectTransform)b.transform).sizeDelta = new Vector2(w, ((RectTransform)b.transform).sizeDelta.y);
-                return b;
-            }
+            UiButton Choice(string label, int i, int n, float y, System.Action click) =>
+                UiKit.ChoiceButton(_window, label, i, n, left, width, y, click);
         }
 
         void Apply()
         {
             if (_output != null) _output.SetProfile(Profile);
             UpdateExpected();
-            for (int i = 0; i < _earButtons.Count; i++) _earButtons[i].Style = Ears[i] == _ear ? UiStyle.Prominent : UiStyle.Gray;
-            for (int i = 0; i < _levelButtons.Count; i++) _levelButtons[i].Style = i == _level ? UiStyle.Prominent : UiStyle.Gray;
-            for (int i = 0; i < _toneButtons.Count; i++) _toneButtons[i].Style = i == _toneIndex ? UiStyle.Prominent : UiStyle.Gray;
+            UiKit.Select(_earButtons, i => Ears[i] == _ear);
+            UiKit.Select(_levelButtons, i => i == _level);
+            UiKit.Select(_toneButtons, i => i == _toneIndex);
             if (_status != null && _output != null) _status.text = _output.Note();
             Debug.Log("[GPL] HearingLoss test: " + DbLabel(LevelDb[_level]) + " = " + TestPanelLevels.Source(LevelDb[_level]) + " on " + _ear +
                       "; " + (_output != null ? _output.Note() : "no output"));

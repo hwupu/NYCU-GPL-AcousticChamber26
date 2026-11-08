@@ -1,4 +1,4 @@
-# HumPerHW2 (C01) — Data format
+# HumPerHW2 (C04) — Data format
 
 **Status:** approved by the PO (PB-08a, 2026-11-07). Written for an analyst (human or AI).
 

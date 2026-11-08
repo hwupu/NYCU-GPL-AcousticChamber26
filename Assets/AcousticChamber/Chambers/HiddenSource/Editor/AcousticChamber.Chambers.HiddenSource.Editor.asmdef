@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HiddenSource.Editor",
+    "rootNamespace": "AcousticChamber.Chambers.HiddenSource.Editor",
+    "references": ["AcousticChamber.Chambers.HiddenSource", "AcousticChamber.Chambers.HiddenSource.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "GPL.SpatialSources", "GPL.HearingLoss", "Meta.XR.Audio", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

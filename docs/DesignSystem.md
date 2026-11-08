@@ -74,6 +74,10 @@ Button fills, **normal → hover → pressed, each brighter; pressed is the brig
 - Toggle buttons and one-of button sets (PB-08e, e.g. Debug "Play stimulus", "0.7 s Noisy"): borderless buttons; the active one
   (playing, chosen) has the `select` fill, hover a step lighter (`gray.pressed`); `UiButton.Selected`. Prominent and destructive
   buttons have no selected state.
+- **Code rule (every panel, test, debug and experience screen):** a one-of set is built with `UiKit.ChoiceButton` (n equal buttons in
+  a row) and shown with `UiKit.Select(buttons, i => chosen)`; a single toggle sets `UiButton.Selected`. Never swap a button's style
+  or colour by hand, never leave the chosen state unshown. Call `Select` after every change and once after building the panel.
+  Several independent choices (ear, level) are separate sets side by side, each with its own `Select`.
 
 ### Groups and rows (Debug, settings)
 - Group = `raised` container (radius 36, 8 u padding to the rows, rows 4 u apart), as wide as the page content (aligned with the header edges, 48 u from the window edge); rows 88 u high (radius 28): label (+ secondary line), value in `text2` (edited values in `text`), trailing control or `›`.

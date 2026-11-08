@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HumPerHW2.ChamberDefinition
   m_EditorClassIdentifier: AcousticChamber.App::AcousticChamber.App.ChamberDefinition
   id: HumPerHW2
-  label: C01
+  label: C04
   title: HumPerHW2
   description: 'Ventriloquist effect: match a sound to a picture in quiet, noisy and reverberant rooms (HW2 rebuilt).'
   thumbnail: {fileID: 0}

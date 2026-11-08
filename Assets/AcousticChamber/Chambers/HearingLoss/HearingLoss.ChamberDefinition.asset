@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HearingLoss.ChamberDefinition
   m_EditorClassIdentifier: AcousticChamber.App::AcousticChamber.App.ChamberDefinition
   id: HearingLoss
-  label: C02
+  label: C03
   title: Hearing Loss
   description: Experience simulated hearing loss on one or both ears while you move a sound around you.
   thumbnail: {fileID: 0}

@@ -94,6 +94,7 @@ namespace AcousticChamber.App.Editor
                 def = ScriptableObject.CreateInstance<ChamberDefinition>();
                 def.id = TemplateId;
                 def.label = "C00";
+                def.enabled = false; // hidden from the Hall: a copy source, not a chamber
                 def.title = "Template";
                 def.description = "Minimal chamber to copy (stub until PB-07).";
                 AssetDatabase.CreateAsset(def, defPath);
