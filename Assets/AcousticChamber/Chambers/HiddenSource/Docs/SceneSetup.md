@@ -13,7 +13,7 @@ Order for a fresh scene: 1, 2, save, Validate Setup. No lighting bake.
 Headless check on the mirror: `Tools/Verify-Headless.ps1 -ExecuteMethod AcousticChamber.Chambers.HiddenSource.Editor.HiddenSourceSetup.BatchSteps`.
 
 ## Headset check (PB-12)
-1. Hall > C02 opens the menu; the handle below the panel moves it (trigger held: swing the ray = direction, hand away / back = distance).
+1. Hall > C02 opens the menu; the handle below the panel turns it around the head (trigger held, swing the ray).
 2. Start: the menu hides, pulses play from the floor, the laser shows, the amber sphere follows the ray on the floor (clamped 0.3-8 m).
 3. A: the true white sphere and a line to the guess appear; the menu returns with "Azimuth error ... Distance error ...".
 4. Room Dry / Room 0.7 s / Hall 2.2 s is audible (echo); Natural is quieter far away than Flat; Left -40 dB dulls the left ear.

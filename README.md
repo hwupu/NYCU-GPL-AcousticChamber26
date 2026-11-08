@@ -35,17 +35,17 @@ headset in MQDH.
 
 ## 🕹️ Inside the lab
 - **Point and click:** aim either controller's ray and pull the **trigger**.
-- **Y button (left):** stop or pause, from anywhere.
+- **Y button (left):** Stop dialog, during a session.
 - **Hold the Meta button:** recenter, if "forward" drifts.
 
-1. **Main Hall:** pick a chamber. Switch the language here: English / 中文.
+1. **Main Hall:** pick a chamber. C01-C03 open their own panel; the steps below are for a study chamber (C04).
 2. **Chamber menu:** type a **Study ID** (up to 4 digits; `1` becomes `S0001`), then choose
    - **Start**: a real session (data is saved),
-   - **Debug**: play freely, change settings and save them as presets, manage the data files, or
+   - **Config**: play in Debug mode, change settings and save them as presets, manage the data files, or
    - **Back to Hall**.
-3. **Hand the headset over.** The participant presses ready, looks ahead, and the chamber begins.
-4. **Need a break?** Press **Y**: *Keep going*, *Pause* (continue later) or *Drop out*.
-   To continue a paused session, enter the same Study ID and choose **Resume**.
+3. **Hand the headset over.** The participant picks a language, recenters (hold the Meta button), reads the instructions, and the chamber begins.
+4. **Need to stop?** Press **Y**: *Keep going* or *Drop out*.
+   An unfinished session (also after quitting the app) continues when you enter the same Study ID and choose **Resume**.
 
 ## 💾 Get your data
 Every session saves a CSV file (one row per event) and a small `.session` file used for resuming. They are stored in one

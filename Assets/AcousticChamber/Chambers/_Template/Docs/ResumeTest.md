@@ -5,7 +5,7 @@ Proves every resume policy on the headset. The same cases run as an EditMode tes
 covers what only the app can show: real quits, the session file on disk, the chamber menu, the launch routing and the CSV.
 
 ## Setup (once per policy)
-1. Hall > Template > **Debug** > Playground: set `resume_from`; **Save as Custom** (it becomes active). Back to the
+1. Hall > Template > **Config** > Playground: set `resume_from`; **Save as Custom** (it becomes active). Back to the
    chamber menu: the line under the buttons reads "Preset: Custom". Defaults otherwise (2 practice trials, 2 blocks × 4 trials).
 2. Use a new Study ID per case (S0101, S0102, ...), so the cases do not mix.
 
@@ -28,13 +28,13 @@ For every resumable policy:
 | `block_start` | block 2 from trial 1 | `block_restart` block 2 `attempt` 2, trials 1–4 `attempt` 2 |
 | `stage_start` | block 1 of the experiment | `block_restart` block 1 `attempt` 2, then block 2 `attempt` 2 (`block_restart`), 8 trials |
 | `session_start` | handover (language skipped) | handover, recenter, slides and ready (not marked "again"), practice `block_restart` `attempt` 2, both blocks `attempt` 2 |
-| `not_resumable` | — | the app opens at the **Hall** (nothing to resume); the ID is not listed; Start with it begins a **new** session (new CSV and session file). The old files stay (Debug > Log files) |
+| `not_resumable` | — | the app opens at the **Hall** (nothing to resume); the ID is not listed; Start with it begins a **new** session (new CSV and session file). The old files stay (Config > Log files) |
 
 Also check once (any policy): quit **during the practice** → the practice starts again as `attempt` 2 (practice always uses
 `stage_start`).
 
 ## Checking the files
-Debug > Log files lists each session (one line per session: the file name). For the CSV itself: the `Template/` folder
+Config > Log files lists each session (one line per session: the file name). For the CSV itself: the `Template/` folder
 (paths in the [GPL.Session README](../../../Modules/Session/README.md#files-and-paths)). In the CSV:
 - The rows before the kill are all there (nothing deleted); the interrupted trial 3 has **no** `trial` row from before the kill.
 - The `.session` file: `status=Completed`, `resume_from` = the policy, `attempt.6.1` = the last attempt of block 2

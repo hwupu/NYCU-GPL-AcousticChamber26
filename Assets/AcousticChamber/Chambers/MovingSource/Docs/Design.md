@@ -54,4 +54,4 @@ returns to normal hearing.
 No Study ID, presets, CSV, `.session` file, Debug bench or resume (ADR-0006).
 
 ## Moving the panel
-The handle below the panel moves it: direction and distance (`GPL.UI` `UiGrabber`; PO 2026-11-08).
+The handle below the panel (`GPL.UI` `UiGrabber`) turns it around the head; no distance move.

@@ -1,7 +1,7 @@
 # GPL.Params
 
 Experimental parameters, presets and the active preset (ADR-0002 of AcousticChamber26). Lets the experimenter tune values in a
-Debug menu, save them as a preset and run real sessions with the active preset, without rebuilding the app.
+Config menu, save them as a preset and run real sessions with the active preset, without rebuilding the app.
 
 **Copy:** this folder + `Core/`. **Dependencies:** GPL.Core.
 

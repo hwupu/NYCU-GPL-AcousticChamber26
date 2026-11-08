@@ -1,7 +1,7 @@
 # HumPerHW2 (C04) — Design
 
 **Status:** approved by the PO (PB-08a, 2026-11-07). Source: HW2 `Docs/ExperimentDesign.md` (protocol of 2026-10-18,
-PB-26..30) and the PO answers Q19-Q28 (archive). Differences from HW2 are marked **(new)**.
+PB-26..30) and the PO answers Q19-Q28 (git history of `docs/Questions.md`). Differences from HW2 are marked **(new)**.
 
 ## Posture and setting
 Seated, posture `Seated`. Room 8.72 m wide × 15 m deep × 3.5 m high (HW2 default), white walls and ceiling, light-gray floor,
@@ -42,7 +42,7 @@ Chamber menu → (Start) → stages (onboarding stages switchable by `onboarding
 
 | # | Stage | What happens | Resume policy |
 |---|---|---|---|
-| — | menu | Study ID, Start, Debug; "Audio level: N (target 8)". | — |
+| — | menu | Study ID, Start, Config; "Audio level: N (target 8)". | — |
 | 1 | `handover` | Stock: "1. Set the IPD. 2. Hand the headset to the participant." Runs again after every resume. | StageStart |
 | 2 | `language` | English / 中文; skipped on a resume. | StageStart |
 | 3 | `recenter` | Stock Meta-button recenter slide. Runs again after every resume. | StageStart |
@@ -97,17 +97,17 @@ Silently, as the Template: handover, recenter and the ready dot again, then the 
 block's condition is re-applied: reverb coefficient, background restarted (placed anew around the new origin) if the condition has
 one. A practice interrupted before "I'm ready" restarts the practice stage.
 
-## Debug (chamber sections, PB-08e)
+## Config page (Debug mode; chamber sections, PB-08e)
 Besides Run / Playground / Presets / Log files / Practice trial:
 - **Acoustics:** 0.3 s Quiet, 0.7 s Noisy (starts the background), 2.2 s Reverb (background on), Preset (Meta Concrete, about 4 s);
   status shows the target, coefficient and calculated RT60.
 - **Playback:** Play stimulus (pulse train ahead at 2 m with the picture, current condition), Play / pause background.
 - **Measure RT60** (impulse at the stimulus source, Schroeder T20 / T30, about 5 s): result in the status line and the console only;
-  the Debug page writes no log rows (Q44). Logged measurements come from runs with `rt60.measure_at_block_start` (Q46).
+  the Config page writes no log rows (Q44). Logged measurements come from runs with `rt60.measure_at_block_start` (Q46).
 - **Sound sphere:** After confirm (default) / Always visible, a Debug-only display switch (not a preset key, not logged, Q45);
   after each Debug trial the sphere stays at the answer and the cue reads "Sound ±x° from the picture (A: continue)" until A.
   Real sessions never show it.
-Leaving Debug (‹ to the chamber menu) stops the test sound and the background and returns the room to Quiet (Q47).
+Leaving Config (‹ to the chamber menu) stops the test sound and the background and returns the room to Quiet (Q47).
 The sections use the Playground values. The buttons show their state (selected fill): the room in use (Quiet / Noisy / Reverb /
 Meta preset, one of four), Play stimulus and Background while they play (a paused background is off), Measure RT60 while it
 runs, and the sound-sphere mode (one of two). Headset checklist: [HeadsetTest.md](HeadsetTest.md).
