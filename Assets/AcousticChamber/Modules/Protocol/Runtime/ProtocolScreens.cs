@@ -65,7 +65,7 @@ namespace GPL.Protocol
 
         readonly Transform _canvas;
         readonly GlobalActions _actions;
-        RectTransform _screen;
+        UiPanel _screen;
         TextMeshProUGUI _cue;
 
         public ProtocolScreens(Transform canvas, GlobalActions actions)
@@ -89,16 +89,14 @@ namespace GPL.Protocol
         public IEnumerator Language(Action<UiLanguage> chosen)
         {
             var th = UiKit.Theme;
-            var r = Open("Language Screen");
+            var page = Open("Language Screen");
             string title = Loc.Get(UiLanguage.English, ProtocolStrings.ChooseLanguage) + "\n" + Loc.Get(UiLanguage.Chinese, ProtocolStrings.ChooseLanguage);
-            // the thanks screen's layout: text centered in its box, buttons below (MessageTextY / MessageButtonY)
-            float buttonY = MessageButtonY;
-            UiKit.Text(r, "Title", title, th.headingSize, new Vector2(0f, MessageTextY), new Vector2(Size.x - 96f, MessageTextH), bold: true);
+            var row = ButtonToolbar(page);
+            CenterText(page, true);
+            MessageText(page.Body, "Title", title);
             UiLanguage? pick = null;
-            UiKit.Button(r, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Prominent, new Vector2(-170f, buttonY), new Vector2(300f, 0f),
-                         () => { if (InputOpen) pick = UiLanguage.English; });
-            UiKit.Button(r, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Prominent, new Vector2(170f, buttonY), new Vector2(300f, 0f),
-                         () => { if (InputOpen) pick = UiLanguage.Chinese; });
+            UiKit.Button(row, "English", Loc.LabelOf(UiLanguage.English), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = UiLanguage.English; });
+            UiKit.Button(row, "Chinese", Loc.LabelOf(UiLanguage.Chinese), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = UiLanguage.Chinese; });
             while (pick == null) yield return null;
             Hide();
             Loc.Set(pick.Value);
@@ -112,14 +110,13 @@ namespace GPL.Protocol
         /// </summary>
         public IEnumerator Choice(string text, string leftKey, string rightKey, Action<int> chosen)
         {
-            var th = UiKit.Theme;
-            var r = Open("Choice Screen");
-            UiKit.Text(r, "Text", text, th.headingSize, new Vector2(0f, MessageTextY), new Vector2(Size.x - 96f, MessageTextH), bold: true);
+            var page = Open("Choice Screen");
+            var row = ButtonToolbar(page);
+            CenterText(page, true);
+            MessageText(page.Body, "Text", text);
             int pick = -1;
-            UiKit.Button(r, "Left", Loc.Get(leftKey), UiStyle.Gray, new Vector2(-200f, MessageButtonY), new Vector2(360f, 0f),
-                         () => { if (InputOpen) pick = 0; });
-            UiKit.Button(r, "Right", Loc.Get(rightKey), UiStyle.Prominent, new Vector2(200f, MessageButtonY), new Vector2(360f, 0f),
-                         () => { if (InputOpen) pick = 1; });
+            UiKit.Button(row, "Left", Loc.Get(leftKey), UiStyle.Gray, onClick: () => { if (InputOpen) pick = 0; });
+            UiKit.Button(row, "Right", Loc.Get(rightKey), UiStyle.Prominent, onClick: () => { if (InputOpen) pick = 1; });
             yield return null; // the click that closed the previous screen does not count here
             while (pick < 0) yield return null;
             Hide();
@@ -134,24 +131,51 @@ namespace GPL.Protocol
         /// </summary>
         public IEnumerator Message(string text, string buttonKey = null, Func<bool> until = null)
         {
-            var th = UiKit.Theme;
-            var r = Open("Message Screen");
+            var page = Open("Message Screen");
             bool hasButton = !string.IsNullOrEmpty(buttonKey);
-            UiKit.Text(r, "Text", text, th.headingSize, new Vector2(0f, hasButton ? MessageTextY : 0f), new Vector2(Size.x - 96f, MessageTextH), bold: true);
+            var row = hasButton ? ButtonToolbar(page) : null;
+            CenterText(page, hasButton);
+            MessageText(page.Body, "Text", text);
             bool clicked = false;
             if (hasButton)
-                UiKit.Button(r, "Button", Loc.Get(buttonKey), UiStyle.Prominent, new Vector2(0f, MessageButtonY), new Vector2(360f, 0f),
-                             () => { if (InputOpen) clicked = true; });
+                UiKit.Button(row, "Button", Loc.Get(buttonKey), UiStyle.Prominent, onClick: () => { if (InputOpen) clicked = true; });
             yield return null; // the click that closed the previous screen does not count here
             while (!clicked && !(until != null && until())) yield return null;
             yield return null;
         }
 
         /// <summary>
-        /// Layout of a message screen with buttons (the thanks screen; PO 2026-11-07: the reference for the language choice and
-        /// the block break): the text is vertically centered in a 360 u box at y 80, the buttons sit at y -180.
+        /// Message layout: the buttons sit in the toolbar at the bottom (a centered row, <c>gap</c> apart); the text is centered
+        /// vertically in the panel (not in the space above the buttons): the body keeps a margin above equal to the toolbar's
+        /// height, so the text stays centered and never touches the buttons. Call <see cref="ButtonToolbar"/> first, then
+        /// <see cref="CenterText"/> (adding a slot resets the body padding).
         /// </summary>
-        public const float MessageTextY = 80f, MessageTextH = 360f, MessageButtonY = -180f;
+        static RectTransform ButtonToolbar(UiPage page)
+        {
+            var toolbar = page.AddToolbar();
+            toolbar.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
+            return toolbar;
+        }
+
+        /// <summary>Centers the body's content vertically in the panel (<paramref name="hasToolbar"/>: the toolbar's height is mirrored above).</summary>
+        static void CenterText(UiPage page, bool hasToolbar)
+        {
+            var th = UiKit.Theme;
+            var g = page.Body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
+            g.childAlignment = TextAnchor.MiddleCenter;
+            g.spacing = 0f;
+            float margin = hasToolbar ? th.buttonHeight + th.surfacePaddingBottom : th.surfacePaddingBottom;
+            g.padding = UiKit.Pad(th.surfacePaddingX, margin, th.surfacePaddingX, hasToolbar ? 0f : th.surfacePaddingBottom);
+        }
+
+        /// <summary>A centered, wrapping, bold heading-size text across the body width.</summary>
+        static TextMeshProUGUI MessageText(RectTransform parent, string name, string text)
+        {
+            var t = UiKit.Text(parent, name, text, UiKit.Theme.headingSize, Vector2.zero, Vector2.zero, bold: true);
+            t.textWrappingMode = TextWrappingModes.Normal;
+            UiKit.Size(t.gameObject, prefW: 0f, flexW: 1f);
+            return t;
+        }
 
         /// <summary>
         /// The handover (Architecture section 8, PB-20b): "Set the IPD, then hand the headset to the participant." + Continue,
@@ -160,17 +184,19 @@ namespace GPL.Protocol
         public IEnumerator Handover()
         {
             var th = UiKit.Theme;
-            var r = Open("Handover Screen");
-            var title = UiKit.Text(r, "Title", Loc.Get(ProtocolStrings.HandoverTitle), th.headingSize,
-                                   new Vector2(0f, SlideTitleY(Size.y)), new Vector2(Size.x - 96f, UiKit.Theme.iconButtonSize), bold: true);
-            UiKit.SingleLine(title); // the slides' top bar
+            var page = Open("Handover Screen", Loc.Get(ProtocolStrings.HandoverTitle));
             // a numbered list: left-aligned in a centered column
-            var t = UiKit.Text(r, "Steps", Loc.Get(ProtocolStrings.Handover), th.headingSize, new Vector2(0f, MessageTextY), new Vector2(720f, MessageTextH),
-                               bold: true, align: TextAlignmentOptions.Left);
+            page.Body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
+            var t = UiKit.Text(page.Body, "Steps", Loc.Get(ProtocolStrings.Handover), th.headingSize, Vector2.zero, Vector2.zero, bold: true,
+                               align: TextAlignmentOptions.Left);
             t.lineSpacing = 20f;
+            t.textWrappingMode = TextWrappingModes.Normal;
+            UiKit.Size(t.gameObject, prefW: 720f, flexW: 0f);
             bool clicked = false;
-            UiKit.LocButton(r, "Button", UiStrings.Continue, UiStyle.Prominent, new Vector2(0f, MessageButtonY), new Vector2(360f, 0f),
-                            () => { if (InputOpen) clicked = true; });
+            var toolbar = page.AddToolbar();
+            toolbar.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
+            var button = UiKit.Button(toolbar, "Button", Loc.Get(UiStrings.Continue), UiStyle.Prominent, onClick: () => { if (InputOpen) clicked = true; });
+            button.GetComponentInChildren<TextMeshProUGUI>().gameObject.AddComponent<LocalizedText>().key = UiStrings.Continue;
             yield return null;
             while (!clicked) yield return null;
             Hide();
@@ -244,14 +270,6 @@ namespace GPL.Protocol
         /// <summary>Arrow before the Back label and after the Next label of a slide.</summary>
         public const string BackArrow = "← ", NextArrow = " →";
 
-        /// <summary>Top bar of a slide (title) = the page header: 40 u top padding + 80 u title row (120 u).</summary>
-        public static float SlideTopBar => Page.HeaderHeight;
-
-        /// <summary>Center of a slide title: like a page title, in the 80 u row below the 40 u top padding (PO 2026-11-07).</summary>
-        public static float SlideTitleY(float height) => height / 2f - Page.TopPad - UiKit.Theme.iconButtonSize / 2f;
-        /// <summary>Bottom bar of a slide (Back, Next); the image fills the height between the bars (468 u on a 700 u canvas).</summary>
-        public const float SlideBottomBar = 112f;
-
         /// <summary>The slides of a <see cref="SlideSet"/> (see the overload with pages).</summary>
         public IEnumerator Slides(SlideSet set, int start, bool resumed, Action<SlideDeck, SlidePage, string> shown,
                                   Func<IEnumerator> firstBack = null, Func<UiLanguage, string> firstBackLabel = null,
@@ -271,8 +289,8 @@ namespace GPL.Protocol
         }
 
         /// <summary>
-        /// Slides (PB-20): title in the top bar, the illustration over the full width between the bars (1000 x 468 u on the 1000 x 700 u
-        /// canvas; without an image the page's caption text fills the gray area), Back (borderless) and Next in the bottom bar.
+        /// Slides (PB-20): title in the navigation bar, the illustration over the full width between the bars (without an image
+        /// the page's caption text fills the gray area), Back (borderless) and Next in the toolbar.
         /// Buttons name where they lead (accessibility, PO 2026-11-07): "← &lt;previous slide's short title&gt;" and
         /// "&lt;next slide's short title&gt; →", "← Back" / "Next →" when that slide has no title.
         /// On the first slide Back is shown only with <paramref name="firstBack"/> (another screen, e.g. the language choice or
@@ -280,7 +298,7 @@ namespace GPL.Protocol
         /// <c>again</c>). On the last slide Next reads "Continue" without an arrow (the slides end), or, with
         /// <paramref name="lastLabel"/>, names what follows ("Next →" when it returns empty). Next is inactive while a page's
         /// <see cref="SlidePage.Ready"/> is false. Opens on slide <paramref name="start"/>; <paramref name="shown"/> runs for
-        /// every slide that comes on screen (store its index, log it). The window changes in place. No pages: nothing shown.
+        /// every slide that comes on screen (store its index, log it). No pages: nothing shown.
         /// </summary>
         public IEnumerator Slides(IReadOnlyList<SlidePage> pages, int start, bool resumed, Action<SlideDeck, SlidePage, string> shown,
                                   Func<IEnumerator> firstBack = null, Func<UiLanguage, string> firstBackLabel = null,
@@ -289,28 +307,34 @@ namespace GPL.Protocol
             var deck = new SlideDeck(pages != null ? pages.Count : 0, start);
             if (deck.Done) yield break;
             var th = UiKit.Theme;
-            float w = Size.x, h = Size.y, imageH = h - SlideTopBar - SlideBottomBar;
-            float buttonY = -h / 2f + SlideBottomBar / 2f, buttonX = w / 2f - 48f - SlideButtonWidth / 2f;
             string how = resumed ? SlideDeck.How.Resume : SlideDeck.How.First;
             int move = 0;
 
             while (!deck.Done)
             {
-                // (re)build the window; it is rebuilt only after another screen (firstBack) replaced it
-                var r = Open("Slides Screen");
-                var title = UiKit.Text(r, "Title", "", th.headingSize, new Vector2(0f, SlideTitleY(h)), new Vector2(w - 96f, th.iconButtonSize), bold: true);
-                UiKit.SingleLine(title);
-                var imageRt = UiKit.Rect(r, "Image", new Vector2(0f, h / 2f - SlideTopBar - imageH / 2f), new Vector2(w, imageH));
+                // (re)build the screen; it is rebuilt only after another screen (firstBack) replaced it
+                var uiPage = Open("Slides Screen", "");
+                UiNavigationBar.CenterTitle(uiPage);
+                var title = uiPage.NavigationBar.Find("Title Box/Label").GetComponent<TextMeshProUGUI>();
+                var toolbar = uiPage.AddToolbar();
+                // the illustration runs the full width between the bar and the toolbar (after the slots: they set the body padding)
+                var bodyGroup = uiPage.Body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>();
+                bodyGroup.padding = UiKit.Pad(0, 12, 0, 0);
+                var imageRt = UiKit.Node(uiPage.Body, "Image");
+                UiKit.Size(imageRt.gameObject, minW: 0f, minH: 0f, prefW: 0f, prefH: 0f, flexW: 1f, flexH: 1f);
                 var image = imageRt.gameObject.AddComponent<UnityEngine.UI.RawImage>();
                 image.raycastTarget = false;
-                var caption = UiKit.Text(imageRt, "Caption", "", th.headingSize, Vector2.zero, new Vector2(w - 192f, imageH - 96f), bold: true);
+                var caption = UiKit.Text(imageRt, "Caption", "", th.headingSize, Vector2.zero, Vector2.zero, bold: true);
+                UiKit.Fill(caption.rectTransform, 48f);
                 caption.raycastTarget = false;
-                var back = UiKit.Button(r, "Back", "", UiStyle.Borderless, new Vector2(-buttonX, buttonY),
-                                        new Vector2(SlideButtonWidth, 0f), () => { if (InputOpen && move == 0) move = -1; });
-                var next = UiKit.Button(r, "Next", "", UiStyle.Prominent, new Vector2(buttonX, buttonY),
-                                        new Vector2(SlideButtonWidth, 0f), () => { if (InputOpen && move == 0) move = 1; });
-                var backLabel = back.transform.Find("Label").GetComponent<TextMeshProUGUI>();
-                var nextLabel = next.transform.Find("Label").GetComponent<TextMeshProUGUI>();
+                var back = UiKit.Button(toolbar, "Back", "…", UiStyle.Borderless, minWidth: false, onClick: () => { if (InputOpen && move == 0) move = -1; });
+                var spacer = UiKit.Node(toolbar, "Spacer");
+                UiKit.Size(spacer.gameObject, flexW: 1f);
+                var next = UiKit.Button(toolbar, "Next", "…", UiStyle.Prominent, minWidth: false, onClick: () => { if (InputOpen && move == 0) move = 1; });
+                foreach (var b in new[] { back, next })
+                    UiKit.Size(b.gameObject, minW: SlideButtonWidth, minH: th.buttonHeight, prefW: SlideButtonWidth, prefH: th.buttonHeight, flexW: 0f, flexH: 0f);
+                var backLabel = back.GetComponentInChildren<TextMeshProUGUI>();
+                var nextLabel = next.GetComponentInChildren<TextMeshProUGUI>();
                 backLabel.overflowMode = TextOverflowModes.Ellipsis; // a long title ends in …
                 nextLabel.overflowMode = TextOverflowModes.Ellipsis;
 
@@ -367,7 +391,7 @@ namespace GPL.Protocol
             yield return null;
         }
 
-        /// <summary>Bare text on the canvas without a panel (the window is hidden), below the center. Null or empty hides it.</summary>
+        /// <summary>Bare text on the canvas without a panel (the panel is hidden), below the center. Null or empty hides it.</summary>
         public void Cue(string text, float y = CueY)
         {
             if (string.IsNullOrEmpty(text))
@@ -388,7 +412,7 @@ namespace GPL.Protocol
         /// <summary>Removes the current screen (not the cue).</summary>
         public void Hide()
         {
-            if (_screen != null) UnityEngine.Object.Destroy(_screen.gameObject);
+            if (_screen != null) Remove(_screen.gameObject);
             _screen = null;
         }
 
@@ -396,15 +420,28 @@ namespace GPL.Protocol
         public void Clear()
         {
             Hide();
-            if (_cue != null) UnityEngine.Object.Destroy(_cue.gameObject);
+            if (_cue != null) Remove(_cue.gameObject);
             _cue = null;
         }
 
-        RectTransform Open(string name)
+        static void Remove(GameObject go)
+        {
+            if (Application.isPlaying) UnityEngine.Object.Destroy(go);
+            else UnityEngine.Object.DestroyImmediate(go);
+        }
+
+        /// <summary>
+        /// A new screen: a <see cref="UiPanel"/> over the canvas (it replaces the previous one). With <paramref name="title"/> it has
+        /// a navigation bar (no back button) showing it.
+        /// </summary>
+        UiPage Open(string name, string title = null)
         {
             Hide();
-            _screen = UiKit.Window(_canvas, name);
-            return _screen;
+            _screen = UiPanel.Create(_canvas, name, Size);
+            _screen.HasGrabber = false; // the participant's screens are not moved
+            var page = _screen.Surface.Root;
+            if (title != null) UiNavigationBar.Create(page, title, UiNavigationBar.Leading.None);
+            return page;
         }
     }
 }

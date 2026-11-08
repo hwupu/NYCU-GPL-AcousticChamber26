@@ -3,7 +3,7 @@
 Standalone build on the Quest 3 (not Link: the Android audio plugin is the one to check). Headset volume at the target step (8)
 unless a step says otherwise. Tick each line; note anything odd with the time, so it can be found in the CSV.
 
-## 1. Debug page (Hall > C04 > Debug)
+## 1. Config page (Hall > C04 > Config)
 | # | Do | Expect |
 |---|---|---|
 | 1 | Acoustics **0.3 s Quiet**, then **Play stimulus** | white-noise pulses (2 s on, 1 s off) straight ahead at 2 m, radio picture in front of them at eye height, nearly dry |
@@ -16,7 +16,7 @@ unless a step says otherwise. Tick each line; note anything odd with the time, s
 | 8 | **Sound sphere: Always visible**, Play stimulus | orange sphere on the sound |
 | 9 | ‹ back to the chamber menu | all sound stops |
 
-## 2. Debug run (Debug > Run experiment trials)
+## 2. Debug run (Config > Run experiment trials)
 | # | Do | Expect |
 |---|---|---|
 | 10 | Handover, language 中文, recenter slide, the three HW2 slides, the dot | slides look right (no stretched text, dark side bands blend in), Back / Next labels in 中文 |

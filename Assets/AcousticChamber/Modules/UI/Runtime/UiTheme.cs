@@ -43,12 +43,14 @@ namespace GPL.UI
     public class UiTheme : ScriptableObject
     {
         /// <summary>Token layout version; assets below it are reset to the defaults by the setup step (fonts kept).</summary>
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
         [HideInInspector] public int version;
 
         [Header("Fonts (TextMeshPro, dynamic; one family for English and 中文)")]
         public TMP_FontAsset regular;
         public TMP_FontAsset bold;
+        [Tooltip("Icon sprites by name (UiSetup.EnsureIconSet).")]
+        public UiIconSet icons;
 
         [Header("Surfaces and text")]
         public Color surface = Rgb(0x1C1C1F);
@@ -97,6 +99,30 @@ namespace GPL.UI
         public float groupPadding = 8f;
         public float panelRadius = 32f;
         public float groupRadius = 36f;
+        public float rowRadius = 28f;
+        public float cardRadius = 40f;
+
+        [Header("Kit v3 (docs/design theme.css): icons, label nudge, panel padding")]
+        [Tooltip("Single-line text moves up by this many units (the font sits low). Icons are not moved.")]
+        public float labelNudge = 2f;
+        public float iconSize = 40f;
+        public float iconSizeSmall = 32f;
+        [Tooltip("Gap between an icon and a label.")]
+        public float iconGap = 12f;
+        [Tooltip("Left and right padding of a button's label.")]
+        public float buttonPaddingX = 40f;
+        [Tooltip("The side of a button or row that has an icon keeps this share of the padding (25 % less).")]
+        [Range(0.5f, 1f)] public float iconSidePaddingShare = 0.75f;
+        [Tooltip("Left and right padding of a surface's content.")]
+        public float surfacePaddingX = 48f;
+        [Tooltip("Top padding of a navigation bar (40 less 4: the font sits low).")]
+        public float navTopPadding = 36f;
+        [Tooltip("Distance from the bottom edge to the last row of a surface or its toolbar.")]
+        public float surfacePaddingBottom = 40f;
+        public float rowMinHeight = 88f;
+        public float rowPaddingX = 28f;
+        public float dialogWidth = 820f;
+        public float panelWidth = 1000f;
         [Range(0.8f, 1f)] public float pressedScale = 0.97f;
         [Tooltip("Scale a sheet appears from (and leaves to).")]
         [Range(0.8f, 1f)] public float sheetScale = 0.94f;
@@ -143,10 +169,12 @@ namespace GPL.UI
         public void ResetTokens()
         {
             var fonts = (regular, bold);
+            var iconSet = icons;
             var d = CreateInstance<UiTheme>();
             JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(d), this);
             DestroyImmediate(d);
             (regular, bold) = fonts;
+            icons = iconSet;
             version = CurrentVersion;
         }
 

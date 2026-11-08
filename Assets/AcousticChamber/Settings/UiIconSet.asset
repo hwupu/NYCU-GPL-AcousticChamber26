@@ -1,0 +1,265 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a766039b6abdf084ab75e140cc08c63b, type: 3}
+  m_Name: UiIconSet
+  m_EditorClassIdentifier: GPL.UI::GPL.UI.UiIconSet
+  icons:
+  - name: arrow-clockwise
+    sprite: {fileID: 21300000, guid: 4f0de95394a4177429d5a050edafb5f0, type: 3}
+  - name: arrow-counter-clockwise
+    sprite: {fileID: 21300000, guid: 85db8db484f8b244ea0b3be66e7555e1, type: 3}
+  - name: arrow-cycle
+    sprite: {fileID: 21300000, guid: 8cd20eed4bb257c44bf55d940c864644, type: 3}
+  - name: arrow-down
+    sprite: {fileID: 21300000, guid: ac622a9ef49e75142a1d1ffe02d863a6, type: 3}
+  - name: arrow-down-left
+    sprite: {fileID: 21300000, guid: c878b2d27c6db504ba6f7af8c40e7497, type: 3}
+  - name: arrow-down-right
+    sprite: {fileID: 21300000, guid: 6ffd71499a9782e4ca3d402c53112c2c, type: 3}
+  - name: arrow-left
+    sprite: {fileID: 21300000, guid: 52b0b52a0c30dc54ea8ab03096626181, type: 3}
+  - name: arrow-repeat
+    sprite: {fileID: 21300000, guid: 1eeabd8c4c8ff274da94e6be7367d197, type: 3}
+  - name: arrow-right
+    sprite: {fileID: 21300000, guid: 4c208c20a869a7144b528d9c5e51be1c, type: 3}
+  - name: arrow-right-left
+    sprite: {fileID: 21300000, guid: b72b3e8aac8d1294bbe5712b120ce36e, type: 3}
+  - name: arrow-up
+    sprite: {fileID: 21300000, guid: 6b760fc9a71ba664a958aac92a045763, type: 3}
+  - name: arrow-up-down
+    sprite: {fileID: 21300000, guid: 4992ea5d44c6cdd40893209a4b6b7f68, type: 3}
+  - name: arrow-up-left
+    sprite: {fileID: 21300000, guid: 5f5e442922dfd6f4c83149a8e705b539, type: 3}
+  - name: arrow-up-right
+    sprite: {fileID: 21300000, guid: ae0d03f91610e6848a6f470aaa123451, type: 3}
+  - name: backspace
+    sprite: {fileID: 21300000, guid: 9bc8bba3ea44a3f40b811e415a05cc59, type: 3}
+  - name: backspace-fill
+    sprite: {fileID: 21300000, guid: 876a44da9b002e94e856c1f52fdfc7c7, type: 3}
+  - name: battery-charging
+    sprite: {fileID: 21300000, guid: 1bf63ea80e092594f8843eac642b6ae8, type: 3}
+  - name: battery-empty
+    sprite: {fileID: 21300000, guid: f03c88e9a10fa8042a2ee0070360ac77, type: 3}
+  - name: battery-full
+    sprite: {fileID: 21300000, guid: d764f8b6eb931a84e9e014b24cf92b50, type: 3}
+  - name: battery-low
+    sprite: {fileID: 21300000, guid: 9ef35bf91dff00f41a4aebec58eaaf8c, type: 3}
+  - name: battery-medium
+    sprite: {fileID: 21300000, guid: 0fc0791c63e34924188bdb80d135b2ac, type: 3}
+  - name: bell
+    sprite: {fileID: 21300000, guid: 261a5c91f316ad3468912eb2d2def758, type: 3}
+  - name: block
+    sprite: {fileID: 21300000, guid: 3f25f3e70f1510244b0b169255340520, type: 3}
+  - name: book
+    sprite: {fileID: 21300000, guid: cd8ef57352d866249999a0080b497454, type: 3}
+  - name: box
+    sprite: {fileID: 21300000, guid: 06f545ce95d43674f98de2772e54c523, type: 3}
+  - name: chat-add
+    sprite: {fileID: 21300000, guid: bbda89bd1ea5cd4499d94411ce517e07, type: 3}
+  - name: chat-approve
+    sprite: {fileID: 21300000, guid: 6be8242ea43f5ec47b6af0306c55bf58, type: 3}
+  - name: chat-bubble
+    sprite: {fileID: 21300000, guid: 549f494197b24d64b98a22af1a67d07a, type: 3}
+  - name: chat-dots
+    sprite: {fileID: 21300000, guid: 7b437eb71a1ecb6498a55020ef8d6275, type: 3}
+  - name: chat-edit
+    sprite: {fileID: 21300000, guid: 27510316a9c6fd248af2b51d4d35695b, type: 3}
+  - name: chat-error
+    sprite: {fileID: 21300000, guid: 7ae5ef65e336ab14cb9287eb83574c3a, type: 3}
+  - name: chat-question
+    sprite: {fileID: 21300000, guid: f5952f453eec2d3478f24b47c66e907b, type: 3}
+  - name: chat-remove
+    sprite: {fileID: 21300000, guid: 1ec5af9f88155d1489f1050987384d66, type: 3}
+  - name: check
+    sprite: {fileID: 21300000, guid: a177ba0f877fa134c99f77a8765e85ba, type: 3}
+  - name: check-box
+    sprite: {fileID: 21300000, guid: 73d9631a53c1d7849a791e9fd095b1d0, type: 3}
+  - name: check-in
+    sprite: {fileID: 21300000, guid: 5412856aa272c0040bcd63d62b82e023, type: 3}
+  - name: chevron-down
+    sprite: {fileID: 21300000, guid: e67d04d932e1517419ac64ef2621f580, type: 3}
+  - name: chevron-left
+    sprite: {fileID: 21300000, guid: 13658b77326d9c84588031c69067ebfa, type: 3}
+  - name: chevron-right
+    sprite: {fileID: 21300000, guid: aae128da3654b11418f5e5070e4c161e, type: 3}
+  - name: chevron-up
+    sprite: {fileID: 21300000, guid: e8e3dd0cc1e71044d8a78c51fb408536, type: 3}
+  - name: circle
+    sprite: {fileID: 21300000, guid: ca75d6c9f2cd65f42aa723f9ce9bf320, type: 3}
+  - name: circle-alert
+    sprite: {fileID: 21300000, guid: a9cc18b2b20bbc14d82c3496c6955b8f, type: 3}
+  - name: circle-alert-fill
+    sprite: {fileID: 21300000, guid: 360e93890fa82d543b0b1faf678899e3, type: 3}
+  - name: circle-check
+    sprite: {fileID: 21300000, guid: 43efef2ad16932e48b3958eb51947354, type: 3}
+  - name: circle-check-fill
+    sprite: {fileID: 21300000, guid: e5fce71b7261246429ce479fbae9cf5a, type: 3}
+  - name: circle-chevron-down
+    sprite: {fileID: 21300000, guid: 85cf38dcade67a34aaaeb0b3e3dfb724, type: 3}
+  - name: circle-chevron-down-fill
+    sprite: {fileID: 21300000, guid: 28d654e7a2511e949a10cc75bf49ac64, type: 3}
+  - name: circle-chevron-left
+    sprite: {fileID: 21300000, guid: 7528b3029d5173c4dbea8920674cf4cd, type: 3}
+  - name: circle-chevron-left-fill
+    sprite: {fileID: 21300000, guid: e4e202fa8e9b9ce4a9fa88fbe8f237f2, type: 3}
+  - name: circle-chevron-right
+    sprite: {fileID: 21300000, guid: 12d199248ee1c2f40b938854048ee266, type: 3}
+  - name: circle-chevron-right-fill
+    sprite: {fileID: 21300000, guid: 4a99fe539789c204b88a612d3b46f491, type: 3}
+  - name: circle-chevron-up
+    sprite: {fileID: 21300000, guid: 7409f7c3dc6a34047a4bd5f2427124bd, type: 3}
+  - name: circle-chevron-up-fill
+    sprite: {fileID: 21300000, guid: 96d2eae27a495bd4ba350b16663451a7, type: 3}
+  - name: circle-fill
+    sprite: {fileID: 21300000, guid: dc136471e2bf090409b6e46ef72df944, type: 3}
+  - name: circle-minus
+    sprite: {fileID: 21300000, guid: a932b8f2fe52f8d40b857576a4593d82, type: 3}
+  - name: circle-minus-fill
+    sprite: {fileID: 21300000, guid: ce3f282bb0753fc4baf2adf44684e77b, type: 3}
+  - name: circle-plus
+    sprite: {fileID: 21300000, guid: 3722f00dba270a64d862daf3b1e9b8ab, type: 3}
+  - name: circle-plus-fill
+    sprite: {fileID: 21300000, guid: e88f950f469ab9c4b82d689723a7518e, type: 3}
+  - name: circle-triangle-down-fill
+    sprite: {fileID: 21300000, guid: f1880c90f122be64986cbb2242be1198, type: 3}
+  - name: circle-triangle-left-fill
+    sprite: {fileID: 21300000, guid: 7b9e8dee5eb206c468549341f94d7d74, type: 3}
+  - name: circle-triangle-right-fill
+    sprite: {fileID: 21300000, guid: 50b7e605747588f4f978b4ecf9642ede, type: 3}
+  - name: circle-triangle-up-fill
+    sprite: {fileID: 21300000, guid: b39367a9aab35e84989a63f131d46d7b, type: 3}
+  - name: circle-x
+    sprite: {fileID: 21300000, guid: 85923ba65b01c8e4ba228dfcd0184e8c, type: 3}
+  - name: circle-x-fill
+    sprite: {fileID: 21300000, guid: 2991b200e10842e4596329f6a136a196, type: 3}
+  - name: clipboard
+    sprite: {fileID: 21300000, guid: 9119c437aac13f44e8c8bb9f2a90a192, type: 3}
+  - name: copy
+    sprite: {fileID: 21300000, guid: b52993683df3e774ead03f988e02d5b2, type: 3}
+  - name: cross
+    sprite: {fileID: 21300000, guid: ee14e57fc60877f42b732bed07d33f5f, type: 3}
+  - name: dashboard
+    sprite: {fileID: 21300000, guid: 4eda97bf0d5c24d4698031c995fdb6f3, type: 3}
+  - name: dot-grid-fill
+    sprite: {fileID: 21300000, guid: 0cc34ff7bd1d8cc49bc6bc6fe8f87275, type: 3}
+  - name: edit
+    sprite: {fileID: 21300000, guid: e7da0c74349935d40beb8a8a53519226, type: 3}
+  - name: enlarge
+    sprite: {fileID: 21300000, guid: 3067ef094f5364c478b0380558696ada, type: 3}
+  - name: equal
+    sprite: {fileID: 21300000, guid: d698f02fc7127724dafcf281e337dfa2, type: 3}
+  - name: equal-fill
+    sprite: {fileID: 21300000, guid: b07ee90e6725b1d40a3806374f07f4f5, type: 3}
+  - name: eye
+    sprite: {fileID: 21300000, guid: 145ffb29de0dbc54a9ef2b84acc5c745, type: 3}
+  - name: eye-closed
+    sprite: {fileID: 21300000, guid: d9ee90e69d1c58340b71a241cd9605ef, type: 3}
+  - name: eye-slashed
+    sprite: {fileID: 21300000, guid: 031f1705bd9b52a4aa8117c4a4e68dc6, type: 3}
+  - name: file
+    sprite: {fileID: 21300000, guid: 57c2139de5ff313488299c23faaf9490, type: 3}
+  - name: filter
+    sprite: {fileID: 21300000, guid: d152c9310d1f6114d87eb08075f3f92f, type: 3}
+  - name: flag
+    sprite: {fileID: 21300000, guid: caf7647e65fdf9142beecac0f3292731, type: 3}
+  - name: folder
+    sprite: {fileID: 21300000, guid: c215ad74c562eb84299f39a4e7f02b66, type: 3}
+  - name: folder-add
+    sprite: {fileID: 21300000, guid: 05480819e7ad0994d8e685a9255ee4e1, type: 3}
+  - name: frame
+    sprite: {fileID: 21300000, guid: 219a2d56cb156e74c8e98cf8714d786c, type: 3}
+  - name: full-screen
+    sprite: {fileID: 21300000, guid: fc40c7ce7243cf54ea6a979e0edfa94d, type: 3}
+  - name: game-controller
+    sprite: {fileID: 21300000, guid: fcff719fa7978a74fb129bf60a41962d, type: 3}
+  - name: gear
+    sprite: {fileID: 21300000, guid: c822bebba33aa164d8b1bf283d51bf54, type: 3}
+  - name: grid
+    sprite: {fileID: 21300000, guid: b45d3d1f8812a344d991539b71bdfe69, type: 3}
+  - name: hand
+    sprite: {fileID: 21300000, guid: 8e5f08f8549ec9e418a6161fddbc3c90, type: 3}
+  - name: headphone
+    sprite: {fileID: 21300000, guid: 3c1e40a318012474bab0629d4e8ad350, type: 3}
+  - name: height
+    sprite: {fileID: 21300000, guid: 9cdb8bc8f1647ee45867bb84cc026865, type: 3}
+  - name: home
+    sprite: {fileID: 21300000, guid: 3bc8301023277d84e9fccb43f7ad797e, type: 3}
+  - name: infinite
+    sprite: {fileID: 21300000, guid: da86bda0c54cf7c4c8ed90aaac179a7b, type: 3}
+  - name: info
+    sprite: {fileID: 21300000, guid: b7123ab354edc4c42860843d69e69f90, type: 3}
+  - name: info-fill
+    sprite: {fileID: 21300000, guid: 6d4977d926f01294589df427326338f5, type: 3}
+  - name: language
+    sprite: {fileID: 21300000, guid: 950a30fcfa4d85c47bab09fde3f9fd76, type: 3}
+  - name: minus
+    sprite: {fileID: 21300000, guid: 20d60cdb4d7c7624581064ef7c643fc9, type: 3}
+  - name: more-horizontal-fill
+    sprite: {fileID: 21300000, guid: f24a7b2cd10c24f46967153578fef589, type: 3}
+  - name: more-vertical-fill
+    sprite: {fileID: 21300000, guid: f1b9281340c648640986c83d16355fe6, type: 3}
+  - name: pause
+    sprite: {fileID: 21300000, guid: 921747ab91f875142b091dfd2a06c192, type: 3}
+  - name: plus
+    sprite: {fileID: 21300000, guid: 1775e3276bd847d48bd8b5b49ef68fbe, type: 3}
+  - name: pointer-hand
+    sprite: {fileID: 21300000, guid: 9dbcab151447b7d4990f2f44a9e071f0, type: 3}
+  - name: reduce
+    sprite: {fileID: 21300000, guid: 9e68ee2302e30044eb7e8a89be4fb452, type: 3}
+  - name: save
+    sprite: {fileID: 21300000, guid: 087b3d920fdec264c91e28ff6902f949, type: 3}
+  - name: settings-horizontal
+    sprite: {fileID: 21300000, guid: d6763bed6853e1045b632720b0c266ce, type: 3}
+  - name: settings-vertical
+    sprite: {fileID: 21300000, guid: a9e3b35cbfdc5a8499ea39028a98defa, type: 3}
+  - name: sign-out
+    sprite: {fileID: 21300000, guid: 4a7da04e25b69d14e8292add092741f5, type: 3}
+  - name: sound-down
+    sprite: {fileID: 21300000, guid: 4a38e5c592a3868499ec3e7e3ff87e22, type: 3}
+  - name: sound-off
+    sprite: {fileID: 21300000, guid: bf2d0f7a68a45bf44afd2e2d1bf77d92, type: 3}
+  - name: sound-on
+    sprite: {fileID: 21300000, guid: 4697bd58dbc31954da325eec7fba6307, type: 3}
+  - name: sound-up
+    sprite: {fileID: 21300000, guid: d4dba7bc7cf31d941b515f873e4427a6, type: 3}
+  - name: square
+    sprite: {fileID: 21300000, guid: 597f57ffe91e9fe4d9b73c8812c18f81, type: 3}
+  - name: square-fill
+    sprite: {fileID: 21300000, guid: 6e518a6b561b11a4e870f02efd249e80, type: 3}
+  - name: star
+    sprite: {fileID: 21300000, guid: a43b2609eddf24e478ab8c5e76f67a00, type: 3}
+  - name: three-line-horizontal
+    sprite: {fileID: 21300000, guid: 18c1ec678e0b1624db0e2a2d40509fd5, type: 3}
+  - name: trash-can
+    sprite: {fileID: 21300000, guid: c8a3af6c2879a754cafd3e407aaad581, type: 3}
+  - name: triangle-alert
+    sprite: {fileID: 21300000, guid: bdab9d27daa9a1645af9929caff976a5, type: 3}
+  - name: triangle-alert-fill
+    sprite: {fileID: 21300000, guid: 7f68701356d604844a4c7d9738265fb2, type: 3}
+  - name: triangle-down-fill
+    sprite: {fileID: 21300000, guid: 254a49be3dc393d4282704824a24d92a, type: 3}
+  - name: triangle-left-fill
+    sprite: {fileID: 21300000, guid: e460bd0332c44f944b842023c7ea4006, type: 3}
+  - name: triangle-right-fill
+    sprite: {fileID: 21300000, guid: 9b6fb97b733e0c64cb518408c5438fc0, type: 3}
+  - name: triangle-up-fill
+    sprite: {fileID: 21300000, guid: d6913298a3476fc45adcacdd6dbd6b6d, type: 3}
+  - name: two-line-horizontal
+    sprite: {fileID: 21300000, guid: 3b3e7e2f54ae8364090b713842f6b0f2, type: 3}
+  - name: two-line-vertical
+    sprite: {fileID: 21300000, guid: b7eb110b66976a44a9be1c9f5fbc0cc4, type: 3}
+  - name: vr-ar
+    sprite: {fileID: 21300000, guid: 22133fd3fac1c844e8ee4391359a7c11, type: 3}
+  - name: water
+    sprite: {fileID: 21300000, guid: 0a5f2c3b4ed43974ca942359e43e90fb, type: 3}
+  - name: width
+    sprite: {fileID: 21300000, guid: 873811cf52bf9fa419027478a1f57dba, type: 3}

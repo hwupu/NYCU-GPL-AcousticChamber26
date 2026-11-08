@@ -32,19 +32,18 @@ namespace AcousticChamber.App
         /// volume cannot be read).
         /// </summary>
         public static bool AskVolumeStep = false;
-        const float LineStep = 48f, VolumePollSec = 0.25f;
-        /// <summary>Height of the status line band at the bottom of the menu (status text centered 34 u above the edge).</summary>
-        const float StatusBand = 54f;
+        const float VolumePollSec = 0.25f;
 
         public ChamberDefinition chamber;
         public ChamberBehaviour logic;
 
-        RectTransform _canvas, _window;
+        RectTransform _canvas;
+        UiPanel _panel;
         TextMeshProUGUI _volume, _preset, _unfinished, _status;
-        float _linesY, _volumePoll;
+        float _volumePoll;
         int _target = -1, _shownVolume = int.MinValue;
-        NumberPadEntry _pad;
-        PageStack _pages;
+        UiNumberPad _pad;
+        UiSurface _pages;
         PresetStore _presets;
         SessionStore _sessions;
         DebugBench _bench;
@@ -105,9 +104,10 @@ namespace AcousticChamber.App
             _stopHost.Chosen -= OnStopChoice;
             _stopHost.Chosen += OnStopChoice;
 
-            _window = UiKit.Window(_canvas);
-            _pages = PageStack.On(_window);
+            _panel = UiPanel.Create(_canvas, "Menu", Size);
+            _pages = _panel.Surface;
             _pages.RootBack = BackToHall;
+            UiNavigationBar.Create(_pages, chamber.MenuTitle, UiNavigationBar.Leading.Back);
             _bench = new DebugBench(_pages, _canvas, work)
             {
                 Files = new DataFiles(DataDir, chamber.id),
@@ -117,8 +117,8 @@ namespace AcousticChamber.App
             _bench.RunRequested += () => StartDebugRun(false);
             _bench.PracticeRequested += () => StartDebugRun(true);
 
-            var menu = _pages.Push(chamber.MenuTitle);
-            BuildMenu(menu.Rect);
+            var menu = _pages.Root;
+            BuildMenu(menu);
             menu.Returned += Refresh;
             menu.Returned += logic.DebugLeft; // only the Debug pages lie above the menu page
             Refresh();
@@ -128,44 +128,54 @@ namespace AcousticChamber.App
 
         // ---- menu page -----------------------------------------------------------------------------------------
 
-        void BuildMenu(RectTransform r)
+        /// <summary>
+        /// The menu page: the number pad (520 u) at the left, the button column at the right (Start, Debug, then the status
+        /// lines: volume, preset, unfinished; an empty line takes no space), and the status line at the bottom.
+        /// </summary>
+        void BuildMenu(UiPage page)
         {
             var th = UiKit.Theme;
-            // the number pad and the button column share one top edge; that group (the pad's height) is centered
-            // vertically between the header and the status band at the bottom (PO 2026-11-07)
-            float header = Size.y / 2f - Page.HeaderHeight, statusTop = -Size.y / 2f + StatusBand;
-            float top = Mathf.Min(header - th.gap, (header + statusTop) / 2f + NumberPadEntry.Height / 2f);
-            float left = -Size.x / 2f + Page.EdgePad;
-            float padX = left + NumberPadEntry.Width / 2f;
-            float padY = top - NumberPadEntry.Height / 2f;
-            _pad = NumberPadEntry.Create(r, new Vector2(padX, padY), StudyId.MaxDigits,
-                                         d => StudyId.IsValidDigits(d) ? StudyId.FromDigits(d) : d, "Study ID");
+            _status = page.AddStatus("");
+            var row = UiKit.Node(page.Body, "Content");
+            UiKit.H(row.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(row.gameObject, flexW: 1f, flexH: 1f);
 
-            float colLeft = left + NumberPadEntry.Width + 2f * th.gap;
-            float colRight = Size.x / 2f - Page.EdgePad;
-            float colW = colRight - colLeft, colX = (colLeft + colRight) / 2f;
-            float y = top;
-            UiKit.Button(r, "Start", "Start", UiStyle.Prominent, new Vector2(colX, y - th.buttonHeight / 2f), new Vector2(colW, 0f), OnStart);
-            y -= th.buttonHeight + th.gap;
-            UiKit.Button(r, "Debug", "Debug", UiStyle.Gray, new Vector2(colX, y - th.buttonHeight / 2f), new Vector2(colW, 0f),
-                         () => _bench.OpenDebugPage());
-            y -= th.buttonHeight + 2f * th.gap;
-            // status lines under the buttons, stacked; an empty line takes no space
-            _linesY = y - 20f;
-            _volume = Line(r, "Volume", colX, _linesY, colW);
-            _preset = Line(r, "Preset", colX, _linesY, colW);
-            _unfinished = Line(r, "Unfinished", colX, _linesY, colW);
+            _pad = UiNumberPad.CreateLayout(row, "Number Pad", StudyId.MaxDigits,
+                                               d => StudyId.IsValidDigits(d) ? StudyId.FromDigits(d) : d, "Study ID");
 
-            _status = UiKit.Text(r, "Status", "", th.smallSize, new Vector2(0f, -Size.y / 2f + 34f), new Vector2(Page.ContentWidth(Size.x), 40f),
-                                 color: th.text2);
+            // the number pad takes 2/5 of the width, the button column 3/5 (the 20 u gap is not shared)
+            UiKit.Size(_pad.gameObject, minW: 0f, prefW: 0f, flexW: 2f);
+            var col = UiKit.Node(row, "Column");
+            UiKit.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(col.gameObject, minW: 0f, prefW: 0f, flexW: 3f);
+            var start = UiKit.Button(col, "Start", "Start", UiStyle.Prominent, minWidth: false, onClick: OnStart);
+            var debug = UiKit.Button(col, "Debug", "Config", UiStyle.Gray, minWidth: false, onClick: () => _bench.OpenDebugPage());
+            foreach (var b in new[] { start, debug })
+                UiKit.Size(b.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
+
+            var lines = UiKit.Node(col, "Lines");
+            UiKit.V(lines.gameObject, 7f, UiKit.Pad(0, 20, 0, 0), TextAnchor.UpperLeft);
+            UiKit.Size(lines.gameObject, prefW: 0f, flexW: 1f);
+            _volume = Line(lines, "Volume");
+            _preset = Line(lines, "Preset");
+            _unfinished = Line(lines, "Unfinished");
         }
 
-        static TextMeshProUGUI Line(RectTransform r, string name, float x, float y, float w)
+        static TextMeshProUGUI Line(RectTransform parent, string name)
         {
-            var t = UiKit.Text(r, name, "", UiKit.Theme.smallSize, new Vector2(x, y), new Vector2(w, 40f), color: UiKit.Theme.text2,
+            var t = UiKit.Text(parent, name, "", UiKit.Theme.smallSize, Vector2.zero, Vector2.zero, color: UiKit.Theme.text2,
                                align: TextAlignmentOptions.Left);
-            UiKit.SingleLine(t); // a 40 u box is shorter than one 28 u line (41 u): TMP would hide it
+            t.textWrappingMode = TextWrappingModes.Normal;
+            UiKit.Size(t.gameObject, prefW: 0f, flexW: 1f);
+            t.gameObject.SetActive(false);
             return t;
+        }
+
+        /// <summary>Sets a status line; an empty line is hidden and takes no space.</summary>
+        static void SetLine(TextMeshProUGUI line, string text)
+        {
+            line.text = text;
+            line.gameObject.SetActive(!string.IsNullOrEmpty(text));
         }
 
         /// <summary>
@@ -179,27 +189,15 @@ namespace AcousticChamber.App
             if (_preset == null) return;
             string active = _presets.ActiveName;
             bool custom = !string.Equals(active, PresetStore.DefaultName, StringComparison.OrdinalIgnoreCase);
-            _preset.text = custom ? "Preset: " + active : "";
+            SetLine(_preset, custom ? "Preset: " + active : "");
             var ids = new List<string>();
             foreach (var rec in _sessions.ListUnfinished())
                 if (!ids.Contains(rec.StudyId)) ids.Add(rec.StudyId);
             ids.Sort(StringComparer.Ordinal);
-            _unfinished.text = ids.Count > 0 ? "Unfinished: " + string.Join(", ", ids) : "";
+            SetLine(_unfinished, ids.Count > 0 ? "Unfinished: " + string.Join(", ", ids) : "");
             _target = logic.Schema.Contains(HeadsetVolume.TargetKey) ? _presets.LoadActive(new List<string>()).GetInt(HeadsetVolume.TargetKey) : -1;
             _shownVolume = int.MinValue;
             ShowVolume();
-            StackLines();
-        }
-
-        void StackLines()
-        {
-            float y = _linesY;
-            foreach (var t in new[] { _volume, _preset, _unfinished })
-            {
-                var p = t.rectTransform.anchoredPosition;
-                t.rectTransform.anchoredPosition = new Vector2(p.x, y);
-                if (!string.IsNullOrEmpty(t.text)) y -= LineStep;
-            }
         }
 
         /// <summary>Reads the volume and updates the line when it changed.</summary>
@@ -209,7 +207,7 @@ namespace AcousticChamber.App
             int v = HeadsetVolume.ReadOrUnknown();
             if (v == _shownVolume) return;
             _shownVolume = v;
-            _volume.text = VolumeStatus.Line(v, _target);
+            SetLine(_volume, VolumeStatus.Line(v, _target));
             _volume.color = VolumeStatus.Off(v, _target) ? UiKit.Theme.redText : UiKit.Theme.text2;
         }
 
@@ -237,8 +235,7 @@ namespace AcousticChamber.App
 
         void ShowWindow(bool on)
         {
-            var layer = _window.GetComponent<UiLayer>();
-            if (layer != null) layer.Show(on);
+            _panel.Shown = on;
         }
 
         // ---- Start / Resume / Start new ------------------------------------------------------------------------
@@ -276,34 +273,29 @@ namespace AcousticChamber.App
         void AskVolume(Action<int> then)
         {
             var th = UiKit.Theme;
-            var size = new Vector2(860f, 640f);
-            var sheet = Sheet.Open(_canvas, "Volume Step", Vector2.zero, size);
-            var r = sheet.Rect;
-            sheet.AddCloseButton(() => SetStatus("Start cancelled."));
-            float d = th.iconButtonSize;
-            float titleLeft = -size.x / 2f + Page.EdgePad + d + UiKit.IconTitleGap;
-            float titleY = size.y / 2f - Page.TopPad - d / 2f;
-            float titleW = size.x / 2f - Page.EdgePad - titleLeft;
-            UiKit.Text(r, "Title", "Headset volume step", th.titleSize, new Vector2(titleLeft + titleW / 2f, titleY), new Vector2(titleW, d),
-                       bold: true, align: TextAlignmentOptions.MidlineLeft);
-            float padX = -size.x / 2f + Page.EdgePad + NumberPadEntry.Width / 2f;
-            float padY = titleY - d / 2f - th.gap - NumberPadEntry.Height / 2f;
-            var pad = NumberPadEntry.Create(r, new Vector2(padX, padY), 2, null, "0–" + MaxVolumeStep);
+            var sheet = UiSheet.Create(_canvas, "Volume Step", "Headset volume step", 860f, () => SetStatus("Start cancelled."));
+            var row = UiKit.Node(sheet.Body, "Content");
+            UiKit.H(row.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(row.gameObject, flexW: 1f);
+            var pad = UiNumberPad.CreateLayout(row, "Number Pad", 2, null, "0–" + MaxVolumeStep);
 
-            float colLeft = padX + NumberPadEntry.Width / 2f + 2f * th.gap, colRight = size.x / 2f - Page.EdgePad;
-            float colX = (colLeft + colRight) / 2f, colW = colRight - colLeft;
-            UiKit.Text(r, "Info", "Enter the headset volume step (0–" + MaxVolumeStep + ") before handing the headset over. It is logged with the session.",
-                       th.smallSize, new Vector2(colX, padY + 60f), new Vector2(colW, 200f), color: th.text2, align: TextAlignmentOptions.TopLeft);
+            var col = UiKit.Node(row, "Column");
+            UiKit.V(col.gameObject, th.gap, null, TextAnchor.UpperLeft);
+            UiKit.Size(col.gameObject, prefW: 0f, flexW: 1f);
+            var info = UiKit.Text(col, "Info", "Enter the headset volume step (0–" + MaxVolumeStep + ") before handing the headset over. It is logged with the session.",
+                                  th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
+            UiKit.Size(info.gameObject, prefW: 0f, flexW: 1f);
             UiButton ok = null;
-            ok = UiKit.Button(r, "OK", "OK", UiStyle.Prominent, new Vector2(colX, padY - NumberPadEntry.Height / 2f + th.buttonHeight / 2f),
-                              new Vector2(colW, 0f), () =>
-                              {
-                                  if (!TryVolume(pad.Value, out int v)) return;
-                                  sheet.Close();
-                                  then(v);
-                              });
+            ok = UiKit.Button(col, "OK", "OK", UiStyle.Prominent, minWidth: false, onClick: () =>
+            {
+                if (!TryVolume(pad.Value, out int v)) return;
+                sheet.Close();
+                then(v);
+            });
+            UiKit.Size(ok.gameObject, minW: 0f, minH: th.buttonHeight, prefW: 0f, prefH: th.buttonHeight, flexW: 1f, flexH: 0f);
             ok.interactable = false;
             pad.Changed += s => ok.interactable = TryVolume(s, out _);
+            sheet.Show();
         }
 
         static bool TryVolume(string digits, out int v) =>
@@ -365,7 +357,7 @@ namespace AcousticChamber.App
                 log.Write(LogEvents.DebugBegin, (practice ? "practice trial, " : "") + "app " + Application.version + ", " + SystemInfo.deviceModel);
                 Launch(new ChamberRun { Record = rec, Values = values, Log = log, IsDebug = true, IsPractice = practice });
             }
-            catch (Exception e) { Fail("Could not start the Debug run", e); }
+            catch (Exception e) { Fail("Could not start the Config run", e); }
         }
 
         EventLog OpenLog(string path, LogContext ctx) =>
@@ -398,7 +390,7 @@ namespace AcousticChamber.App
             _stopHost.DebugRun = run.IsDebug;
             _stopHost.StudyId = run.Record.StudyId;
             if (_actions != null) _actions.StopEnabled = true;
-            SetStatus((run.IsPractice ? "Practice trial " : run.IsDebug ? "Debug run " : run.IsResume ? "Resumed " : "Started ") + run.Record.SessionId);
+            SetStatus((run.IsPractice ? "Practice trial " : run.IsDebug ? "Config run " : run.IsResume ? "Resumed " : "Started ") + run.Record.SessionId);
             _runCo = StartCoroutine(RunToEnd(run));
         }
 
@@ -446,7 +438,7 @@ namespace AcousticChamber.App
             }
             catch (Exception e) { Debug.LogException(e); }
             finally { run.Log.Dispose(); }
-            SetStatus(run.Record.SessionId + (run.IsDebug ? " Debug run ended." : stopped.HasValue ? ": dropped out." : ": completed."));
+            SetStatus(run.Record.SessionId + (run.IsDebug ? " Config run ended." : stopped.HasValue ? ": dropped out." : ": completed."));
             // the participant's language belongs to the run (onboarding, slides, thanks); menus are English (PB-20b)
             Loc.Set(UiLanguage.English);
             if (!run.IsDebug) _pad.Clear();

@@ -21,7 +21,7 @@ namespace AcousticChamber.App
 
         OVRCameraRig _rig;
         GlobalActions _actions;
-        RectTransform _window;
+        UiPanel _panel;
         TextMeshProUGUI _live, _result, _status, _hint, _runningLine;
         HeadGateMethod _gate;
         SystemRecenterMethod _recenter;
@@ -50,30 +50,26 @@ namespace AcousticChamber.App
 
             var th = UiKit.Theme;
             var canvas = (RectTransform)transform;
-            UiKit.Clear(canvas);
-            canvas.sizeDelta = Size;
-            _window = UiKit.Window(canvas);
-            UiKit.Text(_window, "Title", "GPL.Homing test panel", th.titleSize, new Vector2(-Size.x / 2f + 48f + 300f, Size.y / 2f - 80f),
-                       new Vector2(600f, 80f), bold: true, align: TextAlignmentOptions.Left);
-            UiKit.DebugTag(_window);
+            _panel = TestPanelKit.Panel(canvas, Size, "GPL.Homing test panel");
+            _status = _panel.Surface.AddStatus("Press Head gate or Recenter.");
+            var columns = TestPanelKit.Row(_panel.Surface.Body, "Columns");
+            UiKit.Size(columns.gameObject, flexW: 1f, flexH: 1f);
+            columns.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().childAlignment = TextAnchor.UpperLeft;
 
-            const float leftX = -250f, w = 420f;
-            UiKit.Button(_window, "Head Gate", "Head gate", UiStyle.Prominent, new Vector2(leftX, 190f), new Vector2(w, 0f), RunGate);
-            UiKit.Button(_window, "Recenter", "Recenter (system)", UiStyle.Gray, new Vector2(leftX, 90f), new Vector2(w, 0f), RunRecenter);
+            var left = TestPanelKit.Column(columns, "Controls");
+            TestPanelKit.Wide(left, "Head Gate", "Head gate", UiStyle.Prominent, RunGate);
+            TestPanelKit.Wide(left, "Recenter", "Recenter (system)", UiStyle.Gray, RunRecenter);
             var gs = GateSettings.Defaults;
-            UiKit.Text(_window, "Gate Settings",
-                       "Gate: yaw ±" + gs.YawToleranceDeg + "°, pitch ±" + gs.PitchToleranceDeg + "°, hold " + gs.HoldSec + " s, hint after " +
-                       gs.HintAfterSec + " s.\nDuring the gate the panel hides; B cancels.\nLong-press the Meta button to test the listener.",
-                       th.smallSize, new Vector2(leftX, -60f), new Vector2(w, 160f), color: th.text2, align: TextAlignmentOptions.TopLeft);
+            TestPanelKit.Text(left, "Gate Settings",
+                              "Gate: yaw ±" + gs.YawToleranceDeg + "°, pitch ±" + gs.PitchToleranceDeg + "°, hold " + gs.HoldSec + " s, hint after " +
+                              gs.HintAfterSec + " s.\nDuring the gate the panel hides; B cancels.\nLong-press the Meta button to test the listener.",
+                              th.smallSize, th.text2);
 
-            const float rightX = 240f;
-            _live = UiKit.Text(_window, "Live", "", th.smallSize, new Vector2(rightX, 160f), new Vector2(440f, 180f), align: TextAlignmentOptions.TopLeft);
-            _result = UiKit.Text(_window, "Result", "No homing yet.", th.minimumSize, new Vector2(rightX, -110f), new Vector2(440f, 300f),
-                                 color: th.text2, align: TextAlignmentOptions.TopLeft);
-            _status = UiKit.Text(_window, "Status", "Press Head gate or Recenter.", th.smallSize, new Vector2(0f, -Size.y / 2f + 30f),
-                                 new Vector2(Size.x - 80f, 40f), color: th.text2);
+            var right = TestPanelKit.Column(columns, "Readout");
+            _live = TestPanelKit.Text(right, "Live", "", th.smallSize, th.text);
+            _result = TestPanelKit.Text(right, "Result", "No homing yet.", th.minimumSize, th.text2);
 
-            // shown while the gate runs and the window is hidden; far below the dot (the canvas sits 8° below eye level)
+            // shown while the gate runs and the panel is hidden; far below the dot (the canvas sits 8° below eye level)
             _hint = UiKit.Text(canvas, "Gate Hint", "Look at the dot", th.headingSize, new Vector2(0f, -260f), new Vector2(Size.x, 70f), bold: true);
             _runningLine = UiKit.Text(canvas, "Gate Running", "Head gate running · B cancels", th.smallSize, new Vector2(0f, -320f),
                                       new Vector2(Size.x, 40f), color: th.text3);
@@ -107,13 +103,13 @@ namespace AcousticChamber.App
             if (_running != null || _rig == null) return;
             _gate = new HeadGateMethod(_rig, cue, GateSettings.Defaults);
             _gate.HintChanged += on => _hint.gameObject.SetActive(on);
-            _window.gameObject.SetActive(false);
+            _panel.gameObject.SetActive(false);
             _runningLine.gameObject.SetActive(true);
             _running = StartCoroutine(_gate.Run(r =>
             {
                 _running = null;
                 _runningLine.gameObject.SetActive(false);
-                _window.gameObject.SetActive(true);
+                _panel.gameObject.SetActive(true);
                 Show("homing", r);
             }));
         }

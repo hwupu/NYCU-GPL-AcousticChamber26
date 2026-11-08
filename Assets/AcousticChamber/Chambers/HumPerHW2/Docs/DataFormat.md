@@ -58,7 +58,7 @@ Common (as the Template): `session_start`, `language`, `stage_begin/end`, `hando
 - `rt60_measured` (only when `rt60.measure_at_block_start` is on, before a block's first trial; PB-08e, Q46): columns
   `rt60_target_s`, `rt60_measured_s` (T20, empty when the measurement failed); note
   `target=0.7 valid=1 t20=0.712 t30=0.698 depth_db=48 source=block_start` (or `valid=0 reason=...`).
-The Debug page's Measure RT60 and acoustics buttons write no rows (Q44): their results appear in the Debug status line and the
+The Config page's Measure RT60 and acoustics buttons write no rows (Q44): their results appear in the Config status line and the
 console only.
 
 ## Rebuilding the trial table

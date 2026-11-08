@@ -24,7 +24,6 @@ namespace AcousticChamber.App
 
         public ChamberCatalog catalog;
 
-        RectTransform _window;
         TextMeshProUGUI _status;
 
         /// <summary>The launch routing ran in this app run (the Hall routes only when the app starts, not on Back to the Hall).</summary>
@@ -69,51 +68,66 @@ namespace AcousticChamber.App
             var canvas = (RectTransform)transform;
             UiKit.Clear(canvas);
             canvas.sizeDelta = Size;
-            _window = UiKit.Window(canvas);
-            var page = PageStack.On(_window).Push(Title);
-            var r = page.Rect;
-
-            float width = Page.ContentWidth(Size.x);
-            float top = Size.y / 2f - Page.HeaderHeight - th.gap;
-            float bottom = -Size.y / 2f + 72f; // room for the status line
-            _status = UiKit.Text(r, "Status", "", th.smallSize, new Vector2(0f, -Size.y / 2f + 36f), new Vector2(width, 40f), color: th.text2);
+            Panel = UiPanel.Create(canvas, "Hall", Size);
+            var surface = Panel.Surface;
+            UiNavigationBar.Create(surface, Title, UiNavigationBar.Leading.None);
+            _status = surface.AddStatus("");
 
             var chambers = catalog != null ? catalog.Visible() : new List<ChamberDefinition>();
             if (chambers.Count == 0)
             {
-                UiKit.Text(r, "Empty", EmptyText, th.bodySize, new Vector2(0f, (top + bottom) / 2f), new Vector2(width, 200f), color: th.text2);
+                var empty = UiKit.Text(surface.Body, "Empty", EmptyText, th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
+                UiKit.Size(empty.gameObject, prefW: 0f, flexW: 1f);
                 if (catalog == null) Debug.LogWarning("[GPL] HallMenu: no ChamberCatalog set; run Magic > App > Step 3 - Main Hall.");
                 return;
             }
 
-            var list = ScrollList.Create(r, "Chambers", new Vector2(0f, (top + bottom) / 2f), new Vector2(width, top - bottom));
-            var grid = new HallGrid(width, chambers.Count, th.inset);
-            for (int i = 0; i < chambers.Count; i++) Card(list.Content, chambers[i], grid, i);
-            list.ContentHeight = grid.TotalHeight;
+            var content = UiKit.List(surface.Body, "Chambers", out var list);
+            content.GetComponent<VerticalLayoutGroup>().spacing = 8f;
+            var grid = new HallGrid(Size.x - 2f * th.surfacePaddingX, chambers.Count, th.inset);
+            RectTransform row = null;
+            for (int i = 0; i < chambers.Count; i++)
+            {
+                if (i % HallGrid.Columns == 0)
+                {
+                    row = UiKit.Node(content, "Row " + (i / HallGrid.Columns + 1));
+                    UiKit.H(row.gameObject, grid.Gap, null, TextAnchor.UpperLeft);
+                    UiKit.Size(row.gameObject, flexW: 1f);
+                }
+                Card(row, chambers[i], grid);
+            }
+            if (chambers.Count % HallGrid.Columns == 1) // an empty slot keeps the last card at half width
+                UiKit.Size(UiKit.Node(row, "Empty Slot").gameObject, minW: 0f, prefW: 0f, flexW: 1f);
         }
 
-        void Card(RectTransform content, ChamberDefinition c, HallGrid g, int index)
+        /// <summary>The Hall's panel (fades out while a chamber loads).</summary>
+        public UiPanel Panel { get; private set; }
+
+        void Card(RectTransform row, ChamberDefinition c, HallGrid g)
         {
             var th = UiKit.Theme;
-            var size = new Vector2(g.CardWidth, g.CardHeight);
-            var card = UiKit.Button(content, "Card " + c.id, c.CardTitle, UiStyle.Borderless, Vector2.zero, size, () => Open(c));
-            var rt = (RectTransform)card.transform;
-            rt.sizeDelta = size;
-            UiKit.Round(card.GetComponent<Image>(), CardRadius);
-            ScrollList.TopAnchored(rt, g.Top(index), g.X(index));
+            var card = UiKit.Node(row, "Card " + c.id);
+            var bg = UiKit.Fill(card, Color.clear, CardRadius);
+            bg.raycastTarget = true;
+            UiKit.V(card.gameObject, 0f, UiKit.Pad(g.Inset, g.Inset, g.Inset, 0), TextAnchor.UpperLeft);
+            UiKit.Size(card.gameObject, minW: 0f, prefW: 0f, flexW: 1f); // equal columns whatever the title (min 0)
+            var button = card.gameObject.AddComponent<UiButton>();
+            button.targetGraphic = bg;
+            var nav = button.navigation;
+            nav.mode = Navigation.Mode.None;
+            button.navigation = nav;
+            button.Style = UiStyle.Borderless;
+            button.onClick.AddListener(() => Open(c));
 
             // title band below the cover
-            var title = UiKit.LabelOf(card);
-            title.alignment = TextAlignmentOptions.MidlineLeft;
-            title.fontSize = th.bodySize;
+            var cover = UiKit.Node(card, "Cover");
+            UiKit.Fill(cover, th.cover, CoverRadius);
+            UiKit.Size(cover.gameObject, prefW: 0f, prefH: g.CoverHeight, flexW: 1f);
+            var title = UiKit.Label(card, "Title", c.CardTitle, th.bodySize, th.text);
             title.overflowMode = TextOverflowModes.Ellipsis;
-            var tr = title.rectTransform;
-            tr.anchorMin = new Vector2(0f, 0f);
-            tr.anchorMax = new Vector2(1f, 0f);
-            tr.offsetMin = new Vector2(UiKit.RowTextPad, 0f);
-            tr.offsetMax = new Vector2(-UiKit.RowTextPad, g.TitleBand);
-
-            var cover = UiKit.Box(card.transform, "Cover", new Vector2(0f, g.CoverCenterY), new Vector2(g.CoverWidth, g.CoverHeight), th.cover, CoverRadius);
+            var box = (RectTransform)title.transform.parent;
+            box.GetComponent<VerticalLayoutGroup>().padding = UiKit.Pad(UiKit.RowTextPad - g.Inset, 0, UiKit.RowTextPad - g.Inset, 4);
+            UiKit.Size(box.gameObject, prefW: 0f, prefH: g.TitleBand, flexW: 1f);
             if (c.thumbnail != null)
             {
                 var img = UiKit.Fill(UiKit.Rect(cover.transform, "Thumbnail", Vector2.zero, Vector2.zero)).gameObject.AddComponent<RawImage>();
@@ -170,9 +184,8 @@ namespace AcousticChamber.App
                 Debug.LogError("[GPL] HallMenu: " + _status.text);
                 return;
             }
-            var layer = _window.GetComponent<UiLayer>();
-            if (layer != null) layer.Show(false);
-            if (!AppNav.EnterChamber(c) && layer != null) layer.Show(true);
+            Panel.Shown = false;
+            if (!AppNav.EnterChamber(c)) Panel.Shown = true;
         }
     }
 }

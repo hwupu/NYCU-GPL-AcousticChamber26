@@ -14,7 +14,7 @@ namespace AcousticChamber.App
 
         public ChamberDefinition chamber;
 
-        RectTransform _window;
+        UiPanel _panel;
 
         void Start() => Build();
 
@@ -25,21 +25,19 @@ namespace AcousticChamber.App
             var canvas = (RectTransform)transform;
             UiKit.Clear(canvas);
             canvas.sizeDelta = Size;
-            _window = UiKit.Window(canvas);
-            var pages = PageStack.On(_window);
-            pages.RootBack = Back;
-            var page = pages.Push(chamber != null ? chamber.MenuTitle : "Chamber");
-            UiKit.Text(page.Rect, "Note", "Stub chamber scene.\nThe chamber menu (Study ID, Start, Debug) comes with PB-07.\n‹ returns to the Main Hall.",
-                       th.bodySize, new Vector2(0f, -40f), new Vector2(Page.ContentWidth(Size.x), 300f), color: th.text2,
-                       align: TextAlignmentOptions.Center);
+            _panel = UiPanel.Create(canvas, "Stub", Size);
+            _panel.Surface.RootBack = Back;
+            UiNavigationBar.Create(_panel.Surface, chamber != null ? chamber.MenuTitle : "Chamber", UiNavigationBar.Leading.Back);
+            var note = UiKit.Text(_panel.Surface.Body, "Note", "Stub chamber scene.\nThe chamber menu (Study ID, Start, Debug) comes with PB-07.\n‹ returns to the Main Hall.",
+                                  th.bodySize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.Center);
+            UiKit.Size(note.gameObject, prefW: 0f, flexW: 1f, flexH: 1f);
         }
 
         void Back()
         {
             if (AppNav.Busy) return;
-            var layer = _window.GetComponent<UiLayer>();
-            if (layer != null) layer.Show(false);
-            if (!AppNav.BackToHall() && layer != null) layer.Show(true);
+            _panel.Shown = false;
+            if (!AppNav.BackToHall()) _panel.Shown = true;
         }
     }
 }

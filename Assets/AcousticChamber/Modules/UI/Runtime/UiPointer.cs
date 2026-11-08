@@ -243,7 +243,7 @@ namespace GPL.UI
 
         static bool IsUsable(Selectable s) =>
             s != null && s.isActiveAndEnabled && s.interactable && (Modal == null || s.transform.IsChildOf(Modal))
-            && !UiLayer.InLeavingLayer(s.transform);
+            && !UiKit.InLeavingLayer(s.transform);
 
         Selectable Raycast(Ray ray, Selectable[] targets, out Vector3 point) => Pick(ray, targets, maxDistanceM, out point);
 

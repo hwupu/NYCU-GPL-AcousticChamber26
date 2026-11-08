@@ -20,10 +20,12 @@ namespace AcousticChamber.App.Editor
         public const string MainHallScene = "Assets/AcousticChamber/App/Scenes/MainHall.unity";
         const string FontsDir = "Assets/AcousticChamber/Settings/Fonts";
         const string ThemePath = "Assets/AcousticChamber/Settings/UiTheme.asset";
+        const string IconSetPath = "Assets/AcousticChamber/Settings/UiIconSet.asset";
         const string LaserPath = "Assets/AcousticChamber/Settings/Materials/Laser.mat";
         const string GroupUI = "UI";
         const string GroupXR = "XR";
         const string TestPanelName = "UI Test Panel";
+        const string KitPocPanelName = "UiKit PoC Panel";
         const string InputTestPanelName = "Input Test Panel";
         const string BenchTestPanelName = "Debug Bench Test Panel";
         const string HomingTestPanelName = "Homing Test Panel";
@@ -39,6 +41,7 @@ namespace AcousticChamber.App.Editor
             var regular = UiSetup.EnsureFontAsset(FontsDir + "/NotoSansTC-Regular.otf", FontsDir + "/NotoSansTC-Regular SDF.asset");
             var bold = UiSetup.EnsureFontAsset(FontsDir + "/NotoSansTC-Bold.otf", FontsDir + "/NotoSansTC-Bold SDF.asset");
             var theme = UiSetup.EnsureTheme(ThemePath, regular, bold);
+            UiIconSetup.Assign(theme, UiIconSetup.EnsureIconSet(IconSetPath));
             UiSetup.EnsureUnlitMaterial(LaserPath, Color.white);
             Debug.Log("[GPL] App Step 1: UI theme " + ThemePath + " (fonts: " + (regular != null ? regular.name : "none") + ", " +
                       (bold != null ? bold.name : "none") + ")");
@@ -46,8 +49,8 @@ namespace AcousticChamber.App.Editor
         }
 
         /// <summary>
-        /// Adds the GPL.UI test panel (UiShowcase) to the open scene, with UiRoot and UiPointer, and puts the MainHall first in
-        /// the build scene list. Temporary headset check for PB-05a; the Hall menu (PB-06) replaces it.
+        /// Adds the GPL.UI test panel (UiKitPoc: the C01 menu from the layout-based components, with hide / push back / placement
+        /// buttons) to the open scene, with UiRoot and UiPointer, and puts the MainHall first in the build scene list.
         /// </summary>
         [MenuItem("Magic/App/UI Test Panel (open scene)", priority = 50)]
         public static void AddUiTestPanel()
@@ -60,13 +63,13 @@ namespace AcousticChamber.App.Editor
             var theme = EnsureUiAssets();
             var ui = UiSetup.EnsureGroup(GroupUI);
             UiSetup.EnsureUiRoot(ui, theme);
-            RemoveTestPanels(ui); // the test panels sit at the same spot
-            var canvas = UiSetup.CreateOverlayCanvas(ui, TestPanelName, UiShowcase.Size);
-            canvas.AddComponent<UiShowcase>();
+            RemoveTestPanels(ui);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, KitPocPanelName, UiKitPoc.Size);
+            canvas.AddComponent<UiKitPoc>();
             UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
             EnsureMainHallFirstInBuild();
             UiSetup.MarkSceneDirty();
-            Debug.Log("[GPL] UI test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+            Debug.Log("[GPL] UiKit PoC panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
         }
 
         /// <summary>
@@ -252,7 +255,7 @@ namespace AcousticChamber.App.Editor
 
         internal static void RemoveTestPanels(Transform ui)
         {
-            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName, KeyboardTestPanelName }) RemoveChild(ui, n);
+            foreach (var n in new[] { KitPocPanelName, TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName, KeyboardTestPanelName }) RemoveChild(ui, n);
         }
 
         static void RemoveChild(Transform parent, string childName)

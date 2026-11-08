@@ -17,4 +17,4 @@ Headless check on the mirror: `Tools/Verify-Headless.ps1 -ExecuteMethod Acoustic
 2. Point a controller at the orb and press that hand's grip: the orb follows the controller; release leaves it (no throw).
 3. Circle / Fly-by / Approach move it; Speed 0.25-4 ×; Stop ends the path; grabbing also ends it.
 4. Room, Distance (Natural / Flat) and Hearing (L/R -20/-40 dB: the loss is on the chosen ear only) change the sound at once.
-5. The handle below the panel moves it (swing the ray = direction, hand away / back = distance). Y opens Keep going / Back to Hall.
+5. The handle below the panel turns it around the head (trigger held, swing the ray). Y opens Keep going / Back to Hall.

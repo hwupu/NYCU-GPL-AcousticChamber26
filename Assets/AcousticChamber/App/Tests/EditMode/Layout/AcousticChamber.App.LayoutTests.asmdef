@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.App.LayoutTests",
+    "rootNamespace": "AcousticChamber.App.Tests",
+    "references": ["AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Protocol", "GPL.Protocol.Core", "GPL.Input", "GPL.Input.Core", "AcousticChamber.Chambers.MovingSource", "AcousticChamber.Chambers.HiddenSource", "AcousticChamber.Chambers.HearingLoss", "GPL.UI", "GPL.UI.Core", "GPL.DebugBench", "GPL.DebugBench.Core", "GPL.Params.Core", "GPL.Logging.Core", "GPL.Session.Core", "GPL.Core", "Unity.TextMeshPro", "UnityEngine.UI", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

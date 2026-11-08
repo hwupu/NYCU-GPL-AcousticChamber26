@@ -55,7 +55,7 @@ namespace AcousticChamber.Chambers.HiddenSource
         OutputHearingLoss _output;
         GlobalActions _actions;
         ExperienceExit _exit;
-        RectTransform _window;
+        UiPanel _panel;
         TextMeshProUGUI _status;
         Spot _spot;
         double _headX, _headZ, _yawDeg;
@@ -84,7 +84,7 @@ namespace AcousticChamber.Chambers.HiddenSource
             BuildPanel();
             var overlay = GetComponent<OverlayPanel>();
             if (overlay != null) overlay.Movable = true;
-            _exit = new ExperienceExit(transform, _window, _actions, "Hidden Source", Cleanup, InterceptStop);
+            _exit = new ExperienceExit(transform, _panel, _actions, "Hidden Source", Cleanup, InterceptStop);
             HideRound();
             Apply();
             Debug.Log(Log + "Ready.");
@@ -110,55 +110,44 @@ namespace AcousticChamber.Chambers.HiddenSource
         {
             var th = UiKit.Theme;
             ((RectTransform)transform).sizeDelta = Size;
-            _window = UiKit.Window(transform);
-            float left = -Size.x / 2f + 48f, width = Size.x - 96f, top = Size.y / 2f;
+            _panel = UiPanel.Create(transform, "Panel", Size);
+            var surface = _panel.Surface;
+            surface.RootBack = () => _exit?.BackToHall();
+            UiNavigationBar.Create(surface, Title, UiNavigationBar.Leading.Back);
+            var body = surface.Body;
+            body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = 12f;
 
-            UiKit.Text(_window, "Title", Title, th.headingSize, new Vector2(0f, top - 60f), new Vector2(width, 70f), bold: true,
-                       align: TextAlignmentOptions.Left);
-            UiKit.Text(_window, "Intro", "A sound is hidden on the floor around you. Press Start, point to where you hear it with either controller, " +
-                       "and press A. Then see how close you were.", th.smallSize, new Vector2(0f, top - 150f), new Vector2(width, 110f), color: th.text2,
-                       align: TextAlignmentOptions.TopLeft);
+            var intro = UiKit.Text(body, "Intro", "A sound is hidden on the floor around you. Press Start, point to where you hear it with either controller, " +
+                                   "and press A. Then see how close you were.", th.smallSize, Vector2.zero, Vector2.zero, color: th.text2,
+                                   align: TextAlignmentOptions.TopLeft);
+            UiKit.Size(intro.gameObject, prefW: 0f, flexW: 1f);
 
-            Section("Room", top - 250f);
-            for (int i = 0; i < RoomChoices.All.Length; i++)
-            {
-                var room = RoomChoices.All[i];
-                _roomButtons.Add(Choice(RoomChoices.Label(room), i, RoomChoices.All.Length, top - 315f, () => { _room = room; Apply(); }));
-            }
-            Section("Distance", top - 395f);
-            string[] cues = { "Natural", "Flat" };
-            for (int i = 0; i < cues.Length; i++)
-            {
-                bool natural = i == 0;
-                _cueButtons.Add(Choice(cues[i], i, cues.Length, top - 460f, () => { _natural = natural; Apply(); }));
-            }
-            Section("Hearing", top - 540f);
-            // two columns: the ear (Both, Left, Right) and the level (0, -20, -40 dB)
-            float colW = (width - 32f) / 2f;
-            for (int i = 0; i < HearingConditions.Ears.Length; i++)
-            {
-                var ear = HearingConditions.Ears[i];
-                _hearingButtons.Add(UiKit.ChoiceButton(_window, HearingConditions.EarLabel(ear), i, HearingConditions.Ears.Length, left, colW, top - 605f,
-                                                       () => { _condition = _condition.WithEar(ear); Apply(); }));
-            }
-            for (int i = 0; i < HearingConditions.Levels.Length; i++)
-            {
-                var level = HearingConditions.Levels[i];
-                _levelButtons.Add(UiKit.ChoiceButton(_window, HearingConditions.LevelLabel(level), i, HearingConditions.Levels.Length, left + colW + 32f, colW,
-                                                      top - 605f, () => { _condition = _condition.WithLevel(level); Apply(); }));
-            }
+            var rooms = new List<string>();
+            foreach (var r in RoomChoices.All) rooms.Add(RoomChoices.Label(r));
+            var roomRow = UiKit.LabeledRow(body, "Room", "Room");
+            UiKit.ChoiceGroup(roomRow, "Room", rooms, 0, i => { _room = RoomChoices.All[i]; Apply(); }, out var roomButtons);
+            _roomButtons.AddRange(roomButtons);
 
-            _status = UiKit.Text(_window, "Status", "No round yet.", th.smallSize, new Vector2(0f, top - 715f), new Vector2(width, 130f),
-                                 align: TextAlignmentOptions.TopLeft);
+            var cueRow = UiKit.LabeledRow(body, "Distance", "Distance");
+            UiKit.ChoiceGroup(cueRow, "Distance", new[] { "Natural", "Flat" }, 0, i => { _natural = i == 0; Apply(); }, out var cueButtons);
+            _cueButtons.AddRange(cueButtons);
 
-            UiKit.Button(_window, "Start", "Start", UiStyle.Prominent, new Vector2(left + 160f, -top + 55f), new Vector2(320f, 0f), StartRound);
-            UiKit.Button(_window, "Back to Hall", "Back to Hall", UiStyle.Gray, new Vector2(-left - 160f, -top + 55f), new Vector2(320f, 0f), () => _exit.BackToHall());
+            // two groups in one row: the ear (Both, Left, Right) and the level (0, -20, -40 dB)
+            var hearing = UiKit.LabeledRow(body, "Hearing", "Hearing");
+            var ears = new List<string>();
+            foreach (var ear in HearingConditions.Ears) ears.Add(HearingConditions.EarLabel(ear));
+            UiKit.ChoiceGroup(hearing, "Ear", ears, 0, i => { _condition = _condition.WithEar(HearingConditions.Ears[i]); Apply(); }, out var earButtons);
+            _hearingButtons.AddRange(earButtons);
+            var levels = new List<string>();
+            foreach (var level in HearingConditions.Levels) levels.Add(HearingConditions.LevelLabel(level));
+            UiKit.ChoiceGroup(hearing, "Level", levels, 0, i => { _condition = _condition.WithLevel(HearingConditions.Levels[i]); Apply(); }, out var levelButtons);
+            _levelButtons.AddRange(levelButtons);
 
-            void Section(string label, float y) =>
-                UiKit.Text(_window, label, label, th.bodySize, new Vector2(0f, y), new Vector2(width, 50f), color: th.text2, align: TextAlignmentOptions.Left);
+            _status = UiKit.Text(body, "Status", "No round yet.", th.smallSize, Vector2.zero, Vector2.zero, align: TextAlignmentOptions.TopLeft);
+            UiKit.Size(_status.gameObject, prefW: 0f, flexW: 1f);
 
-            UiButton Choice(string label, int i, int n, float y, System.Action click) =>
-                UiKit.ChoiceButton(_window, label, i, n, left, width, y, click);
+            var toolbar = surface.AddToolbar();
+            UiKit.Button(toolbar, "Start", "Start", UiStyle.Prominent, onClick: StartRound);
         }
 
         /// <summary>Applies the choices to the sound and the output and shows them on the buttons.</summary>
@@ -271,9 +260,7 @@ namespace AcousticChamber.Chambers.HiddenSource
 
         void SetWindow(bool shown)
         {
-            var layer = _window != null ? _window.GetComponent<UiLayer>() : null;
-            if (layer != null) layer.Show(shown);
-            else if (_window != null) _window.gameObject.SetActive(shown);
+            if (_panel != null) _panel.Shown = shown;
         }
 
         /// <summary>

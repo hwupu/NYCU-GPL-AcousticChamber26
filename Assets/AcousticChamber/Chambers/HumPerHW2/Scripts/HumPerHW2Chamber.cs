@@ -480,7 +480,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
         /// The buttons show their state (UiButton.Selected): the room in use (one of four), the playing sounds, a running
         /// measurement and the sphere mode (one of two).
         /// </summary>
-        public override void DebugSections(Column col, DebugBench bench)
+        public override void DebugSections(UiColumn col, DebugBench bench)
         {
             _bench = bench;
             col.Label("Acoustics");

@@ -56,6 +56,6 @@ by the policy:
 - `not_resumable`: the menu does not offer the interrupted session (GPL.Session `CanResume` is false); Start with the same Study
   ID begins a new session (new files).
 
-## Debug
-Debug page: Run (the real protocol with the Playground values, `_DEBUG` CSV, no session file, no resume), Playground, Presets, Log files.
-No chamber-specific Debug controls.
+## Config page (Debug mode)
+Run (the real protocol with the Playground values, `_DEBUG` CSV, no session file, no resume), Playground, Presets, Log files.
+No chamber-specific controls.

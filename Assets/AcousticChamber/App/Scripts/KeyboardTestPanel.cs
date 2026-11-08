@@ -29,21 +29,15 @@ namespace AcousticChamber.App
             _entry.Changed += v => Debug.Log("[GPL] Keyboard test: value '" + v + "'");
 
             var th = UiKit.Theme;
-            var canvas = (RectTransform)transform;
-            UiKit.Clear(canvas);
-            canvas.sizeDelta = Size;
-            var window = UiKit.Window(canvas);
-            float width = Size.x - 96f;
-            UiKit.Text(window, "Title", "System keyboard test (PB-14)", th.headingSize, new Vector2(0f, Size.y / 2f - 60f), new Vector2(width, 70f),
-                       bold: true, align: TextAlignmentOptions.Left);
-            UiKit.DebugTag(window);
-            UiKit.Button(window, "Numbers", "Open number keyboard", UiStyle.Prominent, new Vector2(-230f, 150f), new Vector2(420f, 0f), () => Open(TouchScreenKeyboardType.NumberPad, 4));
-            UiKit.Button(window, "Text", "Open text keyboard", UiStyle.Gray, new Vector2(230f, 150f), new Vector2(420f, 0f), () => Open(TouchScreenKeyboardType.Default, 32));
-            UiKit.Button(window, "Close", "Close keyboard", UiStyle.Gray, new Vector2(-230f, 50f), new Vector2(420f, 0f), () => _entry.SetVisible(false));
-            UiKit.Button(window, "Clear", "Clear value", UiStyle.Gray, new Vector2(230f, 50f), new Vector2(420f, 0f), () => _entry.Clear());
-            _value = UiKit.Text(window, "Value", "", th.bodySize, new Vector2(0f, -60f), new Vector2(width, 60f), align: TextAlignmentOptions.Left);
-            _diag = UiKit.Text(window, "Diagnosis", "", th.smallSize, new Vector2(0f, -190f), new Vector2(width, 160f), color: th.text2,
-                               align: TextAlignmentOptions.TopLeft);
+            var body = TestPanelKit.Panel(transform, Size, "System keyboard test (PB-14)").Surface.Body;
+            var r1 = TestPanelKit.Row(body, "Open");
+            TestPanelKit.Wide(r1, "Numbers", "Open number keyboard", UiStyle.Prominent, () => Open(TouchScreenKeyboardType.NumberPad, 4));
+            TestPanelKit.Wide(r1, "Text", "Open text keyboard", UiStyle.Gray, () => Open(TouchScreenKeyboardType.Default, 32));
+            var r2 = TestPanelKit.Row(body, "Close");
+            TestPanelKit.Wide(r2, "Close", "Close keyboard", UiStyle.Gray, () => _entry.SetVisible(false));
+            TestPanelKit.Wide(r2, "Clear", "Clear value", UiStyle.Gray, () => _entry.Clear());
+            _value = TestPanelKit.Text(body, "Value", "", th.bodySize);
+            _diag = TestPanelKit.Text(body, "Diagnosis", "", th.smallSize, th.text2, flexHeight: true);
         }
 
         void Open(TouchScreenKeyboardType type, int max)

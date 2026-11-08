@@ -13,6 +13,6 @@ Status: **accepted**.
 
 **Bindings.** Global actions are reserved and identical across chambers by default; a chamber can remap one only by declaring it in its `ChamberDefinition`, and the menu shows the binding. Chamber actions are declared in the same table and read through `GPL.Input` (no direct `OVRInput` in chamber code). The Meta button stays with the system.
 
-**Text entry.** `ITextEntry` with `NumberPadEntry`, `KeypadEntry`, `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`), selectable per chamber. The HW2 system-keyboard failure gets its own ticket (PB-14). Meta's in-app Virtual Keyboard is not in the installed Core SDK 207.
+**Text entry.** `ITextEntry` with `UiNumberPad` (default), `KeypadEntry`, `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`), selectable per chamber. The HW2 system-keyboard failure is PB-14. Meta's in-app Virtual Keyboard is not in Core SDK 207.
 
 Amended 2026-11-05 (PB-05b: "Pause and back to the chamber menu" removed from the Stop dialog).

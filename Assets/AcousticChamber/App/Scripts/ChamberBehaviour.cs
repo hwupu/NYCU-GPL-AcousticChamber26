@@ -64,7 +64,7 @@ namespace AcousticChamber.App
         /// buttons; report with <c>bench.SetStatus</c>. Experimenter tools only (display switches, test playback); nothing here
         /// may change a session or its log.
         /// </summary>
-        public virtual void DebugSections(Column col, DebugBench bench) { }
+        public virtual void DebugSections(UiColumn col, DebugBench bench) { }
 
         /// <summary>
         /// The experimenter went back from the Debug page to the chamber menu (PB-08e): undo what the chamber's Debug sections

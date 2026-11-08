@@ -189,7 +189,7 @@ namespace GPL.UI.Tests
         }
     }
 
-    /// <summary>Builds GUI in edit mode (no headset): layers, number pad formatting, dialog modality.</summary>
+    /// <summary>Builds GUI in edit mode (no headset): buttons, the scroll list, dialog modality and the Stop dialog.</summary>
     public class UiBuildTests
     {
         GameObject _canvas;
@@ -199,6 +199,7 @@ namespace GPL.UI.Tests
         {
             Loc.ResetForTests();
             UiPointer.Modal = null;
+            UiKit.MotionSuppressed = true;
             _canvas = new GameObject("Test Canvas", typeof(RectTransform), typeof(Canvas)) { layer = OverlayPanel.HiddenCanvasLayer };
             _canvas.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
         }
@@ -209,19 +210,20 @@ namespace GPL.UI.Tests
             Object.DestroyImmediate(_canvas);
             StopDialog.ResetForTests();
             UiPointer.Modal = null;
+            UiKit.MotionSuppressed = false;
             Loc.ResetForTests();
         }
 
-        [Test]
-        public void ShowcaseBuildsAndEveryObjectIsOnTheCanvasLayer()
+        static TextMeshProUGUI LabelOf(Selectable b) => b.GetComponentInChildren<TextMeshProUGUI>();
+
+        /// <summary>A kit button directly on the canvas (no layout group around it): sized by hand.</summary>
+        UiButton Button(string label, UiStyle style, Vector2 pos, Vector2 size, string icon = null)
         {
-            var showcase = _canvas.AddComponent<UiShowcase>();
-            showcase.Build();
-            var all = _canvas.GetComponentsInChildren<Transform>(true);
-            Assert.Greater(all.Length, 30);
-            var wrong = all.Where(t => t.gameObject.layer != OverlayPanel.HiddenCanvasLayer).Select(t => t.name).ToArray();
-            CollectionAssert.IsEmpty(wrong, "objects not on the hidden canvas layer");
-            Assert.GreaterOrEqual(_canvas.GetComponentsInChildren<Button>(true).Length, 17);
+            var b = UiKit.Button(_canvas.transform, label, label, style, icon, minWidth: false);
+            var rt = (RectTransform)b.transform;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
+            return b;
         }
 
         [Test]
@@ -230,7 +232,7 @@ namespace GPL.UI.Tests
             // OVROverlayCanvas creates its render camera as a hidden child of the canvas
             var helper = new GameObject("Overlay Camera") { hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy };
             helper.transform.SetParent(_canvas.transform, false);
-            UiKit.Window(_canvas.transform);
+            UiPanel.Create(_canvas.transform, "Panel", new Vector2(400f, 300f));
             UiKit.Clear(_canvas.transform);
             Assert.IsTrue(helper != null, "the hidden helper survives");
             Assert.AreEqual(1, _canvas.transform.childCount, "our own objects are gone");
@@ -238,10 +240,22 @@ namespace GPL.UI.Tests
         }
 
         [Test]
+        public void EveryObjectOfAPanelIsOnTheCanvasLayer()
+        {
+            var poc = _canvas.AddComponent<UiKitPoc>();
+            poc.Build();
+            var all = _canvas.GetComponentsInChildren<Transform>(true);
+            Assert.Greater(all.Length, 30);
+            var wrong = all.Where(t => t.gameObject.layer != OverlayPanel.HiddenCanvasLayer).Select(t => t.name).ToArray();
+            CollectionAssert.IsEmpty(wrong, "objects not on the hidden canvas layer");
+        }
+
+        [Test]
         public void NumberPadShowsFormattedStudyId()
         {
-            var pad = NumberPadEntry.Create(_canvas.transform, Vector2.zero, StudyId.MaxDigits, StudyId.FromDigits, "S____");
-            var display = pad.transform.Find("Display/Text").GetComponent<TextMeshProUGUI>();
+            var panel = UiPanel.Create(_canvas.transform, "Panel", new Vector2(1000f, 800f));
+            var pad = UiNumberPad.CreateLayout(panel.Surface.Body, "Pad", StudyId.MaxDigits, StudyId.FromDigits, "S____");
+            var display = pad.transform.Find("Display/Value Box/Label").GetComponent<TextMeshProUGUI>();
             Assert.AreEqual("S____", display.text);
             Press(pad, "Key 1");
             Assert.AreEqual("1", pad.Value);
@@ -273,90 +287,18 @@ namespace GPL.UI.Tests
         }
 
         [Test]
-        public void SheetsPushTheLayersBehindBackAndDimThem()
-        {
-            var th = UiKit.Theme;
-            var window = UiKit.Window(_canvas.transform);
-            var button = UiKit.Button(window, "B", "Start", UiStyle.Prominent, Vector2.zero, Vector2.zero);
-            Image Dim(Transform layer) => layer.Find("Push Dim").GetComponent<Image>();
-            Assert.AreEqual(1f, window.localScale.x, 1e-5f);
-            Assert.AreEqual(0f, Dim(window).color.a, 1e-5f);
-
-            var a = Sheet.Open(_canvas.transform, "A", Vector2.zero, new Vector2(820f, 400f));
-            Assert.AreEqual(1f, a.transform.localScale.x, 1e-5f, "the sheet is in front at full size (edit mode: no animation)");
-            Assert.AreEqual(1f, a.GetComponent<CanvasGroup>().alpha, 1e-5f);
-            Assert.AreEqual(th.pushScale, window.localScale.x, 1e-5f, "window pushed back to 94 %");
-            Assert.AreEqual(th.dim.a, Dim(window).color.a, 1e-5f);
-            Assert.AreEqual(window.childCount - 1, Dim(window).transform.GetSiblingIndex(), "dim lies over the window content");
-            Assert.AreEqual(a.transform, UiPointer.Modal);
-
-            var b = Sheet.Open(_canvas.transform, "B", Vector2.zero, new Vector2(820f, 400f));
-            Assert.AreEqual(th.pushScale * th.pushScale, window.localScale.x, 1e-5f, "two levels down: 88 %");
-            Assert.AreEqual(th.pushScale, a.transform.localScale.x, 1e-5f);
-            Assert.AreEqual(th.dim.a, Dim(a.transform).color.a, 1e-5f);
-            Assert.AreEqual(b.transform, UiPointer.Modal);
-            Assert.AreEqual(b, Sheet.Top(_canvas.transform));
-
-            b.Close();
-            Assert.IsTrue(b == null, "destroyed (edit mode: no fade)");
-            Assert.AreEqual(1f, a.transform.localScale.x, 1e-5f, "A comes forward");
-            Assert.AreEqual(0f, Dim(a.transform).color.a, 1e-5f);
-            Assert.AreEqual(th.pushScale, window.localScale.x, 1e-5f);
-            Assert.AreEqual(a.transform, UiPointer.Modal);
-
-            a.Close();
-            Assert.AreEqual(1f, window.localScale.x, 1e-5f);
-            Assert.AreEqual(0f, Dim(window).color.a, 1e-5f);
-            Assert.IsNull(UiPointer.Modal);
-            Assert.IsNotNull(button);
-        }
-
-        [Test]
-        public void PagesChangeInPlaceAndBackReturns()
-        {
-            var window = UiKit.Window(_canvas.transform);
-            var stack = PageStack.On(window);
-            var root = stack.Push("Menu");
-            Assert.IsNull(root.BackButton, "a root page without RootBack has no ‹");
-            bool returned = false;
-            root.Returned += () => returned = true;
-
-            var debug = stack.Push("Debug");
-            Assert.IsNotNull(debug.BackButton);
-            Assert.IsFalse(root.gameObject.activeSelf, "the page below is hidden but kept");
-            Assert.AreEqual(1f, debug.GetComponent<CanvasGroup>().alpha, 1e-5f);
-            Assert.AreEqual(1f, debug.transform.localScale.x, 1e-5f, "in place, full size (edit mode: no animation)");
-
-            var parameters = stack.Push("Parameters");
-            parameters.BackButton.onClick.Invoke();
-            Assert.AreEqual(debug, stack.Top);
-            Assert.IsTrue(parameters == null, "the popped page is destroyed");
-            Assert.IsTrue(debug.gameObject.activeSelf);
-
-            stack.Push("Data files");
-            stack.PopToRoot();
-            Assert.AreEqual(root, stack.Top);
-            Assert.AreEqual(1, stack.Count);
-            Assert.IsTrue(debug == null);
-            Assert.IsTrue(root.gameObject.activeSelf);
-            Assert.IsTrue(returned);
-
-            int rootBack = 0;
-            stack.RootBack = () => rootBack++;
-            stack.Back();
-            Assert.AreEqual(1, rootBack, "‹ on the root page runs RootBack");
-            Assert.AreEqual(1, stack.Count);
-        }
-
-        [Test]
         public void ScrollListMovesContentFadesEdgesAndClipsHits()
         {
-            var list = ScrollList.Create(_canvas.transform, "List", Vector2.zero, new Vector2(800f, 500f));
-            var g = UiKit.Group(list.Content, "Group", Vector2.zero, 760f, 12);
-            ScrollList.TopAnchored(g, 0f);
-            var rows = Enumerable.Range(0, 12).Select(i => UiKit.Row(g, i, "Row " + i)).ToArray();
-            list.ContentHeight = g.sizeDelta.y;
-            Assert.AreEqual(g.sizeDelta.y - 500f, list.Model.Max, 1e-3f);
+            var panel = UiPanel.Create(_canvas.transform, "Panel", new Vector2(1000f, 700f));
+            var content = UiKit.List(panel.Surface.Body, "List", out var list);
+            var group = UiKit.Section(content, "Group");
+            var rows = Enumerable.Range(0, 12).Select(i => UiKit.Row(group, "Row " + i, "Row " + i)).ToArray();
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)panel.Surface.Root.transform);
+            content.GetComponent<UiListSync>().Sync();
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)panel.Surface.Root.transform);
+            Assert.Greater(list.Model.Max, 0f);
             Image Part(string n) => list.transform.Find(n).GetComponent<Image>();
             Assert.AreEqual(0f, Part("Fade Top").color.a, 1e-3f, "at the top: no fade above");
             Assert.AreEqual(1f, Part("Fade Bottom").color.a, 1e-3f, "more content below");
@@ -367,40 +309,17 @@ namespace GPL.UI.Tests
             Assert.AreEqual(0f, Part("Fade Bottom").color.a, 1e-3f);
 
             // row 0 is now scrolled out above the viewport: the pointer must not hit it there
-            var row0 = (RectTransform)rows[0].transform;
-            Vector3 p = row0.TransformPoint(Vector3.zero);
-            Assert.IsTrue(ScrollList.ClipsOut(row0, p));
-            var last = (RectTransform)rows[11].transform;
+            var row0 = rows[0];
+            Assert.IsTrue(ScrollList.ClipsOut(row0, row0.TransformPoint(Vector3.zero)));
+            var last = rows[11];
             Assert.IsFalse(ScrollList.ClipsOut(last, last.TransformPoint(Vector3.zero)), "the last row is visible");
-        }
-
-        [Test]
-        public void GroupRowsUseTheInsetAndConcentricCorners()
-        {
-            var th = UiKit.Theme;
-            var g = UiKit.Group(_canvas.transform, "G", Vector2.zero, 760f, 3);
-            float pad = th.groupPadding;
-            Assert.AreEqual(3 * UiKit.RowHeight + 2 * th.inset + 2 * pad, g.sizeDelta.y, 1e-4f);
-            var first = UiKit.Row(g, 0, "Parameters", "Default");
-            var second = UiKit.Row(g, 1, "Presets");
-            var last = UiKit.Row(g, 2, "Data files");
-            var rt = (RectTransform)first.transform;
-            Assert.AreEqual(760f - 2f * pad, rt.sizeDelta.x, 1e-4f);
-            Assert.AreEqual(g.sizeDelta.y / 2f - pad, rt.anchoredPosition.y + UiKit.RowHeight / 2f, 1e-4f, "padding from the group's top");
-            Assert.AreEqual(-g.sizeDelta.y / 2f + pad, ((RectTransform)last.transform).anchoredPosition.y - UiKit.RowHeight / 2f, 1e-4f);
-            Assert.AreEqual(UiKit.RowHeight + th.inset, rt.anchoredPosition.y - ((RectTransform)second.transform).anchoredPosition.y, 1e-4f,
-                            "rows 4 u apart");
-            Assert.AreEqual(64f / (th.groupRadius - pad), first.GetComponent<Image>().pixelsPerUnitMultiplier, 1e-4f, "concentric: 36 - 8");
-            Assert.IsTrue(first.InGroup);
-            Assert.AreEqual("Default  ›", first.transform.Find("Value").GetComponent<TextMeshProUGUI>().text);
-            Assert.AreEqual("›", last.transform.Find("Value").GetComponent<TextMeshProUGUI>().text);
         }
 
         [Test]
         public void SelectedButtonUsesTheSelectColour()
         {
             var th = UiKit.Theme;
-            var b = UiKit.Button(_canvas.transform, "B", "Play", UiStyle.Borderless, Vector2.zero, Vector2.zero);
+            var b = Button("Play", UiStyle.Borderless, Vector2.zero, new Vector2(200f, 80f));
             b.InGroup = true;
             b.FinishTransition();
             Assert.AreEqual(th.borderlessInGroup.normal, b.CurrentFill);
@@ -411,26 +330,23 @@ namespace GPL.UI.Tests
             b.FinishTransition();
             Assert.AreEqual(0f, b.CurrentFill.a, 1e-6f, "back to no fill (the fade keeps the tint at alpha 0)");
 
-            var p = UiKit.Button(_canvas.transform, "P", "Run", UiStyle.Prominent, Vector2.zero, Vector2.zero);
+            var p = Button("Run", UiStyle.Prominent, Vector2.zero, new Vector2(200f, 80f));
             p.Selected = true;
             p.FinishTransition();
             Assert.AreEqual(th.prominent.normal, p.CurrentFill, "prominent ignores Selected");
         }
 
         [Test]
-        public void ButtonIsCapsuleWithMinimumSizeAndStyleColors()
+        public void ButtonIsCapsuleWithStyleColors()
         {
             var th = UiKit.Theme;
-            var b = UiKit.Button(_canvas.transform, "B", "x", UiStyle.Destructive, Vector2.zero, new Vector2(100f, 0f));
-            var rt = (RectTransform)b.transform;
-            Assert.AreEqual(th.buttonMinWidth, rt.sizeDelta.x);
-            Assert.AreEqual(th.buttonHeight, rt.sizeDelta.y);
+            var b = Button("x", UiStyle.Destructive, Vector2.zero, new Vector2(300f, 80f));
             Assert.AreEqual(th.destructive.normal, b.CurrentFill);
-            var img = b.GetComponent<Image>();
+            var img = (Image)b.targetGraphic;
             Assert.AreEqual(Image.Type.Sliced, img.type);
             Assert.AreEqual(64f / (th.buttonHeight / 2f), img.pixelsPerUnitMultiplier, 1e-4f, "corner radius = height / 2");
             Assert.AreEqual(Selectable.Transition.None, b.transition, "UiButton animates itself");
-            Assert.AreEqual(TextWrappingModes.NoWrap, UiKit.LabelOf(b).textWrappingMode);
+            Assert.AreEqual(TextWrappingModes.NoWrap, LabelOf(b).textWrappingMode);
         }
 
         [Test]
@@ -454,7 +370,7 @@ namespace GPL.UI.Tests
         public void HoverPressReleaseAndDisabled()
         {
             var th = UiKit.Theme;
-            var b = UiKit.Button(_canvas.transform, "B", "Start", UiStyle.Prominent, Vector2.zero, Vector2.zero);
+            var b = Button("Start", UiStyle.Prominent, Vector2.zero, new Vector2(200f, 80f));
             b.OnPointerEnter(null);
             b.FinishTransition();
             Assert.AreEqual(th.prominent.hover, b.CurrentFill);
@@ -468,12 +384,12 @@ namespace GPL.UI.Tests
             b.interactable = false;
             Assert.AreEqual(th.prominent.normal.a * th.disabledAlpha, b.CurrentFill.a, 1e-5f);
 
-            var revert = UiKit.Button(_canvas.transform, "R", "Revert", UiStyle.Borderless, Vector2.zero, Vector2.zero);
+            var revert = Button("Revert", UiStyle.Borderless, Vector2.zero, new Vector2(200f, 80f));
             revert.interactable = false;
-            Assert.AreEqual(th.text3, UiKit.LabelOf(revert).color, "disabled borderless: dim text, not faded white");
+            Assert.AreEqual(th.text3, LabelOf(revert).color, "disabled borderless: dim text, not faded white");
             revert.interactable = true;
             revert.FinishTransition();
-            Assert.AreEqual(th.borderless.label, UiKit.LabelOf(revert).color);
+            Assert.AreEqual(th.borderless.label, LabelOf(revert).color);
 
             // the click disables the button (Revert after reverting): the release must not bring back the normal look
             revert.onClick.AddListener(() => revert.interactable = false);
@@ -481,7 +397,7 @@ namespace GPL.UI.Tests
             revert.onClick.Invoke();
             revert.Release();
             revert.FinishTransition();
-            Assert.AreEqual(th.text3, UiKit.LabelOf(revert).color, "stays disabled after the release");
+            Assert.AreEqual(th.text3, LabelOf(revert).color, "stays disabled after the release");
             Assert.AreEqual(1f, revert.transform.localScale.x, 1e-5f, "pressed scale is undone");
         }
 
@@ -493,7 +409,7 @@ namespace GPL.UI.Tests
             UiKit.Theme = th;
             try
             {
-                var b = UiKit.Button(_canvas.transform, "B", "Back", UiStyle.Borderless, Vector2.zero, Vector2.zero);
+                var b = Button("Back", UiStyle.Borderless, Vector2.zero, new Vector2(200f, 80f));
                 b.OnPointerEnter(null);
                 Assert.AreEqual(th.borderless.hover, b.CurrentFill, "no ramp with reduce motion");
                 b.OnPointerExit(null);
@@ -507,13 +423,11 @@ namespace GPL.UI.Tests
         [Test]
         public void HitRegionIsAtLeast60UnitsAndTheRealRectWins()
         {
-            var small = UiKit.IconButton(_canvas.transform, "Small", UiKit.CloseGlyph, Vector2.zero);
-            ((RectTransform)small.transform).sizeDelta = new Vector2(40f, 40f);
+            var small = Button("Small", UiStyle.Borderless, Vector2.zero, new Vector2(40f, 40f), "cross");
             var hit = UiKit.HitRect((RectTransform)small.transform);
             Assert.AreEqual(60f, hit.width);
             Assert.AreEqual(60f, hit.height);
-            var big = UiKit.Button(_canvas.transform, "Big", "Start", UiStyle.Gray, new Vector2(80f, 0f), new Vector2(100f, 0f));
-            ((RectTransform)big.transform).sizeDelta = new Vector2(100f, 80f);    // spans x 30..130
+            var big = Button("Big", UiStyle.Gray, new Vector2(80f, 0f), new Vector2(100f, 80f));   // spans x 30..130
             Assert.AreEqual(100f, UiKit.HitRect((RectTransform)big.transform).width, "large rects are not grown");
 
             var targets = new Selectable[] { small, big };
@@ -571,9 +485,9 @@ namespace GPL.UI.Tests
             CollectionAssert.AreEqual(new[] { "Drop out", "Keep going" }, DialogLabels(), "main action on the right");
 
             Click("Drop out");
-            Assert.AreEqual("Drop out S0012?", ModalDialog.Current.transform.Find("Title").GetComponent<TextMeshProUGUI>().text);
+            Assert.AreEqual("Drop out S0012?", ModalDialog.Current.transform.Find("Surface/Page/Body/Content/Title").GetComponent<TextMeshProUGUI>().text);
             CollectionAssert.AreEqual(new[] { "Cancel", "Drop out" }, DialogLabels());
-            Assert.AreEqual(2, Sheet.Stack(_canvas.transform).Count, "the confirmation lies on top of the first step");
+            Assert.AreEqual(2, UiPanel.Stack(_canvas.transform).Count, "the confirmation lies on top of the first step");
             Click("Cancel");
             CollectionAssert.AreEqual(new[] { "Drop out", "Keep going" }, DialogLabels(), "Cancel goes back to the first step");
             Assert.IsEmpty(choices);
@@ -584,7 +498,7 @@ namespace GPL.UI.Tests
             CollectionAssert.AreEqual(new[] { StopChoice.DropOut }, choices);
             Assert.IsFalse(StopDialog.IsOpen);
             Assert.IsNull(ModalDialog.Current);
-            Assert.IsEmpty(Sheet.Stack(_canvas.transform), "Drop out closes both sheets");
+            Assert.IsEmpty(UiPanel.Stack(_canvas.transform), "Drop out closes both dialogs");
             Assert.AreEqual(1f, Time.timeScale);
             Assert.IsFalse(AudioListener.pause);
         }
@@ -616,12 +530,47 @@ namespace GPL.UI.Tests
         }
 
         static string[] DialogLabels() =>
-            ModalDialog.Current.GetComponentsInChildren<Button>().OrderBy(b => ((RectTransform)b.transform).anchoredPosition.x)
-                       .Select(b => UiKit.LabelOf(b).text).ToArray();   // left to right
+            ModalDialog.Current.GetComponentsInChildren<Button>().OrderBy(b => b.transform.position.x)
+                       .Select(b => LabelOf(b).text).ToArray();   // left to right
 
         static void Click(string label) =>
-            ModalDialog.Current.GetComponentsInChildren<Button>().Single(b => UiKit.LabelOf(b).text == label).onClick.Invoke();
+            ModalDialog.Current.GetComponentsInChildren<Button>().Single(b => LabelOf(b).text == label).onClick.Invoke();
 
-        static void Press(NumberPadEntry pad, string key) => pad.transform.Find("Keys/" + key).GetComponent<Button>().onClick.Invoke();
+        static void Press(UiNumberPad pad, string key) =>
+            pad.GetComponentsInChildren<Button>(true).Single(b => b.name == key).onClick.Invoke();
+    }
+
+    public class UiIconTests
+    {
+        [Test]
+        public void IconSetLooksUpByNameAndUiKitIconTintsIt()
+        {
+            var set = ScriptableObject.CreateInstance<UiIconSet>();
+            var tex = new Texture2D(4, 4);
+            var sprite = Sprite.Create(tex, new UnityEngine.Rect(0, 0, 4, 4), Vector2.one * 0.5f);
+            set.icons.Add(new UiIconSet.Entry { name = "gear", sprite = sprite });
+            var theme = UiKit.Theme;
+            var old = theme.icons;
+            theme.icons = set;
+            var parent = new GameObject("P", typeof(RectTransform));
+            try
+            {
+                Assert.AreSame(sprite, set.Get("gear"));
+                Assert.IsNull(set.Get("missing"));
+                var icon = UiKit.Icon(parent.transform, "Icon", "gear", 0f, Color.red);
+                var img = icon.GetComponent<Image>();
+                Assert.AreSame(sprite, img.sprite);
+                Assert.AreEqual(Color.red, img.color);
+                Assert.AreEqual(theme.iconSize, ((RectTransform)icon.transform).sizeDelta.x);
+            }
+            finally
+            {
+                theme.icons = old;
+                Object.DestroyImmediate(parent);
+                Object.DestroyImmediate(set);
+                Object.DestroyImmediate(sprite);
+                Object.DestroyImmediate(tex);
+            }
+        }
     }
 }

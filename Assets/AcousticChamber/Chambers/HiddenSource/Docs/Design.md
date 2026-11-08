@@ -52,4 +52,4 @@ result and returns to the menu *(default)*.
 No Study ID, presets, CSV, `.session` file, Debug bench, resume, trial counts or feedback rules (ADR-0006).
 
 ## Moving the menu
-The handle below the panel moves it, direction and distance (`GPL.UI` `PanelMover`, all experience panels and the study chamber menus; PO 2026-11-08). Not during a study run.
+The handle below the panel (`GPL.UI` `UiGrabber`; experience panels and study chamber menus) turns it around the head, no distance move. Not during a study run.

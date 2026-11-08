@@ -1,0 +1,118 @@
+/*
+ * Design tokens of GPL.UI (docs/DesignSystem.md, ADR-0005). The single source of truth of the HTML preview.
+ * Names follow the Unity UiTheme fields (Modules/UI/Runtime/UiTheme.cs): `surface` = UiTheme.surface,
+ * `prominent-hover` = UiTheme.prominent.hover, and so on. Change a value in both places (the Colors story shows the live values).
+ *
+ * Units: 1 canvas unit (u) = 1 px here = 2 mm at 2 m = 0.057 deg in the headset. `--spacing: 1px` makes every Tailwind
+ * number a canvas unit: `h-80` is 80 u, `p-8` is the 8 u group padding, `rounded-panel` is 32 u.
+ */
+@import "@fontsource/noto-sans-tc/400.css";
+@import "@fontsource/noto-sans-tc/700.css";
+@import "tailwindcss";
+
+@theme static {
+  /* Only the design system's tokens exist: no default palette, no shadows, no default radii or type sizes. */
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --font-*: initial;
+  --font-weight-*: initial;
+  --spacing: 1px;
+
+  /* ---- Fonts: Noto Sans TC for English and 中文; Regular and Bold only ---- */
+  --font-sans: "Noto Sans TC", sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+
+  /* ---- Surfaces and text (UiTheme "Surfaces and text") ---- */
+  --color-surface: #1c1c1f;
+  --color-raised: #2a2a2e;
+  --color-cover: #4a4a50;
+  --color-select: #4a4a50;
+  --color-text: #ffffff;
+  --color-text2: #a1a1a8;
+  --color-text3: #5e5e66;
+  --color-debug: #e0a93b;
+  --color-dim: rgb(0 0 0 / 0.45);
+
+  /* ---- Button states: normal / hover / pressed / label (UiTheme "Buttons"); each state is brighter, pressed the brightest ---- */
+  --color-prominent: #d6d6db;
+  --color-prominent-hover: #e9e9ed;
+  --color-prominent-pressed: #ffffff;
+  --color-prominent-label: #141416;
+  --color-gray: #3a3a3f;
+  --color-gray-hover: #48484e;
+  --color-gray-pressed: #5a5a61;
+  --color-gray-label: #ffffff;
+  --color-borderless: transparent;
+  --color-borderless-hover: #2e2e33;
+  --color-borderless-pressed: #3f3f45;
+  --color-borderless-label: #ffffff;
+  --color-borderless-in-group: transparent;
+  --color-borderless-in-group-hover: #3a3a3f;
+  --color-borderless-in-group-pressed: #4a4a50;
+  --color-borderless-in-group-label: #ffffff;
+  --color-destructive: #bf3d37;
+  --color-destructive-hover: #d9453f;
+  --color-destructive-pressed: #f24d46;
+  --color-destructive-label: #ffffff;
+  --color-red-text: #ff6b63;
+
+  /* ---- Type scale (u at 2 m); line heights as TextMeshPro lays them out ---- */
+  --text-title: 56px;
+  --text-title--line-height: 1.2;
+  --text-heading: 44px;
+  --text-heading--line-height: 1.2;
+  --text-body: 36px;
+  --text-body--line-height: 1.2;
+  --text-button: 36px;
+  --text-button--line-height: 1;
+  --text-small: 28px;
+  --text-small--line-height: 1.2;
+  --text-minimum: 24px;
+  --text-minimum--line-height: 1.2;
+
+  /* ---- Geometry (UiTheme "Geometry") ---- */
+  --radius-panel: 32px;
+  --radius-group: 36px;
+  --radius-row: 28px;
+  --radius-card: 40px;
+  --radius-capsule: 9999px;
+  --button-height: 80px;
+  --small-button-height: 60px;
+  --button-min-width: 220px;
+  --icon-button-size: 80px;
+  --hit-min: 60px;
+  --gap: 20px;
+  --inset: 4px;
+  --group-padding: 8px;
+  --button-padding-x: 40px;
+  --icon-size: 40px;
+  --icon-size-small: 32px;
+  --icon-gap: 12px;
+  /* Noto Sans TC sits low in its line box: single-line labels move up (negative = up). Icons do not move. */
+  --label-nudge: -2px;
+  --pressed-scale: 0.97;
+  --sheet-scale: 0.94;
+  --push-scale: 0.94;
+  --page-scale: 0.98;
+  --disabled-alpha: 0.4;
+
+  /* ---- Motion (UiTheme "Motion"; curve = Motion.Settle, no overshoot) ---- */
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --hover-in: 150ms;
+  --hover-out: 350ms;
+  --release: 250ms;
+  --sheet: 450ms;
+  --page: 450ms;
+  --push: 450ms;
+}
+
+html, body {
+  background: #000;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}

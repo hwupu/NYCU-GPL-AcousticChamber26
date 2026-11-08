@@ -1,0 +1,31 @@
+{
+  "name": "acousticchamber-ui-design",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HTML preview and component catalogue of the GPL.UI design system (Storybook, Vue, Tailwind). Reference for the Unity UiKit.",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build": "storybook build -o storybook-static",
+    "icons": "node scripts/export-icons.mjs",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "^3.5.45"
+  },
+  "devDependencies": {
+    "@fontsource/noto-sans-tc": "^5.3.1",
+    "@resvg/resvg-js": "^2.6.2",
+    "@storybook/addon-a11y": "^10.6.6",
+    "@storybook/addon-docs": "^10.6.6",
+    "@storybook/vue3-vite": "^10.6.6",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "storybook": "^10.6.6",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.6",
+    "vue-tsc": "^3.3.14"
+  }
+}

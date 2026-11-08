@@ -2,15 +2,13 @@
 
 > **In AcousticChamber26, CLAUDE.md, docs/Architecture.md and the ADRs (docs/decisions/) take precedence over this generic template** where they differ (e.g. parameters come from presets, not Inspector fields; the participant recenters with the Meta button; one CSV per session with a `.session` file).
 
-Reusable prompt for an AI coding agent. Copy this file into a new project (`docs/References/INSTRUCTIONS.md`), fill in the **Study Brief** (end of this file, or a separate `STUDY-BRIEF.md`), then tell the agent: "Follow Instructions.md and the Study Brief to set up this project." A filled example is in [_study-brief-example.md](_study-brief-example.md).
-
-Written from the lessons of the first project (HW2, ventriloquist effect). Its first build was written in one go from a long prompt and came out buggy; the rules below prevent that.
+Reusable prompt for an AI coding agent. Copy it into a new project (`docs/references/INSTRUCTIONS.md`), fill in the **Study Brief** (end of this file, or a separate `STUDY-BRIEF.md`; filled example: [_study-brief-example.md](_study-brief-example.md)), then tell the agent: "Follow INSTRUCTIONS.md and the Study Brief to set up this project." Written from the lessons of HW2 (ventriloquist effect), whose first build came out buggy because it was written in one go from a long prompt.
 
 ---
 
 ## 1. Roles and process
 - Follow AI-DLC and Scrum, adapted for a solo project. The user is the **Product Owner (PO)**; you switch between **Scrum Master** (tickets, board, decisions, retros) and **engineer**.
-- Keep in `docs/`: product backlog and sprint board (Markdown tables are enough), decision records (`docs/Decisions/ADR-000x-*.md`), a prompt log, the experiment design, scene setup instructions, the data format, and a `README.md`. Update them as work progresses; the PO can close tickets.
+- Keep in `docs/`: product backlog and sprint board (Markdown tables are enough), decision records (`docs/decisions/ADR-000x-*.md`), the experiment design, scene setup instructions, the data format, and a `README.md`. Update them as work progresses; the PO can close tickets.
 - **Ask before coding** when something is unclear (use the discovery checklist in section 6). Do not guess an unspecified experimental parameter; propose a default and ask.
 - **Small steps.** Do what the PO asks in the current request, verify it, hand over, wait. Do not build the whole application in one pass. Plan non-trivial work and get approval first.
 - Report honestly: what you ran and verified, what you could only calculate, and what only a headset can show. Never present an estimate as a measurement.
@@ -59,7 +57,7 @@ Written from the lessons of the first project (HW2, ventriloquist effect). Its f
 4. Stimuli and the trial task, plus the Debug test bench. **PO headset test.**
 5. Practice stage (language, instructions, gate), logging, unit tests.
 6. Conditions and the experiment stage.
-7. docs (README, design, setup, data format, ADRs, prompt log, backlog), Validate Setup.
+7. docs (README, design, setup, data format, ADRs, backlog), Validate Setup.
 8. Standalone Android build test on the headset (CSV retrieval, performance); calibration measurements (levels, RT60).
 
 ## 6. Discovery checklist: ask the PO before coding

@@ -17,16 +17,16 @@ namespace AcousticChamber.App
         readonly string _name;
         readonly Func<bool> _intercept;
         readonly Action _beforeLeave;
-        readonly RectTransform _window;
+        readonly UiPanel _panel;
         bool _leaving, _frozen;
 
         /// <param name="host">The panel canvas (parent of the dialog).</param>
-        /// <param name="window">The panel's window, hidden before the scene switch (overlay layers are not covered by the fade).</param>
+        /// <param name="panel">The panel, hidden before the scene switch (overlay layers are not covered by the fade).</param>
         /// <param name="beforeLeave">Stops sounds, restores the normal hearing; runs once before the switch.</param>
-        public ExperienceExit(Transform host, RectTransform window, GlobalActions actions, string name, Action beforeLeave, Func<bool> intercept = null)
+        public ExperienceExit(Transform host, UiPanel panel, GlobalActions actions, string name, Action beforeLeave, Func<bool> intercept = null)
         {
             _host = host;
-            _window = window;
+            _panel = panel;
             _actions = actions;
             _name = name;
             _beforeLeave = beforeLeave;
@@ -79,12 +79,11 @@ namespace AcousticChamber.App
             if (_leaving || AppNav.Busy) return;
             _leaving = true;
             _beforeLeave?.Invoke();
-            var layer = _window != null ? _window.GetComponent<UiLayer>() : null;
-            if (layer != null) layer.Show(false);
+            if (_panel != null) _panel.Shown = false;
             if (!AppNav.BackToHall())
             {
                 _leaving = false;
-                if (layer != null) layer.Show(true);
+                if (_panel != null) _panel.Shown = true;
             }
         }
     }

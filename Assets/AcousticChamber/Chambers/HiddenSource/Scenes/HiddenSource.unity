@@ -3585,137 +3585,6 @@ Transform:
   - {fileID: 1680760276}
   m_Father: {fileID: 310712901}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &524077481
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 524077482}
-  - component: {fileID: 524077486}
-  - component: {fileID: 524077485}
-  - component: {fileID: 524077484}
-  - component: {fileID: 524077483}
-  m_Layer: 30
-  m_Name: Experience Panel
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &524077482
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 524077481}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2}
-  m_LocalScale: {x: 0.002, y: 0.002, z: 0.002}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1471665049}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 1.2}
-  m_SizeDelta: {x: 1100, y: 900}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &524077483
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 524077481}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e763e28885ba6f4793b8d5ef5525ac2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: AcousticChamber.Chambers.HiddenSource::AcousticChamber.Chambers.HiddenSource.HiddenSourceExperience
-  sourceRoot: {fileID: 1786278752}
-  source: {fileID: 2026400394}
-  pulse: {fileID: 2026400392}
-  trueSphere: {fileID: 191820325}
-  guessSphere: {fileID: 1114777262}
-  line: {fileID: 511804518}
-  reverb: {fileID: 1427293367}
---- !u!114 &524077484
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 524077481}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee10491ef6d5d1d49a270cf6b09bdc19, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Oculus.VR::OVROverlayCanvas
-  _mipmapMode: 0
-  _dynamicResolution: 1
-  _redrawResolutionThreshold: 2147483647
-  rectTransform: {fileID: 524077482}
-  maxTextureSize: 2048
-  manualRedraw: 0
-  renderInterval: 1
-  renderIntervalFrameOffset: 0
-  superSample: 0
-  layer: 5
-  opacity: 2
-  shape: 0
-  curveRadius: 1
-  overlapMask: 0
-  compositionMode: 1
-  enable3D: 0
-  depthRange: 0.5
-  _overlayEnabled: 1
---- !u!114 &524077485
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 524077481}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ba31d2cb54e80c4e8a062db5d44bb8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GPL.UI::GPL.UI.OverlayPanel
-  distanceM: 2
-  pitchDownDeg: 8
-  heightOffsetM: 0
-  yawOffsetDeg: 0
-  followRecenter: 1
-  minHeadHeightM: 0.3
-  maxWaitSec: 5
---- !u!223 &524077486
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 524077481}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_UseReflectionProbes: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
 --- !u!1 &529705663
 GameObject:
   m_ObjectHideFlags: 0
@@ -7614,6 +7483,137 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1462793630}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1360477028
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1360477029}
+  - component: {fileID: 1360477033}
+  - component: {fileID: 1360477032}
+  - component: {fileID: 1360477031}
+  - component: {fileID: 1360477030}
+  m_Layer: 30
+  m_Name: Experience Panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1360477029
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360477028}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
+  m_LocalScale: {x: 0.002, y: 0.002, z: 0.002}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1471665049}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 1.2}
+  m_SizeDelta: {x: 1100, y: 900}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1360477030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360477028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e763e28885ba6f4793b8d5ef5525ac2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AcousticChamber.Chambers.HiddenSource::AcousticChamber.Chambers.HiddenSource.HiddenSourceExperience
+  sourceRoot: {fileID: 1786278752}
+  source: {fileID: 2026400394}
+  pulse: {fileID: 2026400392}
+  trueSphere: {fileID: 191820325}
+  guessSphere: {fileID: 1114777262}
+  line: {fileID: 511804518}
+  reverb: {fileID: 1427293367}
+--- !u!114 &1360477031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360477028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee10491ef6d5d1d49a270cf6b09bdc19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Oculus.VR::OVROverlayCanvas
+  _mipmapMode: 0
+  _dynamicResolution: 1
+  _redrawResolutionThreshold: 2147483647
+  rectTransform: {fileID: 1360477029}
+  maxTextureSize: 2048
+  manualRedraw: 0
+  renderInterval: 1
+  renderIntervalFrameOffset: 0
+  superSample: 0
+  layer: 5
+  opacity: 2
+  shape: 0
+  curveRadius: 1
+  overlapMask: 0
+  compositionMode: 1
+  enable3D: 0
+  depthRange: 0.5
+  _overlayEnabled: 1
+--- !u!114 &1360477032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360477028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ba31d2cb54e80c4e8a062db5d44bb8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GPL.UI::GPL.UI.OverlayPanel
+  distanceM: 2
+  pitchDownDeg: 8
+  heightOffsetM: 0
+  yawOffsetDeg: 0
+  followRecenter: 1
+  minHeadHeightM: 0.3
+  maxWaitSec: 5
+--- !u!223 &1360477033
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360477028}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &1368829251
 GameObject:
   m_ObjectHideFlags: 0
@@ -8366,7 +8366,7 @@ Transform:
   m_Children:
   - {fileID: 982922986}
   - {fileID: 1070649551}
-  - {fileID: 524077482}
+  - {fileID: 1360477029}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1471981043

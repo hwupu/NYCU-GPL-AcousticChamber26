@@ -29,53 +29,44 @@ namespace GPL.DebugBench
             catch (Exception e) { return "unreadable: " + e.Message; }
         }
 
-        public Page OpenDataPage()
+        public UiPage OpenDataPage()
         {
             if (Files == null) throw new InvalidOperationException("DebugBench.Files is not set.");
             var page = _pages.Push("Log files");
-            Column col = null;
+            UiColumn col = null;
             UiButton deleteAll = null;
             deleteAll = page.AddHeaderAction("Delete all", UiStyle.DestructiveText, () => ConfirmDeleteAll(Build));
 
             void Build()
             {
                 if (page == null) return;
-                if (col != null)
-                {
-                    var old = col.List.gameObject;
-                    old.SetActive(false);
-                    if (Application.isPlaying) Object.Destroy(old);
-                    else Object.DestroyImmediate(old);
-                }
+                col?.Destroy();
                 var entries = Files.List();
                 deleteAll.interactable = entries.Count > 0;
 
-                col = Column.In(page);
+                col = UiColumn.In(page);
                 col.Label(entries.Count == 0
                     ? "No log files of this chamber on this device."
                     : CountText(entries.Count) + " on this device, newest first. Copy them off before deleting: deleting cannot be undone.");
                 if (entries.Count > 0)
                 {
-                    const float deleteW = 140f;
-                    var g = col.Group("Files", entries.Count);
+                    var g = col.Group("Files");
                     for (int i = 0; i < entries.Count; i++)
                     {
                         var e = entries[i];
-                        float right = deleteW + 24f + 16f;
-                        // one line: the file name, centered; a long one shrinks instead of being cut (the _DEBUG suffix stays visible)
-                        var row = UiKit.InfoRow(g, i, e.BaseName, null, null, right);
-                        var label = UiKit.RowText(row, "Label");
+                        // one line: the file name; a long one shrinks instead of being cut (the _DEBUG suffix stays visible)
+                        var row = UiKit.Row(g, "Row " + e.BaseName, e.BaseName);
+                        var label = UiKit.RowTitle(row);
                         label.enableAutoSizing = true;
                         label.fontSizeMin = UiKit.Theme.minimumSize;
                         label.fontSizeMax = UiKit.Theme.bodySize;
-                        label.rectTransform.offsetMax = new Vector2(-right, label.rectTransform.offsetMax.y);
-                        var del = UiKit.SmallButton(row, "Delete", "Delete", new Vector2(row.sizeDelta.x / 2f - 24f - deleteW / 2f, 0f), deleteW,
-                                                    () => ConfirmDelete(e, Build), UiStyle.DestructiveText);
+                        // an icon button (red, like the Delete all text in the header)
+                        var del = UiKit.Button(row, "Delete", null, UiStyle.DestructiveText, "trash-can", small: true,
+                                               onClick: () => ConfirmDelete(e, Build));
                         del.InGroup = true;
                     }
                 }
                 col.Label("Folder: " + Files.Folder + ". Presets (presets/) are not log files and stay.");
-                col.Finish();
                 RefreshDebugPage();
             }
 
@@ -91,7 +82,7 @@ namespace GPL.DebugBench
                              " removed from this device. This cannot be undone.";
             if (e.Status == SessionStatus.InProgress)
                 message += " The session is unfinished: " + (e.StudyId.Length > 0 ? e.StudyId : "it") + " can no longer resume it.";
-            ModalDialog.Show(_canvas, "Delete " + (e.IsDebug ? "this Debug run" : e.StudyId.Length > 0 ? e.StudyId + "'s session" : "this session") + "?", message,
+            ModalDialog.Show(_canvas, "Delete " + (e.IsDebug ? "this Config run" : e.StudyId.Length > 0 ? e.StudyId + "'s session" : "this session") + "?", message,
                 new DialogButton("Cancel", UiStyle.Borderless),
                 new DialogButton("Delete", UiStyle.Destructive, () =>
                 {
