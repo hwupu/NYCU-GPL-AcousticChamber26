@@ -111,6 +111,22 @@ namespace GPL.UI
             return img;
         }
 
+        // ---- icons -------------------------------------------------------------------------------------------
+
+        /// <summary>An icon of the theme's icon set, <paramref name="size"/> u square (0 = <c>iconSize</c>), tinted <paramref name="color"/> (default: text).</summary>
+        public static UiIcon Icon(Transform parent, string name, string icon, float size = 0f, Color? color = null)
+        {
+            if (size <= 0f) size = Theme.iconSize;
+            var rt = Rect(parent, name, Vector2.zero, new Vector2(size, size));
+            var img = rt.gameObject.AddComponent<Image>();
+            img.raycastTarget = false;
+            img.preserveAspect = true;
+            var ui = rt.gameObject.AddComponent<UiIcon>();
+            ui.Color = color ?? Theme.text;
+            ui.Name = icon;
+            return ui;
+        }
+
         // ---- text --------------------------------------------------------------------------------------------
 
         public static TextMeshProUGUI Text(Transform parent, string name, string text, int size, Vector2 pos, Vector2 box,

@@ -20,6 +20,7 @@ namespace AcousticChamber.App.Editor
         public const string MainHallScene = "Assets/AcousticChamber/App/Scenes/MainHall.unity";
         const string FontsDir = "Assets/AcousticChamber/Settings/Fonts";
         const string ThemePath = "Assets/AcousticChamber/Settings/UiTheme.asset";
+        const string IconSetPath = "Assets/AcousticChamber/Settings/UiIconSet.asset";
         const string LaserPath = "Assets/AcousticChamber/Settings/Materials/Laser.mat";
         const string GroupUI = "UI";
         const string GroupXR = "XR";
@@ -39,6 +40,7 @@ namespace AcousticChamber.App.Editor
             var regular = UiSetup.EnsureFontAsset(FontsDir + "/NotoSansTC-Regular.otf", FontsDir + "/NotoSansTC-Regular SDF.asset");
             var bold = UiSetup.EnsureFontAsset(FontsDir + "/NotoSansTC-Bold.otf", FontsDir + "/NotoSansTC-Bold SDF.asset");
             var theme = UiSetup.EnsureTheme(ThemePath, regular, bold);
+            UiIconSetup.Assign(theme, UiIconSetup.EnsureIconSet(IconSetPath));
             UiSetup.EnsureUnlitMaterial(LaserPath, Color.white);
             Debug.Log("[GPL] App Step 1: UI theme " + ThemePath + " (fonts: " + (regular != null ? regular.name : "none") + ", " +
                       (bold != null ? bold.name : "none") + ")");

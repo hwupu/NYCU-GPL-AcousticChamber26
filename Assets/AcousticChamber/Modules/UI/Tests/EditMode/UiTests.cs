@@ -624,4 +624,38 @@ namespace GPL.UI.Tests
 
         static void Press(NumberPadEntry pad, string key) => pad.transform.Find("Keys/" + key).GetComponent<Button>().onClick.Invoke();
     }
+
+    public class UiIconTests
+    {
+        [Test]
+        public void IconSetLooksUpByNameAndUiKitIconTintsIt()
+        {
+            var set = ScriptableObject.CreateInstance<UiIconSet>();
+            var tex = new Texture2D(4, 4);
+            var sprite = Sprite.Create(tex, new UnityEngine.Rect(0, 0, 4, 4), Vector2.one * 0.5f);
+            set.icons.Add(new UiIconSet.Entry { name = "gear", sprite = sprite });
+            var theme = UiKit.Theme;
+            var old = theme.icons;
+            theme.icons = set;
+            var parent = new GameObject("P", typeof(RectTransform));
+            try
+            {
+                Assert.AreSame(sprite, set.Get("gear"));
+                Assert.IsNull(set.Get("missing"));
+                var icon = UiKit.Icon(parent.transform, "Icon", "gear", 0f, Color.red);
+                var img = icon.GetComponent<Image>();
+                Assert.AreSame(sprite, img.sprite);
+                Assert.AreEqual(Color.red, img.color);
+                Assert.AreEqual(theme.iconSize, ((RectTransform)icon.transform).sizeDelta.x);
+            }
+            finally
+            {
+                theme.icons = old;
+                Object.DestroyImmediate(parent);
+                Object.DestroyImmediate(set);
+                Object.DestroyImmediate(sprite);
+                Object.DestroyImmediate(tex);
+            }
+        }
+    }
 }
