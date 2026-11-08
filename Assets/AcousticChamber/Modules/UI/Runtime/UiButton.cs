@@ -23,6 +23,7 @@ namespace GPL.UI
         float _start, _duration;
         bool _animating, _pressed;
         Visual _visual = Visual.Normal;
+        UiIcon[] _icons;
 
         enum Visual { Normal, Hover, Pressed, Disabled }
 
@@ -186,6 +187,9 @@ namespace GPL.UI
         {
             if (_fill != null) _fill.color = LerpFill(_from, _to, p);
             if (Label != null) _label.color = Color.LerpUnclamped(_labelFrom, _labelTo, p);
+            if (_icons == null) _icons = GetComponentsInChildren<UiIcon>(true);
+            var lc = Label != null ? _label.color : _labelTo;
+            foreach (var ic in _icons) if (ic != null && ic.FollowsLabel) ic.Color = lc;
             float s = Mathf.LerpUnclamped(_scaleFrom, _scaleTo, p);
             transform.localScale = new Vector3(s, s, 1f);
         }

@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f5af53bdc58b3345aee2f178997c8bc, type: 3}
   m_Name: UiTheme
   m_EditorClassIdentifier: GPL.UI::GPL.UI.UiTheme
-  version: 2
+  version: 3
   regular: {fileID: 11400000, guid: 2f324174c6812f64e81d014a11e329eb, type: 2}
   bold: {fileID: 11400000, guid: 7a7dfddc8d802834cac01ee225f62b65, type: 2}
+  icons: {fileID: 11400000, guid: 7ed4440085a15d743a503b7500b59609, type: 2}
   surface: {r: 0.10980392, g: 0.10980392, b: 0.12156863, a: 1}
   raised: {r: 0.16470589, g: 0.16470589, b: 0.18039216, a: 1}
   cover: {r: 0.2901961, g: 0.2901961, b: 0.3137255, a: 1}
@@ -68,6 +69,21 @@ MonoBehaviour:
   groupPadding: 8
   panelRadius: 32
   groupRadius: 36
+  rowRadius: 28
+  cardRadius: 40
+  labelNudge: 2
+  iconSize: 40
+  iconSizeSmall: 32
+  iconGap: 12
+  buttonPaddingX: 40
+  iconSidePaddingShare: 0.75
+  surfacePaddingX: 48
+  navTopPadding: 36
+  surfacePaddingBottom: 40
+  rowMinHeight: 88
+  rowPaddingX: 28
+  dialogWidth: 820
+  panelWidth: 1000
   pressedScale: 0.97
   sheetScale: 0.94
   pushScale: 0.94

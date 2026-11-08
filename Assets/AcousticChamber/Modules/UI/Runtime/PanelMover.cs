@@ -5,8 +5,8 @@ namespace GPL.UI
     /// <summary>
     /// Lets the participant move an <see cref="OverlayPanel"/> (PO 2026-11-08), visionOS style: a small pill below the panel, outside it.
     /// Point at it (or near it: the target zone is much larger than the pill), hold the trigger and move the controller: swinging the ray
-    /// turns the panel around the head (left / right, up / down), pushing the hand away from the head or pulling it back moves the panel
-    /// farther or nearer. Enable with <see cref="OverlayPanel.Movable"/>. The pill is a real 3D object, not part of the overlay canvas
+    /// turns the panel around the head (left / right, up / down) at a fixed distance (the canvas scale follows the distance, so moving it
+    /// nearer or farther would look the same). Enable with <see cref="OverlayPanel.Movable"/>. The pill is a real 3D object, not part of the overlay canvas
     /// (the compositor layer clips everything outside the canvas); on hover or while held it grows and brightens with the settle curve.
     /// It is a 3D ray target (<see cref="IRayTarget"/>), shown only while some content is visible.
     /// </summary>
@@ -14,16 +14,18 @@ namespace GPL.UI
     public class PanelMover : MonoBehaviour, IRayTarget
     {
         public const string HandleName = "Move Handle";
-        /// <summary>The pill, in canvas units (1 unit = 0.057 deg): length, thickness, and the gap between the panel edge and the pill's center.</summary>
-        public const float PillLength = 220f, PillThickness = 16f, EdgeGap = 56f;
-        /// <summary>The ray reacts inside this zone around the pill (canvas units, centered on it), much larger than the pill.</summary>
-        public const float GrabWidth = 520f, GrabHeight = 150f;
-        /// <summary>The pill's size at full hover (factor) and its opacity at rest and at full hover.</summary>
-        public const float HoverScale = 1.7f, RestAlpha = 0.45f, HoverAlpha = 0.95f;
+        /// <summary>
+        /// The pill (a rounded rectangle, canvas units, 1 unit = 0.057 deg): 120 x 8 at rest, 220 x 16 at full hover, and the gap
+        /// between the surface's bottom edge and the pill's top edge (the top edge stays put while the pill grows downward).
+        /// </summary>
+        public const float PillLength = 120f, PillThickness = 8f, PillLengthHover = 220f, PillThicknessHover = 16f, EdgeGap = 16f;
+        /// <summary>The ray reacts inside this zone just below the surface (canvas units, centered at the panel's x), much larger than the pill.</summary>
+        public const float GrabWidth = 520f, GrabHeight = 120f;
+        /// <summary>The pill's opacity at rest and at full hover.</summary>
+        public const float RestAlpha = 0.45f, HoverAlpha = 0.95f;
+        /// <summary>Space the pill needs below the panel (canvas units), for the floor clearance of <see cref="OverlayPanel"/>.</summary>
+        public const float Reserve = EdgeGap + PillThicknessHover + 40f;
         public const float MinPitchDownDeg = -30f, MaxPitchDownDeg = 60f;
-        public const float MinDistanceM = 0.8f, MaxDistanceM = 5f;
-        /// <summary>Panel distance change per meter the hand moves away from the head.</summary>
-        public const float DistanceGain = 2f;
 
         OverlayPanel _panel;
         RectTransform _rect;
@@ -31,7 +33,7 @@ namespace GPL.UI
         Renderer _renderer;
         Material _mat;
         bool _registered, _hover, _held;
-        float _grabXDeg, _grabYDeg, _grabDistance, _grabHand;
+        float _grabXDeg, _grabYDeg;
         // the settle tween of the hover amount (0 = rest, 1 = hovered or held)
         float _level, _from, _to, _t0, _dur;
 
@@ -48,9 +50,49 @@ namespace GPL.UI
             Register(false);
             if (_handle != null) Destroy(_handle.gameObject);
             if (_mat != null) Destroy(_mat);
+            if (_mesh != null) Destroy(_mesh);
         }
 
-        float CenterY => -_rect.rect.height / 2f - EdgeGap;
+        float _thickness = PillThickness;
+        Mesh _mesh;
+
+        /// <summary>Pill thickness at hover amount <paramref name="level"/> (0 to 1).</summary>
+        public static float ThicknessAt(float level) => Mathf.Lerp(PillThickness, PillThicknessHover, level);
+
+        /// <summary>Pill length at hover amount <paramref name="level"/> (0 to 1).</summary>
+        public static float LengthAt(float level) => Mathf.Lerp(PillLength, PillLengthHover, level);
+
+        /// <summary>Center of the pill under the surface for a pill of <paramref name="thickness"/>: its top edge sits <see cref="EdgeGap"/> below the surface.</summary>
+        float PillCenterY(float thickness) => -_rect.rect.height / 2f - EdgeGap - thickness / 2f;
+
+        /// <summary>Center of the ray zone: it starts at the surface's bottom edge and reaches down.</summary>
+        float ZoneCenterY => -_rect.rect.height / 2f - GrabHeight / 2f;
+
+        /// <summary>Fills <paramref name="mesh"/> with a rounded rectangle (stadium: the end radius is half the thickness) in the xy plane, double-sided.</summary>
+        public static void BuildPill(Mesh mesh, float length, float thickness, int arcSegments = 8)
+        {
+            float r = thickness / 2f, half = Mathf.Max(length / 2f - r, 0f);
+            int n = arcSegments * 2 + 2; // perimeter points: right cap (-90..90), left cap (90..270)
+            var v = new Vector3[n + 1];
+            for (int i = 0; i <= arcSegments; i++)
+            {
+                float a = Mathf.Lerp(-90f, 90f, i / (float)arcSegments) * Mathf.Deg2Rad;
+                v[i] = new Vector3(half + Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0f);
+                v[arcSegments + 1 + i] = new Vector3(-half - Mathf.Cos(a) * r, -Mathf.Sin(a) * r, 0f);
+            }
+            v[n] = Vector3.zero;
+            var t = new int[n * 6];
+            for (int i = 0; i < n; i++)
+            {
+                int j = (i + 1) % n;
+                t[i * 6 + 0] = n; t[i * 6 + 1] = i; t[i * 6 + 2] = j;   // front
+                t[i * 6 + 3] = n; t[i * 6 + 4] = j; t[i * 6 + 5] = i;   // back
+            }
+            mesh.Clear();
+            mesh.vertices = v;
+            mesh.triangles = t;
+            mesh.RecalculateBounds();
+        }
 
         void LateUpdate()
         {
@@ -71,10 +113,25 @@ namespace GPL.UI
             }
             _level = Mathf.LerpUnclamped(_from, _to, Motion.Progress(Time.unscaledTime - _t0, _dur));
 
-            float k = Mathf.Lerp(1f, HoverScale, _level);
-            _handle.localPosition = new Vector3(0f, CenterY, 0f);
-            _handle.localScale = new Vector3(PillThickness * k, PillLength * k / 2f, PillThickness * k);
-            SetColor(Mathf.Lerp(RestAlpha, HoverAlpha, _level), Mathf.Lerp(0.8f, 1f, _level));
+            float thickness = ThicknessAt(_level);
+            if (!Mathf.Approximately(thickness, _thickness))
+            {
+                _thickness = thickness;
+                BuildPill(_mesh, LengthAt(_level), thickness);
+            }
+            _handle.localPosition = new Vector3(0f, PillCenterY(thickness), 0f);
+            SetColor(Mathf.Lerp(RestAlpha, HoverAlpha, _level) * PanelAlpha(), Mathf.Lerp(0.8f, 1f, _level));
+        }
+
+        /// <summary>Opacity of a <see cref="UiPanel"/> under the canvas (the handle fades with it); 1 without one.</summary>
+        float PanelAlpha()
+        {
+            for (int i = 0; i < _rect.childCount; i++)
+            {
+                var up = _rect.GetChild(i).GetComponent<UiPanel>();
+                if (up != null) return up.Alpha;
+            }
+            return 1f;
         }
 
         bool ContentVisible()
@@ -83,6 +140,8 @@ namespace GPL.UI
             {
                 var c = _rect.GetChild(i);
                 if (c == _handle || !c.gameObject.activeSelf) continue;
+                var up = c.GetComponent<UiPanel>();
+                if (up != null) { if (up.GrabberVisible) return true; continue; }
                 var layer = c.GetComponent<UiLayer>();
                 if (layer == null || layer.Visible) return true;
             }
@@ -91,13 +150,14 @@ namespace GPL.UI
 
         void BuildHandle()
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            go.name = HandleName;
-            Destroy(go.GetComponent<Collider>());
+            var go = new GameObject(HandleName, typeof(MeshFilter), typeof(MeshRenderer));
             go.layer = 0; // the eye cameras draw it; the canvas layers 30 / 31 are hidden from them
             _handle = go.transform;
             _handle.SetParent(_rect, false);
-            _handle.localRotation = Quaternion.Euler(0f, 0f, 90f); // the capsule's long axis lies along the panel's x
+            _mesh = new Mesh { name = "Move Handle Pill" };
+            _thickness = PillThickness;
+            BuildPill(_mesh, PillLength, PillThickness);
+            go.GetComponent<MeshFilter>().sharedMesh = _mesh;
 
             var shader = Shader.Find("Universal Render Pipeline/Unlit");
             _mat = new Material(shader != null ? shader : Shader.Find("Sprites/Default"));
@@ -107,6 +167,7 @@ namespace GPL.UI
             _mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
             _mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             _mat.SetFloat("_ZWrite", 0f);
+            _mat.SetFloat("_Cull", 0f); // double-sided
             _mat.SetOverrideTag("RenderType", "Transparent");
             _mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             _mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
@@ -157,7 +218,7 @@ namespace GPL.UI
             distance = 0f;
             if (_handle == null || !_handle.gameObject.activeInHierarchy || !PlanePoint(ray, out distance, out Vector2 local)) return false;
             if (distance > maxDistance) return false;
-            return Mathf.Abs(local.x) <= GrabWidth / 2f && Mathf.Abs(local.y - CenterY) <= GrabHeight / 2f;
+            return Mathf.Abs(local.x) <= GrabWidth / 2f && Mathf.Abs(local.y - ZoneCenterY) <= GrabHeight / 2f;
         }
 
         public void RayHover(bool on) => _hover = on;
@@ -165,13 +226,10 @@ namespace GPL.UI
         public void RayPress(Ray ray)
         {
             _held = true;
-            if (!PlanePoint(ray, out _, out Vector2 local)) local = new Vector2(0f, CenterY);
+            if (!PlanePoint(ray, out _, out Vector2 local)) local = new Vector2(0f, ZoneCenterY);
             // the grab point relative to the panel center as an angle (1 canvas unit = 0.001 of the distance)
             _grabXDeg = Mathf.Atan(local.x * OverlayPanel.ScalePerMeter) * Mathf.Rad2Deg;       // right of center
             _grabYDeg = Mathf.Atan(-local.y * OverlayPanel.ScalePerMeter) * Mathf.Rad2Deg;      // below center
-            _grabDistance = _panel.distanceM;
-            var rig = FindAnyObjectByType<OVRCameraRig>();
-            _grabHand = rig != null ? (ray.origin - rig.centerEyeAnchor.position).magnitude : 0f;
         }
 
         public Vector3 RayDrag(Ray ray)
@@ -180,10 +238,7 @@ namespace GPL.UI
             if (rig == null) return ray.origin + ray.direction * _panel.distanceM;
             Vector3 head = rig.centerEyeAnchor.position;
 
-            // distance: the hand moving away from the head pushes the panel away, pulling it back brings the panel nearer
-            float hand = (ray.origin - head).magnitude;
-            _panel.distanceM = Mathf.Clamp(_grabDistance + (hand - _grabHand) * DistanceGain, MinDistanceM, MaxDistanceM);
-
+            // the distance stays as it is (the canvas scale follows it, so a different distance would look the same)
             // direction: where the ray meets the sphere of the panel's distance around the head (the far hit)
             Vector3 oc = ray.origin - head;
             float b = Vector3.Dot(oc, ray.direction);

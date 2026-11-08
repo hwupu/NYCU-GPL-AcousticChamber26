@@ -25,6 +25,7 @@ namespace AcousticChamber.App.Editor
         const string GroupUI = "UI";
         const string GroupXR = "XR";
         const string TestPanelName = "UI Test Panel";
+        const string KitPocPanelName = "UiKit PoC Panel";
         const string InputTestPanelName = "Input Test Panel";
         const string BenchTestPanelName = "Debug Bench Test Panel";
         const string HomingTestPanelName = "Homing Test Panel";
@@ -69,6 +70,27 @@ namespace AcousticChamber.App.Editor
             EnsureMainHallFirstInBuild();
             UiSetup.MarkSceneDirty();
             Debug.Log("[GPL] UI test panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
+        }
+
+        /// <summary>Adds the rebuilt-UiKit proof of concept (UiKitPoc: the C01 menu from the layout-based components) to the open scene.</summary>
+        [MenuItem("Magic/App/UiKit PoC Panel (open scene)", priority = 49)]
+        public static void AddKitPocPanel()
+        {
+            if (Object.FindAnyObjectByType<OVRCameraRig>(FindObjectsInactive.Include) == null)
+            {
+                Debug.LogError("[GPL] Add the Camera Rig building block first.");
+                return;
+            }
+            var theme = EnsureUiAssets();
+            var ui = UiSetup.EnsureGroup(GroupUI);
+            UiSetup.EnsureUiRoot(ui, theme);
+            RemoveTestPanels(ui);
+            var canvas = UiSetup.CreateOverlayCanvas(ui, KitPocPanelName, UiKitPoc.Size);
+            canvas.AddComponent<UiKitPoc>();
+            UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
+            EnsureMainHallFirstInBuild();
+            UiSetup.MarkSceneDirty();
+            Debug.Log("[GPL] UiKit PoC panel added under '" + GroupUI + "'. Save the scene, then Play (Quest Link) or build.");
         }
 
         /// <summary>
@@ -254,7 +276,7 @@ namespace AcousticChamber.App.Editor
 
         internal static void RemoveTestPanels(Transform ui)
         {
-            foreach (var n in new[] { TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName, KeyboardTestPanelName }) RemoveChild(ui, n);
+            foreach (var n in new[] { KitPocPanelName, TestPanelName, InputTestPanelName, BenchTestPanelName, HomingTestPanelName, HearingLossTestPanelName, KeyboardTestPanelName }) RemoveChild(ui, n);
         }
 
         static void RemoveChild(Transform parent, string childName)

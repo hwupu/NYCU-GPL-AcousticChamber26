@@ -11,6 +11,8 @@ namespace GPL.UI
     public class UiIcon : MonoBehaviour
     {
         [SerializeField] string iconName;
+        /// <summary>True = tinted with the label color of the button it sits in (button icons).</summary>
+        public bool FollowsLabel;
         Image _image;
 
         Image Img => _image != null ? _image : (_image = GetComponent<Image>());

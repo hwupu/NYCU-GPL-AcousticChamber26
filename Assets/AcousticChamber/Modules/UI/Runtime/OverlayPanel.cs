@@ -112,7 +112,7 @@ namespace GPL.UI
             float scale = ScalePerMeter * distanceM;
             Vector3 pos = head + rot * Vector3.forward * distanceM + Vector3.up * heightOffsetM;
             // a tall panel (or its move handle below it) must stay above the floor: lift it when its lowest point would go under
-            float halfHeight = ((RectTransform)transform).rect.height / 2f + (Movable ? PanelMover.EdgeGap + PanelMover.PillLength / 8f + 40f : 0f);
+            float halfHeight = ((RectTransform)transform).rect.height / 2f + (Movable ? PanelMover.Reserve : 0f);
             float lowest = pos.y + (rot * Vector3.down).y * halfHeight * scale;
             float floor = _rig.transform.position.y + MinClearanceM;
             if (lowest < floor) pos.y += floor - lowest;
