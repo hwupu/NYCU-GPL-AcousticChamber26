@@ -16,7 +16,7 @@ MonoBehaviour:
   label: C02
   title: Hidden Source
   description: 'Hide and seek, by ear only: point to where a hidden sound is, then see how close you were.'
-  thumbnail: {fileID: 0}
+  thumbnail: {fileID: 2800000, guid: d84728105bcbc4912e4d61a6253d0e0b, type: 3}
   scenePath: Assets/AcousticChamber/Chambers/HiddenSource/Scenes/HiddenSource.unity
   version: 0.1
   enabled: 1

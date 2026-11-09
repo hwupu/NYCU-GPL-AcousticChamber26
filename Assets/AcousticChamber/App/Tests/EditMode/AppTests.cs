@@ -25,19 +25,22 @@ namespace AcousticChamber.App.Tests
         [Test]
         public void HallGrid_Geometry()
         {
-            var g = new HallGrid(904f, 3);
-            Assert.AreEqual(450f, g.CardWidth, 1e-4);
-            Assert.AreEqual(442f, g.CoverWidth, 1e-4);
-            Assert.AreEqual(248.625f, g.CoverHeight, 1e-4);
-            Assert.AreEqual(4f + 248.625f + 72f, g.CardHeight, 1e-4);
+            var g = new HallGrid(888f, 3);
+            // PO 2026-11-10: the card is the cover; column gap 24, row gap 28 (room to grow on hover)
+            Assert.AreEqual(432f, g.CardWidth, 1e-4);
+            Assert.AreEqual(243f, g.CardHeight, 1e-4);
+            Assert.AreEqual(g.CardWidth, g.CoverWidth);
+            Assert.AreEqual(g.CardHeight, g.CoverHeight);
             Assert.AreEqual(2, g.Rows);
-            Assert.AreEqual(2f * g.CardHeight + 8f, g.TotalHeight, 1e-4);
-            Assert.AreEqual(-227f, g.X(0), 1e-4);
-            Assert.AreEqual(227f, g.X(1), 1e-4);
-            Assert.AreEqual(-227f, g.X(2), 1e-4);
+            Assert.AreEqual(2f * 243f + 28f, g.TotalHeight, 1e-4);
+            Assert.AreEqual(-228f, g.X(0), 1e-4);
+            Assert.AreEqual(228f, g.X(1), 1e-4);
+            Assert.AreEqual(-228f, g.X(2), 1e-4);
             Assert.AreEqual(0f, g.Top(1), 1e-4);
-            Assert.AreEqual(g.CardHeight + 8f, g.Top(2), 1e-4);
-            Assert.AreEqual(g.CardHeight / 2f - 4f - g.CoverHeight / 2f, g.CoverCenterY, 1e-4);
+            Assert.AreEqual(g.CardHeight + 28f, g.Top(2), 1e-4);
+            // a hovered card (103 %) stays inside the 8 u margin and the gaps
+            Assert.LessOrEqual(g.CardWidth * 0.015f, 8f);
+            Assert.LessOrEqual(g.CardHeight * 0.015f * 2f, g.RowGap);
             Assert.AreEqual(0f, new HallGrid(904f, 0).TotalHeight);
             Assert.Throws<System.ArgumentOutOfRangeException>(() => new HallGrid(0f, 1));
         }

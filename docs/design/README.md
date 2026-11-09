@@ -58,4 +58,4 @@ Not components (no Storybook counterpart): `UiColumn` (scrolling body of the Con
 Panel kinds (`UiPanel` props): `window` fixed (Main Hall, onboarding), `window` + `movable` (experience chamber menu, has the grabber), `dialog` (confirmation: Drop out; centered, 820 u, no grabber). A sheet is a `window` that pushes the one behind it back.
 
 ## Plan
-Done: colors, typography, icons, core components (dim and push back are `UiPanel` props `shown`, `depth`). Screens: C03 (panel + Config page, 2026-11-10). Open: Main Hall, default chamber menu, C01 / C02 menus, Config and its pages.
+Done: colors, typography, icons, core components (dim and push back are `UiPanel` props `shown`, `depth`). Screens: C03 (panel + Config page, 2026-11-10), Main Hall (chamber covers, 2026-11-10; covers read from `Assets/AcousticChamber/App/Covers`). Open: default chamber menu, C01 / C02 menus, Config and its pages.

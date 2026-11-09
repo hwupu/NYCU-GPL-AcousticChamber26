@@ -16,7 +16,7 @@ MonoBehaviour:
   label: C04
   title: HumPerHW2
   description: 'Ventriloquist effect: match a sound to a picture in quiet, noisy and reverberant rooms (HW2 rebuilt).'
-  thumbnail: {fileID: 0}
+  thumbnail: {fileID: 2800000, guid: 5501783a647224f32b71aa4719c16ee0, type: 3}
   scenePath: Assets/AcousticChamber/Chambers/HumPerHW2/Scenes/HumPerHW2.unity
   version: 0.1
   enabled: 1
