@@ -176,14 +176,12 @@ namespace AcousticChamber.Chambers.HumPerHW2
 
         public static class Strings
         {
-            public const string Hint = "humper.hint";
             public const string PracticeAsk = "humper.practice_ask";
             public const string PracticeAgain = "humper.practice_again";
             public const string Ready = "humper.ready";
             public const string ConditionDone = "humper.condition_done";
 
             public static readonly StringTable Table = new StringTable(Id)
-                .Add(Hint, "Left / right trigger: move the sound\nA: confirm", "左／右扳機：移動聲音\nA：確認")
                 .Add(PracticeAsk, "Practice again, or start the experiment?", "要再練習一次，還是開始正式實驗？")
                 .Add(PracticeAgain, "Practice again", "再練習一次")
                 .Add(Ready, "I'm ready", "我準備好了")
@@ -270,7 +268,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
             for (int n = 1; ; n++)
             {
                 c.Trial = n;
-                yield return DoTrial(PracticeSpec(n), hints: true, iti: n > 1);
+                yield return DoTrial(PracticeSpec(n), iti: n > 1);
                 int pick = -1;
                 yield return Screens.Choice(Loc.Get(Strings.PracticeAsk), Strings.PracticeAgain, Strings.Ready, p => pick = p);
                 run.Log.Write(Events.PracticeChoice, pick == 0 ? "again" : "ready");
@@ -298,14 +296,14 @@ namespace AcousticChamber.Chambers.HumPerHW2
             if (s.Stage.Name == Stages.Practice)
             {
                 EnsureCondition(Conditions.Practice);
-                yield return DoTrial(PracticeSpec(s.Trial + 1), hints: true, iti: false);
+                yield return DoTrial(PracticeSpec(s.Trial + 1), iti: false);
                 yield break;
             }
             string condition = ConditionOf(s.Block);
             bool switched = EnsureCondition(condition);
             if (switched && CurrentRun.Values.GetBool("rt60.measure_at_block_start")) yield return MeasureAtBlockStart();
             var list = ListOf(condition);
-            yield return DoTrial(list[Mathf.Clamp(s.Trial, 0, list.Count - 1)], hints: false, iti: s.Trial > 0);
+            yield return DoTrial(list[Mathf.Clamp(s.Trial, 0, list.Count - 1)], iti: s.Trial > 0);
         }
 
         /// <summary>
@@ -361,9 +359,10 @@ namespace AcousticChamber.Chambers.HumPerHW2
 
         /// <summary>
         /// Design.md "Trial": inter-trial interval, head gate, picture and sound on the circle around the head, pulse train, the
-        /// triggers move the sound until A, then the <c>trial</c> row (the trial's last action).
+        /// triggers move the sound until A, then the <c>trial</c> row (the trial's last action). No helper text in practice or experiment
+        /// trials (AV disparity: any visual cue may bias the response; the instructions are on the onboarding slides, PO 2026-11-09).
         /// </summary>
-        IEnumerator DoTrial(TrialSpec spec, bool hints, bool iti)
+        IEnumerator DoTrial(TrialSpec spec, bool iti)
         {
             var run = CurrentRun;
             var v = run.Values;
@@ -378,7 +377,6 @@ namespace AcousticChamber.Chambers.HumPerHW2
             Place(HeadOrigin(), Yaw());
             _inTrial = true;
             if (pulse != null) pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
-            if (hints) Screens.Cue(Loc.Get(Strings.Hint));
             bool debug = run.IsDebug;
             if (debug && SphereAlwaysVisible && marker != null) marker.Show(true); // Q45: Debug runs only
 

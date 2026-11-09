@@ -369,7 +369,7 @@ namespace GPL.DebugBench.Tests
 
                 // Delete one: confirm first (Cancel keeps it)
                 var del = RowOf(s2).Find("Delete").GetComponent<UiButton>();
-                Assert.AreEqual(UiStyle.DestructiveText, del.Style);
+                Assert.AreEqual(UiStyle.Destructive, del.Style, "red-filled trash icon (PO 2026-11-09)");
                 Assert.IsNull(del.GetComponentInChildren<TextMeshProUGUI>(), "an icon button: no label");
                 Assert.IsNotNull(del.GetComponentInChildren<UiIcon>(), "the trash icon");
                 del.onClick.Invoke();
