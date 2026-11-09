@@ -9806,7 +9806,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: 366ce361b4d0bae47ba18988123ba119, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 82de281477d0dcd4196bbd2608a38a3c, type: 3}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -10128,6 +10128,7 @@ MonoBehaviour:
   distanceM: 2
   pitchDownDeg: 8
   heightOffsetM: 0
+  yawOffsetDeg: 0
   followRecenter: 1
   minHeadHeightM: 0.3
   maxWaitSec: 5

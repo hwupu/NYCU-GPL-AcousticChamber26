@@ -22,7 +22,7 @@ proposed by the agent and wait for approval.
 ## Sound
 | Item | Value |
 |---|---|
-| Clips | the four HW2 recordings (white noise, podcasts 1 and 2, street market); click to play, click again to pause, as in C03. No pure tones *(default)*. Used in place, not copied |
+| Clips | generated **White noise** and **Pink noise** (GPL.Stimuli, ADR-0008, looped, -26 dBFS RMS), then three HW2 recordings (podcasts 1 and 2, street market; PO 2026-11-09: will be replaced); click to play, click again to pause, as in C03. No pure tones *(default)*. Recordings used in place, not copied |
 | Spatialization | Meta XR Audio, acoustics on |
 | Distance cue | switch: **natural** (inverse-distance attenuation) or **flat** (loudness constant, the lab rule). Default natural *(Q38)* |
 | Room | **Dry**, **Room 0.7 s**, **Hall 2.2 s** (HW2 RT60 table). Default Dry *(default)* |
@@ -35,7 +35,7 @@ whatever the ear.
 ## Panel (English only)
 ```
 C01 · Moving Source
-Sound      [White noise] [Podcast 1] [Podcast 2] [Street market] ...
+Sound      [White noise] [Pink noise] [Podcast 1] [Podcast 2] [Street market]
 Room       [Dry] [Room 0.7 s] [Hall 2.2 s]
 Distance   [Natural] [Flat]
 Hearing    [Both] [Left] [Right]   [0 dB] [-20 dB] [-40 dB]

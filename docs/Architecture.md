@@ -60,6 +60,7 @@ A module may reference `GPL.Core`, the GPL modules named in its README (no cycle
 | **GPL.Homing** | gate math | `IHomingMethod` + methods (section 8), recenter listener, fixation cue |
 | **GPL.Acoustics** | `Rt60Estimator`, `Rt60Calibration` (measured table, V/S scaling), room math | `ShoeboxRoom`, `ReverbTuner`, `Rt60Meter`, `ClipLevels`; Editor: room builder, Reflection mixer, audio build-settings guard |
 | **GPL.HearingLoss** | `ANSIS344`, presets, `HearingProfile`, peaking biquad | `OutputHearingLoss` on the final stereo output (section 11) |
+| **GPL.Stimuli** | `StimulusRecipe` (tone, Gaussian white / pink noise, ramps, RMS level, seed; log `Note()`), `Synth`, `Fft`, `StandardRecipes` (loops, published stimuli) | `StimulusClips` (recipe → in-memory PCM `AudioClip`, recordings leveled at load), `StimulusLibrary` (credited recordings in `Library/`); [ADR-0008](decisions/ADR-0008-audio-stimuli.md) |
 | **GPL.SpatialSources** | placement math, floor drag | `PlacedSource`, `PulseTrain`, `BackgroundBed`, `FloorDragSource`; planned: constrained random placement, trajectories |
 | **GPL.Responses** | adjustment state and result records | `TriggerAdjust`; planned: pointing ray, place-a-marker, button choice |
 | **GPL.DebugBench** | `WorkingCopy` (the Playground) | `DebugBench` pages: Config, Parameters, Presets, Log files |
@@ -170,6 +171,10 @@ MQDH does not list the per-app folder, so files are managed in the headset.
   Audio/ Images/ Materials/ Models/
   Docs/  Brief.md, Design.md, DataFormat.md, AnalysisPlan.md, SceneSetup.md, decisions/
 ```
+**Stimuli and assets:** tones and noise are generated with GPL.Stimuli from a recipe in the chamber's design (no file); recordings,
+images and models live in the chamber's own `Audio/`, `Images/`, `Models/` (never another chamber's folder), and every third-party
+asset has an entry in `docs/AssetCredits.md` before it is committed ([ADR-0008](decisions/ADR-0008-audio-stimuli.md),
+[ADR-0009](decisions/ADR-0009-asset-credits.md)).
 **Chamber logic:** a chamber's MonoBehaviour derives from `ProtocolChamber` (App; itself a `ChamberBehaviour`), which owns the run loop (walker + structure rows), the onboarding stages, the head gate before a trial, block break, thanks, recenter rows, the plan-hash check on resume and the cleanup after Stop. The chamber overrides `Schema`, `LogSchema`, `CreatePlan`, `RunTrial` and optionally `RunStage` / `BlockEnd` / `OnAbort` / `BeforeRow` (sets context columns such as `condition` before a structure row). A chamber without a staged protocol may derive from `ChamberBehaviour` directly. A chamber supplies a protocol (stages + resume policies), a trial runner, condition appliers (push parameter values into modules; shared by real runs and Debug), log columns, parameter schema, bindings, posture and docs.
 
 Chambers (independent; order is a backlog decision):

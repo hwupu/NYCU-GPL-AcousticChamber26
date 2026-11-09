@@ -12,6 +12,7 @@ using GPL.Protocol;
 using GPL.Responses;
 using GPL.Session;
 using GPL.SpatialSources;
+using GPL.Stimuli;
 using GPL.UI;
 using UnityEngine;
 
@@ -47,8 +48,22 @@ namespace AcousticChamber.Chambers.HumPerHW2
         [Tooltip("Debug: orange sphere on the sound.")]
         public SourceMarker marker;
 
+        /// <summary>The stimulus (Design.md "Object"): Gaussian white noise, 2 s, 20 ms cos² ramps, -26 dBFS RMS, frozen (seed 1); GPL.Stimuli.</summary>
+        public static readonly StimulusRecipe StimulusRecipe = GPL.Stimuli.StimulusRecipe.WhiteNoise(2.0, seed: 1, rampS: 0.020);
+
         static ParameterSchema _schema;
         static LogSchema _log;
+        AudioClip _stimulusClip;
+
+        void Awake()
+        {
+            if (stimulus == null) return;
+            _stimulusClip = StimulusClips.CreateAtOutputRate(StimulusRecipe);
+            stimulus.GetComponent<AudioSource>().clip = _stimulusClip;
+            Debug.Log("[Chamber:" + Id + "] Stimulus " + StimulusRecipe.WithSampleRate(_stimulusClip.frequency).Note());
+        }
+
+        void OnDestroy() => StimulusClips.Release(_stimulusClip);
 
         /// <summary>The preset keys and defaults of Design.md "Parameters" (in this order: it gives the params_hash).</summary>
         public static ParameterSchema CreateSchema()

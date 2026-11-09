@@ -23,8 +23,6 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
         public const string DefinitionPath = Folder + "/HiddenSource.ChamberDefinition.asset";
         public const string MaterialsDir = Folder + "/Materials";
         public const string MixerPath = Folder + "/Audio/HiddenSourceMixer.mixer";
-        /// <summary>The white-noise stimulus of HW2, used in place (a temporary asset link between chambers, as in HearingLoss).</summary>
-        public const string StimulusPath = "Assets/AcousticChamber/Chambers/HumPerHW2/Audio/SFX-C-01-normalized.wav";
         const string PanelName = "Experience Panel";
         const string Log = "[Chamber:HiddenSource] ";
 
@@ -43,7 +41,7 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
         }
 
         /// <summary>
-        /// Step 2: the floor, Stimuli/Source (Emitter at 0.3 m with AudioSource + MetaXRAudioSource + PulseTrain, white noise, routed to
+        /// Step 2: the floor, Stimuli/Source (Emitter at 0.3 m with AudioSource + MetaXRAudioSource + PulseTrain, no clip: the white noise is generated at run time, routed to
         /// the Reflection mixer), the true and guess spheres, the reveal line, Audio/Reverb with the shoebox; links all to the panel.
         /// </summary>
         [MenuItem("Magic/HiddenSource/Step 2 - Floor, source and room", priority = 131)]
@@ -54,8 +52,6 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
             if (logic == null) return;
             var group = ReflectionMixer.Ensure(MixerPath);
             if (group == null) return;
-            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(StimulusPath);
-            if (clip == null) { Debug.LogError(Log + "Missing " + StimulusPath); return; }
 
             EnsureFloor(MaterialsDir);
             var stimuli = UiSetup.EnsureGroup("Stimuli");
@@ -64,7 +60,7 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
             var root = Child(stimuli, "Source");
             var emitter = Child(root.transform, "Emitter");
             emitter.transform.localPosition = new Vector3(0f, HiddenSourceExperience.EmitterHeightM, 0f);
-            var source = Spatial(emitter, clip, group);
+            var source = Spatial(emitter, null, group); // the clip is generated at run time (GPL.Stimuli, HiddenSourceExperience.Stimulus)
             var pulse = Get<PulseTrain>(emitter);
 
             var trueMat = UnlitMat(MaterialsDir, "True Sphere", Color.white);
@@ -127,7 +123,7 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
             if (logic.reverb == null || logic.reverb.room == null) Problem("reverb or shoebox not linked (Step 2)");
             if (logic.source != null)
             {
-                if (logic.source.clip == null) Problem("the source has no clip");
+                if (logic.source.clip != null) Problem("the source still has a clip asset (re-run Step 2; the stimulus is generated at run time)");
                 if (!logic.source.spatialize || logic.source.spatialBlend < 1f) Problem("the source is not spatialized");
             }
             foreach (var s in ReflectionMixer.Unrouted())

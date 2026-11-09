@@ -37,3 +37,5 @@ One short line per ticket (status, commit / date). Acceptance: [ProductBacklog](
 | Panel move handle | Built, headset check open | `UiGrabber` below the chamber menu and experience panels |
 | Housekeeping 2026-11-08 | Done | `UiButton.Selected` in all test / experience panels, `UiKit.Select`, C04 relabel, C00 hidden, HearingLoss relabelled C03 |
 | UiKit rebuild (branch uikit-rebuild) | Migration done, manual test pending | Storybook design `9c70bce`; PoC `265670e`; U2a `a42e005` `c4fda22`; U3 `c0269f5` (every panel migrated, old builders deleted); naming `2eafe82` (ADR-0007); 315 tests pass; headset check open (icons, fonts, grabber, panels) |
+| PB-22 GPL.Stimuli | Built, scene re-run + headset check open | HW2 Steps 1-5 + Validate OK headless; library: 7 OpenAIR recordings (CC BY-SA) |
+| PB-23 Asset credits | Open | AssetCredits.md local only (not in git, PO) |

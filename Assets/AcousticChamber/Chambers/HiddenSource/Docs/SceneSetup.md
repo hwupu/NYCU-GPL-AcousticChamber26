@@ -6,7 +6,7 @@ Block that came with the copy of MainHall and is never touched. Shared helpers: 
 | Step | What it does |
 |---|---|
 | 1 - Chamber, scene and panel | ChamberDefinition (C02), the scene (copy of MainHall, Hall panel removed; asks to save the open scene first), `UI/Experience Panel` (overlay canvas, straight ahead, with `HiddenSourceExperience`), Global Actions, UI Pointer, Scene Fade; saves; Sync Chambers |
-| 2 - Floor, source and room | `Environment/Floor` (30 × 30 m grid), `Stimuli/Source` (child `Emitter` at 0.3 m: AudioSource + MetaXRAudioSource + `PulseTrain`, white noise `SFX-C-01` from `Chambers/HumPerHW2/Audio`, spatialized, acoustics on, routed to `Audio/HiddenSourceMixer.mixer` with the Reflection effect, natural rolloff), `True Sphere`, `Guess Sphere` (URP Unlit, hidden), `Reveal Line` (LineRenderer), `Environment/Shoebox Acoustics` (20 × 20 × 6 m, locked to the listener) and `Audio/Reverb` (`ReverbTuner`); links to the panel |
+| 2 - Floor, source and room | `Environment/Floor` (30 × 30 m grid), `Stimuli/Source` (child `Emitter` at 0.3 m: AudioSource + MetaXRAudioSource + `PulseTrain`, no clip (white noise generated at run time, GPL.Stimuli), spatialized, acoustics on, routed to `Audio/HiddenSourceMixer.mixer` with the Reflection effect, natural rolloff), `True Sphere`, `Guess Sphere` (URP Unlit, hidden), `Reveal Line` (LineRenderer), `Environment/Shoebox Acoustics` (20 × 20 × 6 m, locked to the listener) and `Audio/Reverb` (`ReverbTuner`); links to the panel |
 | Validate Setup | panel, Global Actions, pointer, links, clip, spatialized source, every source routed to the Reflection mixer, exactly one shoebox, spatializer "Meta XR Audio" |
 
 Order for a fresh scene: 1, 2, save, Validate Setup. No lighting bake.

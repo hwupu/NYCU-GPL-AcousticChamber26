@@ -6,6 +6,7 @@ using GPL.HearingLoss;
 using GPL.Homing;
 using GPL.Input;
 using GPL.SpatialSources;
+using GPL.Stimuli;
 using GPL.UI;
 using TMPro;
 using UnityEngine;
@@ -28,13 +29,25 @@ namespace AcousticChamber.Chambers.MovingSource
         public static readonly Vector2 Size = new Vector2(1100f, 980f);
         public const float StartDistanceM = 2f, StartHeightM = 1.2f;
 
+        /// <summary>The generated sounds, first on the panel (GPL.Stimuli, looped): label, recipe.</summary>
+        public static readonly (string label, StimulusRecipe recipe)[] Generated =
+        {
+            ("White noise", StandardRecipes.WhiteLoop),
+            ("Pink noise", StandardRecipes.PinkLoop),
+        };
+
         [Header("Set by Magic > MovingSource steps")]
         public Transform sourceRoot;
         public GrabSource grab;
         public AudioSource source;
+        [Tooltip("Recordings after the generated sounds (may be empty).")]
         public AudioClip[] clips = new AudioClip[0];
         public string[] clipNames = new string[0];
         public ReverbTuner reverb;
+
+        readonly List<AudioClip> _sounds = new List<AudioClip>();
+        readonly List<string> _soundNames = new List<string>();
+        readonly List<AudioClip> _generated = new List<AudioClip>();
 
         RoomChoice _room = RoomChoice.Dry;
         bool _natural = true;
@@ -56,11 +69,19 @@ namespace AcousticChamber.Chambers.MovingSource
 
         IEnumerator Start()
         {
-            if (sourceRoot == null || grab == null || source == null || clips == null || clips.Length == 0)
+            if (sourceRoot == null || grab == null || source == null)
             {
-                Debug.LogError(Log + "Source, grab or clips not linked: run Magic > MovingSource > Step 2.");
+                Debug.LogError(Log + "Source or grab not linked: run Magic > MovingSource > Step 2.");
                 yield break;
             }
+            foreach (var g in Generated)
+            {
+                var clip = StimulusClips.CreateAtOutputRate(g.recipe, g.label);
+                _generated.Add(clip);
+                _sounds.Add(clip);
+            }
+            if (clips != null) foreach (var c in clips) if (c != null) _sounds.Add(c);
+            _soundNames.AddRange(SoundNames());
             _rig = HeadPose.FindRig();
             _output = OutputHearingLoss.Ensure();
             if (_output == null) Debug.LogError(Log + "No AudioListener in the scene: hearing loss is off.");
@@ -87,13 +108,14 @@ namespace AcousticChamber.Chambers.MovingSource
             float waited = 0f;
             while (_rig != null && HeadPose.NotTrackedYet(_rig) && waited < 5f) { waited += Time.unscaledDeltaTime; yield return null; }
             ResetSource();
-            Debug.Log(Log + "Ready: " + clips.Length + " sounds.");
+            Debug.Log(Log + "Ready: " + _sounds.Count + " sounds.");
         }
 
         void OnDestroy()
         {
             _exit?.Dispose();
             if (_output != null) _output.SetProfile(HearingProfile.Normal);
+            foreach (var c in _generated) StimulusClips.Release(c);
         }
 
         void Cleanup()
@@ -122,9 +144,7 @@ namespace AcousticChamber.Chambers.MovingSource
             var body = surface.Body;
             body.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = 12f;
 
-            var names = new List<string>();
-            for (int i = 0; i < clips.Length; i++) names.Add(SoundName(i));
-            Choices(body, "Sound", names, -1, ClickSound, _soundButtons);
+            Choices(body, "Sound", SoundNames(), -1, ClickSound, _soundButtons);
 
             var rooms = new List<string>();
             foreach (var r in RoomChoices.All) rooms.Add(RoomChoices.Label(r));
@@ -199,7 +219,17 @@ namespace AcousticChamber.Chambers.MovingSource
                            "\n" + move + "  Hearing: " + hearing + ".";
         }
 
-        string SoundName(int i) => i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name;
+        string SoundName(int i) => _soundNames[i];
+
+        /// <summary>The labels on the Sound row: the generated sounds, then the recordings (same order as the clips built in Start).</summary>
+        List<string> SoundNames()
+        {
+            var names = new List<string>();
+            foreach (var g in Generated) names.Add(g.label);
+            for (int i = 0; i < (clips != null ? clips.Length : 0); i++)
+                if (clips[i] != null) names.Add(i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name);
+            return names;
+        }
 
         void ClickSound(int index)
         {
@@ -207,7 +237,7 @@ namespace AcousticChamber.Chambers.MovingSource
             {
                 _sound = index;
                 source.Stop();
-                source.clip = clips[index];
+                source.clip = _sounds[index];
                 source.Play();
                 _playing = true;
             }

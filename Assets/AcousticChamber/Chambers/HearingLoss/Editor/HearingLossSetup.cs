@@ -29,11 +29,10 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         const string LaserPath = "Assets/AcousticChamber/Settings/Materials/Laser.mat";
         const string Log = "[Chamber:HearingLoss] ";
 
-        /// <summary>The sounds on the panel (HW2 clips for now, PO 2026-11-07): file, button label. Their import settings belong to
+        /// <summary>The recordings on the panel after the generated sounds (HW2 clips for now, PO 2026-11-07 and 2026-11-09): file, button label. Their import settings belong to
         /// HumPerHW2 (01 Decompress On Load, 02-04 Streaming) and are not changed here.</summary>
         static readonly (string file, string label)[] Sounds =
         {
-            ("SFX-C-01-normalized.wav", "White noise"),
             ("SFX-C-02-normalized.wav", "Podcast 1"),
             ("SFX-C-03-normalized.wav", "Podcast 2"),
             ("SFX-C-04-normalized.wav", "Street market"),
@@ -108,7 +107,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         /// <summary>
         /// Step 2: Environment/Floor (30 × 30 m, URP Lit with a 1 m grid, no walls: dry, no reverb), Stimuli/Speaker (a box speaker
         /// standing on the floor 2 m ahead, FloorDragSource; child Emitter at 0.3 m with AudioSource + MetaXRAudioSource:
-        /// spatialized, acoustics off, no mixer, volume 1, flat rolloff, loop), the four sounds (HW2 clips in Chambers/HumPerHW2/Audio, import settings untouched), links to the panel.
+        /// spatialized, acoustics off, no mixer, volume 1, flat rolloff, loop), the three recordings (HW2 clips in Chambers/HumPerHW2/Audio, import settings untouched; tones and noise are generated at run time, GPL.Stimuli), links to the panel.
         /// </summary>
         [MenuItem("Magic/HearingLoss/Step 2 - Floor, speaker and sounds", priority = 121)]
         public static void SpeakerStep()
@@ -165,7 +164,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
                 if (clips[i] == null) { Debug.LogError(Log + "Missing " + path); return; }
                 names[i] = Sounds[i].label;
             }
-            var source = Spatial(emitter, clips[0]);
+            var source = Spatial(emitter, null); // the panel sets the clip
 
             Undo.RecordObject(logic, "HearingLoss speaker");
             logic.speaker = drag;
@@ -174,7 +173,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
             logic.clipNames = names;
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
-            Debug.Log(Log + "Step 2: floor, speaker and " + clips.Length + " sounds linked. Save the scene.");
+            Debug.Log(Log + "Step 2: floor, speaker and " + clips.Length + " recordings linked. Save the scene.");
         }
 
         /// <summary>Checks the scene against Design.md.</summary>

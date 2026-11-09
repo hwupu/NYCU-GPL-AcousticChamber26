@@ -25,3 +25,5 @@ Product Owner: researcher. Status: Done / Built / Open / Deferred / Blocked (wai
 | PB-19 | Debug bench + preset manager | Config pages: Run, Parameters from the schema, Presets (Playground, Save as Custom, Make active, Delete), chamber groups, Log files page | Done (ADR-0002) |
 | PB-20 | Onboarding slides | Per-chamber slide list (text + optional image, English / 中文), next / back, usable as a protocol stage; 20a slide screen, 20b onboarding sequence | Done |
 | PB-21 | Refactor before HumPerHW2 | `ProtocolChamber` base + `Onboarding` helper, `ChamberBehaviour` Debug sections + practice hooks, slide editor helpers; Template runs on them unchanged | Done |
+| PB-22 | GPL.Stimuli | Tones, Gaussian white / pink noise from recipes (ramps, RMS level, seed), EditMode-verified (spectrum, distribution, ramps, level); all chambers use it instead of `SFX-C-01` (ADR-0008) | Built; open: PO re-runs Step 2 (C01-C03) / Step 4 (C04), headset check |
+| PB-23 | Asset credits | `docs/AssetCredits.md` lists every third-party asset (audio, images, icons, fonts, models); open items resolved (ADR-0009) | Open: PO checks Radio.jpg, slides, SFX-C-04; replaces SFX-C-02/03 |

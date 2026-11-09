@@ -117,7 +117,6 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
 
         public const string AudioDir = Folder + "/Audio";
         public const string MixerPath = AudioDir + "/HumPerHW2Mixer.mixer";
-        public const string StimulusClipPath = AudioDir + "/SFX-C-01-normalized.wav";
         public static readonly string[] BackgroundClipPaths =
         {
             AudioDir + "/SFX-C-02-normalized.wav", AudioDir + "/SFX-C-03-normalized.wav", AudioDir + "/SFX-C-04-normalized.wav",
@@ -127,7 +126,7 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
         const float EyeLevelM = 1.2f; // placeholder height in the scene; trials place everything at the measured eye height
 
         /// <summary>
-        /// Step 4: the Reflection mixer; Stimuli/Stimulus (white noise SFX-C-01, Decompress On Load, PlacedSource + PulseTrain),
+        /// Step 4: the Reflection mixer; Stimuli/Stimulus (no clip: white noise generated at run time by GPL.Stimuli, PlacedSource + PulseTrain),
         /// Stimuli/Picture (the radio, 0.25 m wide, URP Unlit, hidden), Stimuli/Sound Marker (Debug sphere, hidden);
         /// Audio/Background (SFX-C-02..04 looping, Streaming, levels measured from the WAV files) and Audio/Reverb (ReverbTuner on the
         /// shoebox). Every spatial source is routed to the mixer; all gains at unity. Links everything to HumPerHW2Chamber.
@@ -141,17 +140,13 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
             var group = ReflectionMixer.Ensure(MixerPath);
             if (group == null) return;
 
-            var stimClip = AssetDatabase.LoadAssetAtPath<AudioClip>(StimulusClipPath);
-            if (stimClip == null) { Debug.LogError(Log + "Missing " + StimulusClipPath); return; }
-            ClipImport.DecompressOnLoad(stimClip);
-
             var stimuli = UiSetup.EnsureGroup("Stimuli");
             var audio = UiSetup.EnsureGroup("Audio");
 
             // stimulus
             var stimGo = Child(stimuli, "Stimulus");
             stimGo.transform.localPosition = new Vector3(0f, EyeLevelM, 2f);
-            var stimSource = Spatial(stimGo, stimClip, group, loop: false);
+            var stimSource = Spatial(stimGo, null, group, loop: false); // white noise generated at run time (HumPerHW2Chamber.StimulusRecipe)
             var placed = Get<PlacedSource>(stimGo);
             placed.Anchor = PlacedSource.Anchoring.Replaced;
             var pulse = Get<PulseTrain>(stimGo);
@@ -346,7 +341,8 @@ namespace AcousticChamber.Chambers.HumPerHW2.Editor
                                                             " m, the image is " + pw + " × " + ph + " px (run Step 4)");
                 if (picImporter.npotScale != TextureImporterNPOTScale.None) Problem("Radio.jpg is resized on import (Non-Power of 2 not None; run Step 4)");
             }
-            if (logic.stimulus != null && logic.stimulus.GetComponent<AudioSource>().clip == null) Problem("stimulus has no clip");
+            if (logic.stimulus != null && logic.stimulus.GetComponent<AudioSource>().clip != null)
+                Problem("stimulus still has a clip asset (run Step 4; the white noise is generated at run time)");
             foreach (var s in ReflectionMixer.Unrouted()) Problem(s.name + " is not routed to a mixer with the '" + ReflectionMixer.EffectName + "' effect (room would be dry)");
             var shoeboxes = Object.FindObjectsByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             if (shoeboxes.Length != 1) Problem(shoeboxes.Length + " shoebox components (need exactly 1)");
