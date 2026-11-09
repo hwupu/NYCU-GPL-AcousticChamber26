@@ -60,8 +60,8 @@ namespace GPL.DebugBench
                         label.enableAutoSizing = true;
                         label.fontSizeMin = UiKit.Theme.minimumSize;
                         label.fontSizeMax = UiKit.Theme.bodySize;
-                        // an icon button (red, like the Delete all text in the header)
-                        var del = UiKit.Button(row, "Delete", null, UiStyle.DestructiveText, "trash-can", small: true,
+                        // a red-filled trash icon button (destructive, PO 2026-11-09; the header Delete all stays red text)
+                        var del = UiKit.Button(row, "Delete", null, UiStyle.Destructive, "trash-can", small: true,
                                                onClick: () => ConfirmDelete(e, Build));
                         del.InGroup = true;
                     }

@@ -32,7 +32,6 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
 
         static readonly (string file, string label)[] Sounds =
         {
-            ("SFX-C-01-normalized.wav", "White noise"),
             ("SFX-C-02-normalized.wav", "Podcast 1"),
             ("SFX-C-03-normalized.wav", "Podcast 2"),
             ("SFX-C-04-normalized.wav", "Street market"),
@@ -51,7 +50,7 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
 
         /// <summary>
         /// Step 2: the floor, Stimuli/Source (an orb with GrabSource; child Emitter with AudioSource + MetaXRAudioSource, routed to the
-        /// Reflection mixer), the four sounds, Audio/Reverb with the shoebox; links all to the panel.
+        /// Reflection mixer), the three recordings (white and pink noise are generated at run time, GPL.Stimuli), Audio/Reverb with the shoebox; links all to the panel.
         /// </summary>
         [MenuItem("Magic/MovingSource/Step 2 - Floor, source and room", priority = 141)]
         public static void SourceStep()
@@ -88,7 +87,7 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
 
             var emitter = Child(root.transform, "Emitter");
             emitter.transform.localPosition = Vector3.zero;
-            var source = Spatial(emitter, clips[0], group);
+            var source = Spatial(emitter, null, group); // the panel sets the clip
 
             var shoeboxGo = Child(UiSetup.EnsureGroup("Environment"), "Shoebox Acoustics");
             var shoebox = Get<MetaXRAudioRoomAcousticProperties>(shoeboxGo);
@@ -111,7 +110,7 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
             logic.reverb = reverb;
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
-            Debug.Log(Log + "Step 2: floor, source, " + clips.Length + " sounds and room linked. Save the scene.");
+            Debug.Log(Log + "Step 2: floor, source, " + clips.Length + " recordings and room linked. Save the scene.");
         }
 
         /// <summary>Checks the scene against Design.md.</summary>

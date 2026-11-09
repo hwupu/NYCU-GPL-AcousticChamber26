@@ -1,0 +1,14 @@
+{
+    "name": "GPL.Stimuli",
+    "rootNamespace": "GPL.Stimuli",
+    "references": ["GPL.Core", "GPL.Stimuli.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

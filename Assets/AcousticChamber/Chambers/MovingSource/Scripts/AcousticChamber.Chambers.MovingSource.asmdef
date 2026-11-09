@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.Chambers.MovingSource",
     "rootNamespace": "AcousticChamber.Chambers.MovingSource",
-    "references": ["AcousticChamber.Chambers.MovingSource.Core", "AcousticChamber.App", "GPL.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing", "GPL.HearingLoss.Core", "GPL.HearingLoss", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.SpatialSources.Core", "GPL.SpatialSources", "Unity.TextMeshPro", "Oculus.VR"],
+    "references": ["AcousticChamber.Chambers.MovingSource.Core", "AcousticChamber.App", "GPL.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing", "GPL.HearingLoss.Core", "GPL.HearingLoss", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.SpatialSources.Core", "GPL.SpatialSources", "GPL.Stimuli.Core", "GPL.Stimuli", "Unity.TextMeshPro", "Oculus.VR"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -6,7 +6,7 @@ Block that came with the copy of MainHall and is never touched. Shared helpers: 
 | Step | What it does |
 |---|---|
 | 1 - Chamber, scene and panel | ChamberDefinition (C01), the scene (copy of MainHall, Hall panel removed; asks to save the open scene first), `UI/Experience Panel` (overlay canvas 35° left with `MovingSourceExperience`), Global Actions, UI Pointer, Scene Fade; saves; Sync Chambers |
-| 2 - Floor, source and room | `Environment/Floor` (30 × 30 m grid), `Stimuli/Source` (an Unlit orb 0.25 m with `GrabSource`; child `Emitter`: AudioSource + MetaXRAudioSource, spatialized, acoustics on, routed to `Audio/MovingSourceMixer.mixer` with the Reflection effect, natural rolloff, loop), the four sounds from `Chambers/HumPerHW2/Audio` (used in place), `Environment/Shoebox Acoustics` (24 × 24 × 8 m, locked to the listener) and `Audio/Reverb` (`ReverbTuner`); links to the panel |
+| 2 - Floor, source and room | `Environment/Floor` (30 × 30 m grid), `Stimuli/Source` (an Unlit orb 0.25 m with `GrabSource`; child `Emitter`: AudioSource + MetaXRAudioSource, spatialized, acoustics on, routed to `Audio/MovingSourceMixer.mixer` with the Reflection effect, natural rolloff, loop, no clip), the three recordings from `Chambers/HumPerHW2/Audio` (used in place; white and pink noise are generated at run time, GPL.Stimuli), `Environment/Shoebox Acoustics` (24 × 24 × 8 m, locked to the listener) and `Audio/Reverb` (`ReverbTuner`); links to the panel |
 | Validate Setup | panel, Global Actions, pointer, links, four clips, spatialized source, every source routed to the Reflection mixer, exactly one shoebox, spatializer "Meta XR Audio" |
 
 Order for a fresh scene: 1, 2, save, Validate Setup. No lighting bake.

@@ -48,7 +48,7 @@ Button fills, **normal → hover → pressed, each brighter**:
 | **prominent** | the one main action of a screen (Start, Keep going, Resume, Make active, Run experiment trials) |
 | **gray** | a secondary action that needs a visible target (Config, Practice trial) |
 | **borderless** | everything else: back, cancel, number-pad keys, list actions, header actions (Revert, Delete all) |
-| **destructive** | red fill only on the final confirmation (Drop out, Delete); elsewhere red text |
+| **destructive** | red fill on the final confirmation (Drop out, Delete) and on a row's trash icon button (Delete, PO 2026-11-09); elsewhere red text |
 
 - Capsule (radius = height / 2). Height 80 u (small 60 u), minimum width 220 u (except keys, icon and small buttons). Labels never wrap.
 - Icon buttons (back `‹`, close `×`): borderless circles, 80 u, glyph 72 u; gap to the header title 8 u.

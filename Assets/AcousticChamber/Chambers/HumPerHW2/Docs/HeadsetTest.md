@@ -20,7 +20,7 @@ unless a step says otherwise. Tick each line; note anything odd with the time, s
 | # | Do | Expect |
 |---|---|---|
 | 10 | Handover, language 中文, recenter slide, the three HW2 slides, the dot | slides look right (no stretched text, dark side bands blend in), Back / Next labels in 中文 |
-| 11 | Practice: hold the left, then the right trigger | the sound moves 10°/s; both or none = still; hint text below; A ends the trial |
+| 11 | Practice: hold the left, then the right trigger | the sound moves 10°/s; both or none = still; **no** helper text anywhere in the trial; A ends the trial |
 | 12 | After the trial | sphere at the answer, "Sound ±x° from the picture (A: continue)"; then Practice again / I'm ready |
 | 13 | Practice again once, then I'm ready | a second practice trial, then the first condition block |
 | 14 | During a trial press **Y** | dialog; picture, dot and sphere hidden; sound paused; Keep going brings them back, the trial continues |

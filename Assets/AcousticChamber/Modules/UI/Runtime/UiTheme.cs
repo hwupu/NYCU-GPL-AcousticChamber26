@@ -15,7 +15,7 @@ namespace GPL.UI
         Borderless,
         /// <summary>Borderless with red text: a destructive action that is not the final step.</summary>
         DestructiveText,
-        /// <summary>Red fill: only the final confirmation (Drop out, Delete).</summary>
+        /// <summary>Red fill: the final confirmation (Drop out, Delete) and a row's trash icon button.</summary>
         Destructive,
     }
 

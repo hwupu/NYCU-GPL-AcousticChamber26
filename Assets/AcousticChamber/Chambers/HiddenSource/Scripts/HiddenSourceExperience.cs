@@ -5,6 +5,7 @@ using GPL.HearingLoss;
 using GPL.Homing;
 using GPL.Input;
 using GPL.SpatialSources;
+using GPL.Stimuli;
 using GPL.UI;
 using TMPro;
 using UnityEngine;
@@ -31,6 +32,9 @@ namespace AcousticChamber.Chambers.HiddenSource
         public const float GuessMinM = 0.3f, GuessMaxM = 8f;
         public const float GuessRadiusM = 0.125f;
 
+        /// <summary>The stimulus (Docs/Design.md): Gaussian white noise, 2 s, 20 ms cos² ramps, -26 dBFS RMS, frozen (seed 1); GPL.Stimuli.</summary>
+        public static readonly StimulusRecipe Stimulus = StimulusRecipe.WhiteNoise(2.0, seed: 1, rampS: 0.020);
+
         [Header("Set by Magic > HiddenSource steps")]
         public Transform sourceRoot;
         public AudioSource source;
@@ -56,6 +60,7 @@ namespace AcousticChamber.Chambers.HiddenSource
         GlobalActions _actions;
         ExperienceExit _exit;
         UiPanel _panel;
+        AudioClip _clip;
         TextMeshProUGUI _status;
         Spot _spot;
         double _headX, _headZ, _yawDeg;
@@ -69,6 +74,9 @@ namespace AcousticChamber.Chambers.HiddenSource
                 Debug.LogError(Log + "Source, spheres or line not linked: run Magic > HiddenSource > Step 2.");
                 return;
             }
+            _clip = StimulusClips.CreateAtOutputRate(Stimulus);
+            source.clip = _clip;
+            Debug.Log(Log + Stimulus.WithSampleRate(_clip.frequency).Note());
             _rig = HeadPose.FindRig();
             _output = OutputHearingLoss.Ensure();
             if (_output == null) Debug.LogError(Log + "No AudioListener in the scene: hearing loss is off.");
@@ -95,6 +103,7 @@ namespace AcousticChamber.Chambers.HiddenSource
             _exit?.Dispose();
             RayTargets.Unregister(_catcher);
             if (_output != null) _output.SetProfile(HearingProfile.Normal);
+            StimulusClips.Release(_clip);
         }
 
         void Cleanup()

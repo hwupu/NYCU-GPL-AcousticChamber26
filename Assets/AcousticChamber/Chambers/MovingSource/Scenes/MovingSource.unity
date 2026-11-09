@@ -2072,12 +2072,10 @@ MonoBehaviour:
   grab: {fileID: 1762598531}
   source: {fileID: 1924077970}
   clips:
-  - {fileID: 8300000, guid: 82de281477d0dcd4196bbd2608a38a3c, type: 3}
   - {fileID: 8300000, guid: 34007ab183fa4d3459efb796ba54de76, type: 3}
   - {fileID: 8300000, guid: 3a1b8bf5f7473534993d0ef08c0b9f0d, type: 3}
   - {fileID: 8300000, guid: 07861a3621602024e9e2fe6e9ab6c84e, type: 3}
   clipNames:
-  - White noise
   - Podcast 1
   - Podcast 2
   - Street market
@@ -10496,7 +10494,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: 3dd3ad21322b0c94ca0496e615ab0c00, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 82de281477d0dcd4196bbd2608a38a3c, type: 3}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
