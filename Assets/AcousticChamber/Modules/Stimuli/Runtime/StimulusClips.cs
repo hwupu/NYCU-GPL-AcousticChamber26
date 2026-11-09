@@ -28,9 +28,10 @@ namespace GPL.Stimuli
         /// <summary>
         /// A mono in-memory copy of a recording whose RMS over the whole clip is <paramref name="levelDbfs"/> (the file is not
         /// changed; gains stay at unity). Needs Load Type Decompress On Load (the Library import rule). Throws if it would clip.
-        /// <paramref name="gainDb"/> = the gain applied, for the log.
+        /// <paramref name="gainDb"/> = the gain applied, for the log. <paramref name="silenceAfterS"/> seconds of silence are appended
+        /// after leveling (they do not count in the RMS): looped, the sound repeats with that gap.
         /// </summary>
-        public static AudioClip Leveled(AudioClip recording, double levelDbfs, out double gainDb, string name = null)
+        public static AudioClip Leveled(AudioClip recording, double levelDbfs, out double gainDb, string name = null, double silenceAfterS = 0)
         {
             if (recording == null) throw new System.ArgumentNullException(nameof(recording));
             if (recording.loadType != AudioClipLoadType.DecompressOnLoad)
@@ -40,6 +41,7 @@ namespace GPL.Stimuli
             if (!recording.GetData(raw, 0)) throw new System.InvalidOperationException("GetData failed on " + recording.name);
             var mono = Synth.MixToMono(raw, recording.channels);
             gainDb = Synth.LevelTo(mono, levelDbfs);
+            mono = Synth.AppendSilence(mono, silenceAfterS, recording.frequency);
             var clip = AudioClip.Create(string.IsNullOrEmpty(name) ? recording.name : name, mono.Length, 1, recording.frequency, false);
             clip.SetData(mono, 0);
             return clip;

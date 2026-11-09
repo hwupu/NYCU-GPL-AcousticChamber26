@@ -3,6 +3,9 @@
  * UiChoiceGroup (Unity: UiKit.ChoiceButton + UiKit.Select; SwiftUI Picker). n equal buttons in a row; the chosen ones are `selected`.
  *  - `selection`   single (one of n, never empty) | multiple (each toggles)
  *  - `appearance`  segmented (a raised capsule track, 4 u inset, borderless in-group buttons) | tabs (no track, 8 u apart)
+ *  - `columns`     0 = one row (default); n = a grid of n equal columns on one track (rows 4 u apart, the last row filled
+ *                  from the left, its empty cells keep their width). One selection across all rows. For long option lists
+ *                  whose labels do not fit in one row (C03 sounds: 4 columns).
  * Code rule: choices are always shown with this component, never with hand-made style swaps.
  */
 import UiButton from '../UiButton/UiButton.vue'
@@ -16,7 +19,8 @@ const props = withDefaults(defineProps<{
   selection?: 'single' | 'multiple'
   appearance?: 'segmented' | 'tabs'
   small?: boolean
-}>(), { selection: 'single', appearance: 'segmented' })
+  columns?: number
+}>(), { selection: 'single', appearance: 'segmented', columns: 0 })
 
 const isOn = (v: string) => (Array.isArray(model.value) ? model.value.includes(v) : model.value === v)
 function pick(v: string) {
@@ -27,7 +31,8 @@ function pick(v: string) {
 </script>
 
 <template>
-  <div class="ui-choice-group" :data-appearance="appearance" role="group">
+  <div class="ui-choice-group" :data-appearance="appearance" :data-grid="columns > 0 ? '' : undefined"
+       :style="columns > 0 ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` } : undefined" role="group">
     <UiButton
       v-for="o in options" :key="o.value"
       :label="o.label" :icon-leading="o.icon" button-style="borderless" in-group :min-width="false" :small="small"
@@ -47,6 +52,9 @@ function pick(v: string) {
   background: var(--color-raised);
 }
 .ui-choice-group[data-appearance='tabs'] { gap: 8px; }
+/* grid: same track and inset; the outer radius stays the capsule radius of one row (44 u), so the corners match a one-row group */
+.ui-choice-group[data-grid] { display: grid; }
+.ui-choice-group[data-grid][data-appearance='segmented'] { border-radius: calc(var(--button-height) / 2 + var(--inset)); }
 /* inside a raised group the track is the surface color (DesignSystem: segmented control) */
 :global(.ui-section-group) .ui-choice-group[data-appearance='segmented'] { background: var(--color-surface); }
 </style>

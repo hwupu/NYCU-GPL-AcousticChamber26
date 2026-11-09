@@ -98,6 +98,29 @@ namespace GPL.UI.Tests
         }
 
         [Test]
+        public void ChoiceGroupGridHasEqualColumnsAndOneSelection()
+        {
+            var labels = new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
+            int chosen = -1;
+            UiKit.ChoiceGroup(_poc.Panel.Surface.Body, "Grid", labels, 1, i => chosen = i, 4, out var buttons);
+            Layout();
+            var track = Find("Body/Grid");
+            Assert.AreEqual(3, track.childCount - 1, "three rows besides the background");
+            Assert.AreEqual(3f * 80f + 2f * 4f + 8f, track.rect.height, 0.5f, "rows 4 u apart, 4 u inset");
+            float w = ((RectTransform)buttons[0].transform).rect.width;
+            foreach (var b in buttons) Assert.AreEqual(w, ((RectTransform)b.transform).rect.width, 0.5f);
+            Assert.AreEqual((track.rect.width - 8f - 3f * 4f) / 4f, w, 0.5f, "four equal columns");
+            var lastRow = Find("Body/Grid/Row 3");
+            Assert.AreEqual(4, lastRow.childCount, "two buttons and two empty cells");
+            Assert.AreEqual(w, ((RectTransform)lastRow.GetChild(3)).rect.width, 0.5f);
+            Assert.IsTrue(buttons[1].Selected);
+            buttons[9].onClick.Invoke();
+            Assert.AreEqual(9, chosen);
+            Assert.IsTrue(buttons[9].Selected);
+            Assert.IsFalse(buttons[1].Selected, "one selection across the rows");
+        }
+
+        [Test]
         public void RowsAreAtLeastEightyEightAndGrowWithLines()
         {
             var single = Find("Body/Path/Group/Approach");

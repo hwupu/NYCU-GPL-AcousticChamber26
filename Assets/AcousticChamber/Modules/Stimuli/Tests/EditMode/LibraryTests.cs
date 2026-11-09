@@ -65,5 +65,32 @@ namespace GPL.Stimuli.Tests
             }
             finally { UnityEngine.Object.DestroyImmediate(leveled); }
         }
+
+        [Test]
+        public void AppendSilence_AddsZerosAfter_AndLeveledKeepsTheSoundLevel()
+        {
+            var x = new[] { 0.5f, -0.5f };
+            CollectionAssert.AreEqual(new[] { 0.5f, -0.5f, 0f, 0f, 0f }, Synth.AppendSilence(x, 0.3, 10));
+            Assert.AreSame(x, Synth.AppendSilence(x, 0, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Synth.AppendSilence(x, -1, 10));
+
+            // all library recordings level to -26 dBFS RMS without clipping (crest factors 17-22 dB); the gap does not count in the level
+            foreach (var e in StimulusLibrary.All)
+            {
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(StimulusLibrary.AssetPath(e));
+                var leveled = StimulusClips.Leveled(clip, -26, out _, silenceAfterS: 1.0);
+                try
+                {
+                    Assert.AreEqual(clip.samples + clip.frequency, leveled.samples, e.Id + ": 1 s of silence appended");
+                    var data = new float[leveled.samples];
+                    leveled.GetData(data, 0);
+                    var sound = new float[clip.samples];
+                    Array.Copy(data, sound, sound.Length);
+                    Assert.AreEqual(-26.0, Synth.RmsDbfs(sound), 0.01, e.Id);
+                    for (int i = clip.samples; i < data.Length; i++) Assert.AreEqual(0f, data[i], e.Id + ": silence");
+                }
+                finally { UnityEngine.Object.DestroyImmediate(leveled); }
+            }
+        }
     }
 }

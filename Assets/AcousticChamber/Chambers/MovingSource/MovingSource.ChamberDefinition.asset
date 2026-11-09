@@ -16,7 +16,7 @@ MonoBehaviour:
   label: C01
   title: Moving Source
   description: 'Grab a sound and throw it around: hear its direction, distance and echoes change.'
-  thumbnail: {fileID: 0}
+  thumbnail: {fileID: 2800000, guid: b9d5619f8849982f86a56e3aa1bf5a92, type: 3}
   scenePath: Assets/AcousticChamber/Chambers/MovingSource/Scenes/MovingSource.unity
   version: 0.1
   enabled: 1

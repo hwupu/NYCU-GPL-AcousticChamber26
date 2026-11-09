@@ -26,7 +26,7 @@ src/theme/             theme.css (tokens), tokens.ts (names, Unity field, use: d
 src/foundations/       Colors, Typography, Icons pages
 src/icons/             the icon set (Akar Icons SVG, `index.ts` = name -> svg); in Unity one sprite per icon, same name
 src/components/        one folder per component: Name.vue + Name.stories.ts (+ documentation helpers)
-src/screens/           Main Hall, chamber menu, Config, experience panels (later)
+src/screens/           Main Hall, chamber menu, Config, experience panels (C03 done)
 ```
 
 ## Component names and hierarchy
@@ -37,7 +37,7 @@ A Vue component = one Unity file of the same name in `Assets/AcousticChamber/Mod
 | `UiIcon` | `UiKit.Icon`, class `UiIcon` | `Image` | sprite tinted by the label color |
 | `UiButton` | `UiKit.Button`, class `UiButton` | `Button` | `buttonStyle` prominent / gray / borderless / destructiveText / destructive; `selected` = toggle button; no label = icon button |
 | `UiSwitch` | `UiKit.SwitchRow`, class `UiSwitch` | `Toggle` | iOS style switch |
-| `UiChoiceGroup` | `UiKit.ChoiceGroup` (+ `UiKit.Select`) | `Picker` | `selection` single / multiple; `appearance` segmented / tabs |
+| `UiChoiceGroup` | `UiKit.ChoiceGroup` (+ `UiKit.Select`) | `Picker` | `selection` single / multiple; `appearance` segmented / tabs; `columns` grid |
 | `UiSection` | `UiKit.Section` | `Section` | raised rounded group with an optional header (and footer) |
 | `UiRow` | `UiKit.Row`, `LabeledRow` | list row | leading icon, title, subtitle, trailing value / ›, button, icon, switch; clickable rows highlight |
 | `UiTextField` | `UiKit.TextField`, class `UiTextField` | `TextField` | shows a value; fed by an `ITextEntry` |
@@ -58,4 +58,4 @@ Not components (no Storybook counterpart): `UiColumn` (scrolling body of the Con
 Panel kinds (`UiPanel` props): `window` fixed (Main Hall, onboarding), `window` + `movable` (experience chamber menu, has the grabber), `dialog` (confirmation: Drop out; centered, 820 u, no grabber). A sheet is a `window` that pushes the one behind it back.
 
 ## Plan
-Done: colors, typography, icons, core components (dim and push back are `UiPanel` props `shown`, `depth`). Open: screens (Main Hall, default chamber menu, C01 / C02 / C03 menus, Config and its pages).
+Done: colors, typography, icons, core components (dim and push back are `UiPanel` props `shown`, `depth`). Screens: C03 (panel + Config page, 2026-11-10), Main Hall (chamber covers, 2026-11-10; covers read from `Assets/AcousticChamber/App/Covers`). Open: default chamber menu, C01 / C02 menus, Config and its pages.

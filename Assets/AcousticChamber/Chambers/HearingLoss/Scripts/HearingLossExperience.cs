@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using AcousticChamber.App;
 using GPL.HearingLoss;
 using GPL.Homing;
@@ -7,7 +8,6 @@ using GPL.Input;
 using GPL.SpatialSources;
 using GPL.Stimuli;
 using GPL.UI;
-using TMPro;
 using UnityEngine;
 
 namespace AcousticChamber.Chambers.HearingLoss
@@ -15,9 +15,10 @@ namespace AcousticChamber.Chambers.HearingLoss
     /// <summary>
     /// The HearingLoss experience chamber (Docs/Design.md, ADR-0006): no Study ID, no session, no log. A custom panel, laid out like
     /// the Hearing Loss Test Panel: hearing condition (both ears / left / right), hearing loss (HLSim presets, GPL.HearingLoss on the
-    /// final output), pure tones and recordings, all played from the speaker (click to play, click again to pause). The speaker
-    /// stands on the floor 2 m ahead and is dragged with the controller ray (trigger held). Y opens a Keep going / Back to Hall
-    /// dialog. Lives on the panel's overlay canvas; English only.
+    /// final output) and the sounds in a 4-column grid (GPL.Stimuli: generated noises and the library recordings; no HW2 clips, PO
+    /// 2026-11-10), played from the speaker (click to play, click again to pause). Config (bottom right) opens the hearing loss test
+    /// (HearingLossTestView) with its tones played from the speaker (PO 2026-11-10). The speaker stands on the floor 2 m ahead and is dragged with the controller ray (trigger held). Y opens a
+    /// Keep going / Back to Hall dialog. Lives on the panel's overlay canvas; English only.
     /// </summary>
     public class HearingLossExperience : MonoBehaviour
     {
@@ -28,40 +29,41 @@ namespace AcousticChamber.Chambers.HearingLoss
         public static readonly Vector2 Size = new Vector2(1100f, 900f);
         public const float StartDistanceM = 2f;
 
-        /// <summary>Pure-tone peak level: -20 dBFS (RMS -23 dBFS, about the -23 LUFS of the recordings at 1 kHz).</summary>
-        public const float TonePeakDbfs = -20f;
+        /// <summary>Library recordings are leveled at load to this RMS (the noises' level; the files stay unchanged; PO 2026-11-10).</summary>
+        public const double LibraryLevelDbfs = -26.0;
 
-        /// <summary>The generated noises, first in the "Audio recording" row (GPL.Stimuli, looped): label, recipe.</summary>
+        /// <summary>Silence after each library recording: looped, the sound repeats once per (length + 1 s) (PO 2026-11-10).</summary>
+        public const double LibraryGapS = 1.0;
+
+        /// <summary>Columns of the sound grid (PO 2026-11-10).</summary>
+        public const int SoundColumns = 4;
+
+        /// <summary>The generated noises, first in the sound grid (GPL.Stimuli, looped): label, recipe.</summary>
         public static readonly (string label, StimulusRecipe recipe)[] Generated =
         {
             ("White noise", StandardRecipes.WhiteLoop),
             ("Pink noise", StandardRecipes.PinkLoop),
         };
 
-        /// <summary>
-        /// One second of sine at <paramref name="hz"/> (whole cycles, so the loop is seamless; no ramps), peak <see cref="TonePeakDbfs"/>
-        /// (RMS 3.01 dB lower).
-        /// </summary>
-        public static StimulusRecipe ToneRecipe(int hz) =>
-            StimulusRecipe.Tone(hz, 1.0, rampS: 0, levelDbfs: TonePeakDbfs - 20.0 * System.Math.Log10(System.Math.Sqrt(2.0)));
-
         [Header("Set by Magic > HearingLoss steps")]
         public FloorDragSource speaker;
         public AudioSource source;
-        [Tooltip("Recordings after the generated noises (may be empty).")]
-        public AudioClip[] clips = new AudioClip[0];
-        public string[] clipNames = new string[0];
+        [Tooltip("Second source on the speaker for the Config page's test tones (not looped), so the paused sound keeps its place.")]
+        public AudioSource toneSource;
+        [Tooltip("GPL.Stimuli library recordings after the generated noises: leveled to -26 dBFS RMS, 1 s gap, looped (may be empty).")]
+        public AudioClip[] libraryClips = new AudioClip[0];
+        public string[] libraryNames = new string[0];
+        public string[] libraryIds = new string[0];
 
         ExperienceState _state;
         OVRCameraRig _rig;
         OutputHearingLoss _output;
         GlobalActions _actions;
         UiPanel _panel;
-        TextMeshProUGUI _status;
-        AudioClip[] _tones;
-        readonly List<AudioClip> _recordings = new List<AudioClip>();     // generated noises, then the recording assets
+        readonly List<AudioClip> _recordings = new List<AudioClip>();     // generated noises, leveled library copies
+        readonly Dictionary<int, AudioClip> _testTones = new Dictionary<int, AudioClip>(); // Config page, by Hz (made on first use)
         readonly List<AudioClip> _generated = new List<AudioClip>();      // destroyed on leaving
-        readonly List<UiButton> _soundButtons = new List<UiButton>(); // tones, then recordings
+        readonly List<UiButton> _soundButtons = new List<UiButton>();
         readonly List<string> _soundNames = new List<string>();
         readonly List<UiButton> _earButtons = new List<UiButton>();
         readonly List<UiButton> _levelButtons = new List<UiButton>();
@@ -80,7 +82,17 @@ namespace AcousticChamber.Chambers.HearingLoss
                 _generated.Add(clip);
                 _recordings.Add(clip);
             }
-            if (clips != null) foreach (var c in clips) if (c != null) _recordings.Add(c);
+            for (int i = 0; libraryClips != null && i < libraryClips.Length; i++)
+            {
+                if (libraryClips[i] == null) continue;
+                string label = NameAt(libraryNames, i, libraryClips[i]);
+                string id = libraryIds != null && i < libraryIds.Length ? libraryIds[i] : libraryClips[i].name;
+                var copy = StimulusClips.Leveled(libraryClips[i], LibraryLevelDbfs, out double gainDb, label, LibraryGapS);
+                _generated.Add(copy);
+                _recordings.Add(copy);
+                Debug.Log(Log + label + ": recording=" + id + " rms_dbfs=" + LibraryLevelDbfs.ToString(CultureInfo.InvariantCulture) +
+                          " gain_db=" + gainDb.ToString("0.00", CultureInfo.InvariantCulture) + " gap_s=" + LibraryGapS.ToString(CultureInfo.InvariantCulture));
+            }
             _state = new ExperienceState(_recordings.Count);
             _rig = HeadPose.FindRig();
             _output = OutputHearingLoss.Ensure();
@@ -94,10 +106,6 @@ namespace AcousticChamber.Chambers.HearingLoss
                 _actions.StopRequested += OpenLeaveDialog;
             }
 
-            _tones = new AudioClip[ExperienceState.ToneHz.Length];
-            for (int i = 0; i < _tones.Length; i++)
-                _generated.Add(_tones[i] = StimulusClips.CreateAtOutputRate(ToneRecipe(ExperienceState.ToneHz[i]),
-                                                                            "Tone " + ExperienceState.ToneButton(ExperienceState.ToneHz[i])));
             source.loop = true;
             BuildPanel();
             var overlay = GetComponent<OverlayPanel>();
@@ -109,7 +117,7 @@ namespace AcousticChamber.Chambers.HearingLoss
             while (_rig != null && HeadPose.NotTrackedYet(_rig) && waited < 5f) { waited += Time.unscaledDeltaTime; yield return null; }
             speaker.center = _rig != null ? _rig.centerEyeAnchor : null;
             ResetSpeaker();
-            Debug.Log(Log + "Ready: " + _tones.Length + " tones, " + _recordings.Count + " recordings, speaker " + StartDistanceM + " m ahead.");
+            Debug.Log(Log + "Ready: " + _recordings.Count + " sounds, speaker " + StartDistanceM + " m ahead.");
         }
 
         void OnDestroy()
@@ -121,6 +129,7 @@ namespace AcousticChamber.Chambers.HearingLoss
             }
             if (_output != null) _output.SetProfile(HearingProfile.Normal);
             foreach (var c in _generated) StimulusClips.Release(c);
+            foreach (var c in _testTones.Values) StimulusClips.Release(c);
         }
 
         // ---- panel ---------------------------------------------------------------------------------------------------
@@ -152,34 +161,74 @@ namespace AcousticChamber.Chambers.HearingLoss
             UiKit.ChoiceGroup(levelRow, "Level", levels, 0, i => { _state.SetLevel(ExperienceState.Levels[i]); Apply(); }, out var levelButtons);
             _levelButtons.AddRange(levelButtons);
 
-            var tones = new List<string>();
-            foreach (var hz in ExperienceState.ToneHz) tones.Add(ExperienceState.ToneButton(hz));
-            var toneRow = UiKit.LabeledRow(body, "Pure tone", "Tone", 160f);
-            UiKit.ChoiceGroup(toneRow, "Tone", tones, -1, i => ClickSound(i), out var toneButtons);
-            _soundButtons.AddRange(toneButtons);
-            _soundNames.AddRange(tones);
-
-            var recs = RecordingNames();
-            var recRow = UiKit.LabeledRow(body, "Audio recording", "Recording", 160f);
-            UiKit.ChoiceGroup(recRow, "Recording", recs, -1, i => ClickSound(ExperienceState.ToneHz.Length + i), out var recButtons);
-            _soundButtons.AddRange(recButtons);
-            _soundNames.AddRange(recs);
-
-            _status = UiKit.Text(body, "Status", "", th.smallSize, Vector2.zero, Vector2.zero, color: th.text2, align: TextAlignmentOptions.TopLeft);
-            UiKit.Size(_status.gameObject, prefW: 0f, flexW: 1f);
+            // the sounds: a heading above a full-width 4-column grid, so the labels fit (PO 2026-11-10)
+            var heading = UiKit.Label(body, "Sounds", "Sounds", th.bodySize, th.text2);
+            UiKit.Size(heading.transform.parent.gameObject, prefW: 0f, flexW: 1f);
+            var names = SoundNames();
+            UiKit.ChoiceGroup(body, "Sound Grid", names, -1, ClickSound, SoundColumns, out var soundButtons);
+            _soundButtons.AddRange(soundButtons);
+            _soundNames.AddRange(names);
 
             var toolbar = surface.AddToolbar();
             UiKit.Button(toolbar, "Reset Speaker", "Reset speaker", UiStyle.Gray, onClick: ResetSpeaker);
+            var spacer = UiKit.Node(toolbar, "Spacer");
+            UiKit.Size(spacer.gameObject, flexW: 1f);
+            UiKit.Button(toolbar, "Config", "Config", UiStyle.Gray, iconLeading: "settings-horizontal", onClick: OpenConfig);
+            surface.Root.Returned += () => // back from Config: the test tone stops, the chamber's own hearing loss again
+            {
+                if (toneSource != null) toneSource.Stop();
+                Apply();
+            };
         }
 
-        /// <summary>Click on a tone or recording: a new sound plays from the start; the playing one pauses; a paused one resumes.</summary>
+        /// <summary>
+        /// Config: the hearing loss test (the Sandbox test panel's view), its tones from the speaker (PO 2026-11-10). The sound pauses;
+        /// the test sets its own loss.
+        /// </summary>
+        void OpenConfig()
+        {
+            if (_panel == null || _panel.Surface.Count > 1) return;
+            if (_state != null && _state.Playing)
+            {
+                source.Pause();
+                _state.Stop();
+            }
+            Apply();
+            var page = _panel.Surface.Push("Hearing loss test");
+            var view = toneSource != null ? HearingLossTestView.Create(page.Body, null, PlayTestTone, () => toneSource.isPlaying)
+                                          : HearingLossTestView.Create(page.Body);
+            if (toneSource == null) Debug.LogError(Log + "No test tone source on the speaker (run Magic > HearingLoss > Step 2): tones play in the head.");
+            view.ResetOnDestroy = false; // Returned re-applies the chamber's profile
+            Debug.Log(Log + "Config: hearing loss test opened.");
+        }
+
+        /// <summary>
+        /// A test tone from the speaker: <paramref name="hz"/> for <paramref name="seconds"/>, peak <paramref name="peakDbfs"/> (RMS 3.01 dB
+        /// lower), 10 ms cos² ramps (GPL.Stimuli), on the speaker's second source.
+        /// </summary>
+        void PlayTestTone(int hz, float peakDbfs, float seconds)
+        {
+            if (!_testTones.TryGetValue(hz, out var clip))
+            {
+                var recipe = StimulusRecipe.Tone(hz, seconds, rampS: 0.010, levelDbfs: peakDbfs - 20.0 * System.Math.Log10(System.Math.Sqrt(2.0)));
+                _testTones[hz] = clip = StimulusClips.CreateAtOutputRate(recipe, "Test tone " + hz + " Hz");
+            }
+            toneSource.Stop();
+            toneSource.loop = false;
+            toneSource.clip = clip;
+            toneSource.Play();
+            Debug.Log(Log + "Config: test tone " + hz + " Hz from the speaker, peak " + peakDbfs.ToString(CultureInfo.InvariantCulture) + " dBFS, " +
+                      seconds.ToString(CultureInfo.InvariantCulture) + " s.");
+        }
+
+        /// <summary>Click on a sound: a new sound plays from the start; the playing one pauses; a paused one resumes.</summary>
         void ClickSound(int sound)
         {
             switch (_state.ClickSound(sound))
             {
                 case SoundAction.PlayFromStart:
                     source.Stop();
-                    source.clip = ClipOf(sound);
+                    source.clip = _recordings[sound];
                     source.Play();
                     break;
                 case SoundAction.Pause:
@@ -192,31 +241,29 @@ namespace AcousticChamber.Chambers.HearingLoss
             Apply();
         }
 
-        AudioClip ClipOf(int sound) =>
-            ExperienceState.IsTone(sound) ? _tones[sound] : _recordings[ExperienceState.RecordingIndex(sound)];
-
-        /// <summary>The labels of the "Audio recording" row: the generated noises, then the recordings (same order as the clips built in Start).</summary>
-        List<string> RecordingNames()
+        /// <summary>The labels of the sound grid: the generated noises, then the library recordings (the order of Start).</summary>
+        List<string> SoundNames()
         {
             var names = new List<string>();
             foreach (var g in Generated) names.Add(g.label);
-            for (int i = 0; i < (clips != null ? clips.Length : 0); i++)
-                if (clips[i] != null) names.Add(i < clipNames.Length && !string.IsNullOrEmpty(clipNames[i]) ? clipNames[i] : clips[i].name);
+            for (int i = 0; libraryClips != null && i < libraryClips.Length; i++)
+                if (libraryClips[i] != null) names.Add(NameAt(libraryNames, i, libraryClips[i]));
             return names;
         }
+
+        static string NameAt(string[] names, int i, AudioClip clip) =>
+            names != null && i < names.Length && !string.IsNullOrEmpty(names[i]) ? names[i] : clip.name;
 
         string NameOf(int sound) => sound < 0 ? "nothing" : _soundNames[sound];
 
         /// <summary>Pushes the state to the output and the panel. The sound playing is Selected; a paused one is normal again.</summary>
         void Apply()
         {
+            if (_state == null) return;
             if (_output != null) _output.SetProfile(_state.Profile);
             UiKit.Select(_soundButtons, i => i == _state.Sound && _state.Playing);
             UiKit.Select(_earButtons, i => ExperienceState.Ears[i] == _state.Ear);
             UiKit.Select(_levelButtons, i => ExperienceState.Levels[i] == _state.Level);
-            string playing = _state.Sound < 0 ? "Click a tone or a recording to play it; click it again to pause."
-                           : (_state.Playing ? "Playing " : "Paused ") + NameOf(_state.Sound) + ".";
-            if (_status != null) _status.text = _state.Status() + "  " + playing + "\nPoint at the speaker and hold the trigger to move it.";
             Debug.Log(Log + (_state.Playing ? "playing " : "paused ") + NameOf(_state.Sound) + "; " + _state.Status());
         }
 
@@ -257,6 +304,7 @@ namespace AcousticChamber.Chambers.HearingLoss
             if (_leaving || AppNav.Busy) return;
             _leaving = true;
             source.Stop();
+            if (toneSource != null) toneSource.Stop();
             if (_panel != null) _panel.Shown = false;
             if (!AppNav.BackToHall())
             {

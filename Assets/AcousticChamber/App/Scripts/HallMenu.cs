@@ -11,15 +11,21 @@ namespace AcousticChamber.App
 {
     /// <summary>
     /// The Main Hall (Architecture section 5, DesignSystem section 7): a 2-column grid of chamber cards, built at run time
-    /// from the <see cref="ChamberCatalog"/>. A card is one target: a 16:9 cover (thumbnail or the solid <c>cover</c> color)
-    /// with the C-ID and an "N unfinished" pill, the title below. Choosing a card fades into the chamber's scene. No Study ID
-    /// and no DEBUG tag here (Debug mode lives in each chamber, PO 2026-11-06).
+    /// from the <see cref="ChamberCatalog"/> (Storybook Screens/Main Hall, PO 2026-11-10). A card is one target: a 16:9 cover
+    /// (thumbnail with rounded corners, or the solid <c>cover</c> color) with the C-ID top left and the title bottom left on it,
+    /// white at 75 % with a soft shadow; nothing below the cover, no unfinished pill (the launch routing still opens a chamber
+    /// with unfinished sessions). Choosing a card fades into the chamber's scene. No Study ID and no DEBUG tag here (Debug mode
+    /// lives in each chamber, PO 2026-11-06). The status line shows only when a chamber cannot open.
     /// </summary>
     public class HallMenu : MonoBehaviour
     {
         public static readonly Vector2 Size = new Vector2(1000f, 700f);
-        public const float CardRadius = 40f, CoverRadius = 36f;
-        public const string Title = "Main Hall";
+        public const float CoverRadius = 36f;
+        /// <summary>Room around the card grid inside the list, so a hovered card (103 %) is not clipped.</summary>
+        public const float GridMargin = 8f;
+        /// <summary>C-ID and title: 24 u in from the cover edges, white at 75 %, soft shadow (CSS drop-shadow(0 0 4px rgb(0 0 0 / 0.3))).</summary>
+        public const float TextInset = 24f, TitleBottom = 12f, TextAlpha = 0.75f, ShadowBlur = 4f, ShadowAlpha = 0.3f, TitleSpacing = -3f;
+        public const string Title = "Acoustic Chambers"; // centered (PO 2026-11-10)
         public const string EmptyText = "No chambers yet. Run Magic > App > Sync Chambers.";
 
         public ChamberCatalog catalog;
@@ -71,7 +77,9 @@ namespace AcousticChamber.App
             Panel = UiPanel.Create(canvas, "Hall", Size);
             var surface = Panel.Surface;
             UiNavigationBar.Create(surface, Title, UiNavigationBar.Leading.None);
+            UiNavigationBar.CenterTitle(surface.Root);
             _status = surface.AddStatus("");
+            _status.transform.parent.gameObject.SetActive(false); // shown only with a message (Open)
 
             var chambers = catalog != null ? catalog.Visible() : new List<ChamberDefinition>();
             if (chambers.Count == 0)
@@ -83,8 +91,10 @@ namespace AcousticChamber.App
             }
 
             var content = UiKit.List(surface.Body, "Chambers", out var list);
-            content.GetComponent<VerticalLayoutGroup>().spacing = 8f;
-            var grid = new HallGrid(Size.x - 2f * th.surfacePaddingX, chambers.Count, th.inset);
+            var grid = new HallGrid(Size.x - 2f * th.surfacePaddingX - 2f * GridMargin, chambers.Count);
+            var column = content.GetComponent<VerticalLayoutGroup>();
+            column.spacing = grid.RowGap;
+            column.padding = UiKit.Pad((int)GridMargin, (int)GridMargin, (int)(UiKit.IndicatorMargin + GridMargin), (int)GridMargin); // the list keeps its indicator margin on the right
             RectTransform row = null;
             for (int i = 0; i < chambers.Count; i++)
             {
@@ -106,10 +116,11 @@ namespace AcousticChamber.App
         void Card(RectTransform row, ChamberDefinition c, HallGrid g)
         {
             var th = UiKit.Theme;
+            // the card is only its cover; the button's own fill lies under the cover (hidden), the look is scale + saturation
             var card = UiKit.Node(row, "Card " + c.id);
-            var bg = UiKit.Fill(card, Color.clear, CardRadius);
+            var bg = UiKit.Fill(card, Color.clear, CoverRadius);
             bg.raycastTarget = true;
-            UiKit.V(card.gameObject, 0f, UiKit.Pad(g.Inset, g.Inset, g.Inset, 0), TextAnchor.UpperLeft);
+            UiKit.V(card.gameObject, 0f, null, TextAnchor.UpperLeft);
             UiKit.Size(card.gameObject, minW: 0f, prefW: 0f, flexW: 1f); // equal columns whatever the title (min 0)
             var button = card.gameObject.AddComponent<UiButton>();
             button.targetGraphic = bg;
@@ -119,48 +130,59 @@ namespace AcousticChamber.App
             button.Style = UiStyle.Borderless;
             button.onClick.AddListener(() => Open(c));
 
-            // title band below the cover
+            // the cover; the C-ID and the title are on it, nothing below it
             var cover = UiKit.Node(card, "Cover");
-            UiKit.Fill(cover, th.cover, CoverRadius);
+            var shape = UiKit.Fill(cover, th.cover, CoverRadius); // the rounded "Background" child
             UiKit.Size(cover.gameObject, prefW: 0f, prefH: g.CoverHeight, flexW: 1f);
-            var title = UiKit.Label(card, "Title", c.CardTitle, th.bodySize, th.text);
-            title.overflowMode = TextOverflowModes.Ellipsis;
-            var box = (RectTransform)title.transform.parent;
-            box.GetComponent<VerticalLayoutGroup>().padding = UiKit.Pad(UiKit.RowTextPad - g.Inset, 0, UiKit.RowTextPad - g.Inset, 4);
-            UiKit.Size(box.gameObject, prefW: 0f, prefH: g.TitleBand, flexW: 1f);
+            RawImage img = null;
             if (c.thumbnail != null)
             {
-                var img = UiKit.Fill(UiKit.Rect(cover.transform, "Thumbnail", Vector2.zero, Vector2.zero)).gameObject.AddComponent<RawImage>();
+                // the image is a child of the rounded shape, which masks it (a Mask needs its graphic on the same object)
+                shape.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+                img = UiKit.Fill(UiKit.Rect(shape.transform, "Thumbnail", Vector2.zero, Vector2.zero)).gameObject.AddComponent<RawImage>();
                 img.texture = c.thumbnail;
+                img.uvRect = CoverUv(c.thumbnail.width, c.thumbnail.height);
                 img.raycastTarget = false;
             }
+            HallCard.Attach(button, img); // hover: 103 % (pressed 101.5 %), image saturation 125 %
 
+            var white = new Color(th.text.r, th.text.g, th.text.b, TextAlpha);
             if (!string.IsNullOrEmpty(c.label))
             {
-                var id = UiKit.Text(cover.transform, "C-ID", c.label, th.smallSize, Vector2.zero, new Vector2(200f, 44f), bold: true,
-                                    align: TextAlignmentOptions.MidlineLeft);
-                Corner(id.rectTransform, left: true);
+                var id = UiKit.Text(cover.transform, "C-ID", c.label, th.smallSize, Vector2.zero, new Vector2(200f, 40f), bold: true, color: white,
+                                    align: TextAlignmentOptions.TopLeft);
+                id.textWrappingMode = TextWrappingModes.NoWrap;
+                id.rectTransform.anchorMin = id.rectTransform.anchorMax = id.rectTransform.pivot = new Vector2(0f, 1f);
+                id.rectTransform.anchoredPosition = new Vector2(TextInset, -TextInset);
+                UiKit.SoftShadow(id, ShadowBlur, new Color(0f, 0f, 0f, ShadowAlpha));
             }
 
-            int unfinished = Unfinished(c);
-            if (unfinished > 0)
-            {
-                string s = unfinished + " unfinished";
-                var pill = UiKit.Box(cover.transform, "Unfinished", Vector2.zero, new Vector2(10f, 44f), th.prominent.normal, 22f);
-                var t = UiKit.Text(pill.transform, "Label", s, th.minimumSize, Vector2.zero, Vector2.zero, bold: true, color: th.prominent.label);
-                t.textWrappingMode = TextWrappingModes.NoWrap;
-                UiKit.Fill(t.rectTransform);
-                pill.rectTransform.sizeDelta = new Vector2(t.GetPreferredValues(s).x + 36f, 44f);
-                Corner(pill.rectTransform, left: false);
-            }
+            var title = UiKit.Text(cover.transform, "Title", c.CardTitle, th.titleSize, Vector2.zero, Vector2.zero, bold: true, color: white,
+                                   align: TextAlignmentOptions.BottomLeft);
+            title.textWrappingMode = TextWrappingModes.NoWrap;
+            title.overflowMode = TextOverflowModes.Ellipsis;
+            title.characterSpacing = TitleSpacing; // tight, like CSS letter-spacing -0.03em
+            var tr = title.rectTransform;
+            tr.anchorMin = Vector2.zero;
+            tr.anchorMax = new Vector2(1f, 0f);
+            tr.pivot = Vector2.zero;
+            tr.offsetMin = new Vector2(TextInset, TitleBottom);
+            tr.offsetMax = new Vector2(-TextInset, TitleBottom + th.titleSize * 2f); // room for the whole line (Noto: ~1.45 em); a shorter box makes the ellipsis drop the line
+            UiKit.SoftShadow(title, ShadowBlur, new Color(0f, 0f, 0f, ShadowAlpha));
         }
 
-        /// <summary>Pins <paramref name="rt"/> to the cover's top left or top right corner, 20 u in.</summary>
-        static void Corner(RectTransform rt, bool left)
+        /// <summary>UV rect that fills the 16:9 cover with an image of any aspect (centered crop, like CSS background-size: cover).</summary>
+        public static Rect CoverUv(int width, int height)
         {
-            float x = left ? 0f : 1f;
-            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(x, 1f);
-            rt.anchoredPosition = new Vector2(left ? 24f : -20f, -20f);
+            if (width <= 0 || height <= 0) return new Rect(0f, 0f, 1f, 1f);
+            float aspect = (float)width / height;
+            if (aspect > HallGrid.CoverAspect)
+            {
+                float w = HallGrid.CoverAspect / aspect;
+                return new Rect((1f - w) / 2f, 0f, w, 1f);
+            }
+            float h = aspect / HallGrid.CoverAspect;
+            return new Rect(0f, (1f - h) / 2f, 1f, h);
         }
 
         /// <summary>Unfinished (resumable) sessions of the chamber; 0 if its data folder cannot be read.</summary>
@@ -181,6 +203,7 @@ namespace AcousticChamber.App
             if (problem != null)
             {
                 _status.text = c.MenuTitle + ": " + problem;
+                _status.transform.parent.gameObject.SetActive(true);
                 Debug.LogError("[GPL] HallMenu: " + _status.text);
                 return;
             }

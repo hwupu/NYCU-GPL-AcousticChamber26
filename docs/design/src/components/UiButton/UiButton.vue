@@ -8,6 +8,8 @@
  *  - `state`        forces hover / pressed for documentation; at run time the pointer drives it
  * `selected` does nothing on prominent and destructive (as UiButton.Selected). `inGroup` = on a raised group (borderless hover colors).
  * Single-line labels move up by `--label-nudge` (the font sits low); icons do not.
+ * `hoverScale` / `pressedScale` (UiButton.HoverScale / PressedScale): scale on hover (default 1) and while pressed (default the theme 97 %);
+ * the Main Hall cards grow: 103 % / 101.5 %.
  */
 import { computed, useSlots } from 'vue'
 import UiIcon from '../UiIcon/UiIcon.vue'
@@ -30,6 +32,8 @@ const props = withDefaults(
     /** false = no 220 u minimum width (keys, segments, steppers). */
     minWidth?: boolean
     state?: 'idle' | 'hover' | 'pressed'
+    hoverScale?: number
+    pressedScale?: number
   }>(),
   { buttonStyle: 'gray', minWidth: true, state: 'idle' },
 )
@@ -55,6 +59,7 @@ const canSelect = computed(() => props.selected && !fillStyle.value)
     :data-icon-trailing="iconTrailing ? '' : undefined"
     :data-min-width="minWidth && !iconOnly && !small ? '' : undefined"
     :data-state="state"
+    :style="{ '--hover-scale': hoverScale ?? 1, '--press-scale': pressedScale ?? 'var(--pressed-scale)' }"
     :disabled="disabled"
     @click="$emit('click', $event)"
   >
@@ -127,12 +132,13 @@ const canSelect = computed(() => props.selected && !fillStyle.value)
 .ui-button:hover:not(:disabled),
 .ui-button[data-state='hover']:not(:disabled) {
   background: var(--fh);
+  transform: scale(var(--hover-scale));
   transition-duration: var(--hover-in), var(--hover-in), var(--release), var(--hover-out);
 }
 .ui-button:active:not(:disabled),
 .ui-button[data-state='pressed']:not(:disabled) {
   background: var(--fp);
-  transform: scale(var(--pressed-scale));
+  transform: scale(var(--press-scale));
   transition-duration: 0s;
 }
 .ui-button:disabled { opacity: var(--disabled-alpha); cursor: default; }

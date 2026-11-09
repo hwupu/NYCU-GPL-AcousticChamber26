@@ -1,7 +1,7 @@
 {
     "name": "AcousticChamber.Chambers.HearingLoss.Editor",
     "rootNamespace": "AcousticChamber.Chambers.HearingLoss.Editor",
-    "references": ["AcousticChamber.Chambers.HearingLoss", "AcousticChamber.Chambers.HearingLoss.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "GPL.SpatialSources", "GPL.HearingLoss", "Meta.XR.Audio", "Oculus.VR"],
+    "references": ["AcousticChamber.Chambers.HearingLoss", "AcousticChamber.Chambers.HearingLoss.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "GPL.SpatialSources", "GPL.HearingLoss", "GPL.Stimuli.Core", "Meta.XR.Audio", "Oculus.VR"],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

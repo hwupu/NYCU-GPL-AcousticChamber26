@@ -17,7 +17,7 @@ namespace AcousticChamber.Chambers.HearingLoss.Tests
             Assert.AreEqual(Ear.Both, s.Ear);
             Assert.AreEqual(HearingLossLevel.None, s.Level);
             Assert.AreEqual(HearingProfile.Normal, s.Profile);
-            Assert.AreEqual(9, s.SoundCount);
+            Assert.AreEqual(4, s.SoundCount);
             Assert.AreEqual("Left ear 0 dB, right ear 0 dB (at 4 kHz).", s.Status());
         }
 
@@ -25,33 +25,21 @@ namespace AcousticChamber.Chambers.HearingLoss.Tests
         public void ClickPlaysPausesResumesAndSwitches()
         {
             var s = new ExperienceState(4);
-            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(3)); // 4 kHz tone
+            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(3)); // fourth recording
             Assert.IsTrue(s.Playing);
             Assert.AreEqual(SoundAction.Pause, s.ClickSound(3));
             Assert.IsFalse(s.Playing);
             Assert.AreEqual(SoundAction.Resume, s.ClickSound(3));
             Assert.IsTrue(s.Playing);
-            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(6)); // second recording
-            Assert.AreEqual(6, s.Sound);
+            Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(1)); // second recording
+            Assert.AreEqual(1, s.Sound);
             Assert.IsTrue(s.Playing);
-            s.ClickSound(6);
+            s.ClickSound(1);
             Assert.AreEqual(SoundAction.PlayFromStart, s.ClickSound(0)); // another sound while paused starts it
             Assert.IsTrue(s.Playing);
             s.Stop();
             Assert.IsFalse(s.Playing);
             Assert.AreEqual(0, s.Sound);
-        }
-
-        [Test]
-        public void TonesFirstThenRecordings()
-        {
-            Assert.IsTrue(ExperienceState.IsTone(0));
-            Assert.IsTrue(ExperienceState.IsTone(4));
-            Assert.IsFalse(ExperienceState.IsTone(5));
-            Assert.AreEqual(0, ExperienceState.RecordingIndex(5));
-            CollectionAssert.AreEqual(new[] { 500, 1000, 2000, 4000, 8000 }, ExperienceState.ToneHz);
-            Assert.AreEqual("500 Hz", ExperienceState.ToneButton(500));
-            Assert.AreEqual("8 kHz", ExperienceState.ToneButton(8000));
         }
 
         [Test]

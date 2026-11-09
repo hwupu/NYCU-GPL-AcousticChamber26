@@ -26,6 +26,8 @@ namespace GPL.UI
             var box = bar.Find("Title Box");
             UiKit.Size(box.gameObject, flexW: 1f);
             box.GetComponentInChildren<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+            // the box lays out its label at the label's own width: place it in the middle too (it was left in the wide box)
+            box.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
             bar.Find("Spacer").gameObject.SetActive(false); // no spacer (and its gap): the title is centered in the whole bar
         }
 

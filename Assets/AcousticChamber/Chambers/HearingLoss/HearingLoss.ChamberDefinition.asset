@@ -16,7 +16,7 @@ MonoBehaviour:
   label: C03
   title: Hearing Loss
   description: Experience simulated hearing loss on one or both ears while you move a sound around you.
-  thumbnail: {fileID: 0}
+  thumbnail: {fileID: 2800000, guid: dd230fee822416fa140c252e8b7921c4, type: 3}
   scenePath: Assets/AcousticChamber/Chambers/HearingLoss/Scenes/HearingLoss.unity
   version: 0.1
   enabled: 1

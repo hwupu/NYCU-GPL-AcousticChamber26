@@ -51,6 +51,15 @@ namespace GPL.UI
 
         bool _selected;
 
+        /// <summary>Scale on hover (1 = none; the Main Hall cards grow to 1.03). Storybook UiButton <c>hoverScale</c>.</summary>
+        public float HoverScale = 1f;
+
+        /// <summary>Scale while pressed; 0 = the theme's <c>pressedScale</c> (97 %). Storybook UiButton <c>pressedScale</c>.</summary>
+        public float PressedScale;
+
+        /// <summary>True while the button looks hovered or pressed (follows the pointer; for owners that animate more than the button).</summary>
+        public bool IsEmphasized => _visual == Visual.Hover || _visual == Visual.Pressed;
+
         /// <summary>True while the trigger holds this button down (set by <see cref="UiPointer"/>).</summary>
         public bool IsPressedVisual => _pressed;
 
@@ -162,8 +171,8 @@ namespace GPL.UI
             scale = 1f;
             switch (v)
             {
-                case Visual.Hover: fill = c.hover; break;
-                case Visual.Pressed: fill = c.pressed; scale = Theme.pressedScale; break;
+                case Visual.Hover: fill = c.hover; scale = HoverScale; break;
+                case Visual.Pressed: fill = c.pressed; scale = PressedScale > 0f ? PressedScale : Theme.pressedScale; break;
                 case Visual.Disabled:
                     fill = c.normal;
                     fill.a *= Theme.disabledAlpha;
