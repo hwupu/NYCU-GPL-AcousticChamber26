@@ -15,7 +15,8 @@ some licences require it (CC BY, OFL, MIT). Credits so far were scattered (HW2's
 - Generated stimuli (GPL.Stimuli) and assets made by Editor scripts need no credit; they are listed once as "generated".
 - Packages (Meta XR SDKs, Unity packages) are covered by their own licences in `Packages/`, not listed per file.
 - The AI assistant reminds the PO whenever a new asset appears without an entry.
-- `docs/AssetCredits.md` stays out of git until the PO says otherwise (PO 2026-11-09).
+- `docs/AssetCredits.md` was kept out of git at first (PO 2026-11-09) and committed on 2026-11-10 (PO); it is kept current with every
+  asset change.
 
 **Consequences**
 - A Credits page in the app (needed when CC BY assets ship in a build) is a later UI ticket, designed in the Storybook first.

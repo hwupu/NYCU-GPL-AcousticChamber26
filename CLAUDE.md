@@ -45,4 +45,4 @@ Read only the docs the task touches: [Architecture](docs/Architecture.md) (secti
 
 ## Data and repository
 One CSV per session (flush every row, console mirror) plus a `.session` file: names in `Modules/Session/README.md`, scheme in Architecture section 10. Participant data never goes into git (`/ParticipantData/` ignored). Git LFS for audio, images, models, fonts, lightmaps; commit `.meta` files; author from git config. No analysis scripts.
-**Asset credits (ADR-0009):** every third-party asset (audio, image, icon, font, model) gets an entry in `docs/AssetCredits.md` before it is committed; remind the PO whenever a new asset has none. That file stays out of git until the PO says otherwise.
+**Asset credits (ADR-0009):** every third-party asset (audio, image, icon, font, model) gets an entry in `docs/AssetCredits.md` before it is committed; remind the PO whenever a new asset has none. Keep it committed and current.
