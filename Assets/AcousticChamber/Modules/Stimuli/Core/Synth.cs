@@ -130,6 +130,21 @@ namespace GPL.Stimuli
             for (int i = 0; i < x.Length; i++) x[i] *= g;
         }
 
+        /// <summary>
+        /// <paramref name="x"/> followed by <paramref name="seconds"/> of silence at <paramref name="sampleRate"/> (a new buffer; the input
+        /// when <paramref name="seconds"/> is 0). A looped clip with a gap: a short sound repeats once per (length + gap).
+        /// </summary>
+        public static float[] AppendSilence(float[] x, double seconds, int sampleRate)
+        {
+            if (seconds < 0) throw new ArgumentOutOfRangeException(nameof(seconds));
+            if (sampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(sampleRate));
+            int n = (int)Math.Round(seconds * sampleRate);
+            if (n == 0) return x;
+            var y = new float[x.Length + n];
+            Array.Copy(x, y, x.Length);
+            return y;
+        }
+
         /// <summary>Averages interleaved channels to mono (a mono buffer is copied).</summary>
         public static float[] MixToMono(float[] interleaved, int channels)
         {

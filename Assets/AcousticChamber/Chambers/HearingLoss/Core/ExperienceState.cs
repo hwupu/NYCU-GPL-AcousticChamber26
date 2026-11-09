@@ -9,7 +9,7 @@ namespace AcousticChamber.Chambers.HearingLoss
     /// <summary>
     /// What the HearingLoss panel shows and sets (Docs/Design.md; layout like the Hearing Loss Test Panel, PO 2026-11-08):
     /// hearing condition (loss on both ears / left / right), hearing loss (0 / -20 / -30 / -40 dB, the HLSim presets), the sounds
-    /// (five pure tones, then the recordings). One sound plays at a time from the speaker: click a sound to play it, click it again
+    /// (generated noises and recordings; the pure tones moved to the Config page, PO 2026-11-10). One sound plays at a time from the speaker: click a sound to play it, click it again
     /// to pause, again to resume; another sound starts from the beginning. The ear(s) without the loss stay at 0 dB (no adjustment).
     /// Choosing an ear while at 0 dB sets -20 dB (PO 2026-11-08). Pure; the experience script plays the sounds and applies
     /// <see cref="Profile"/> to the output. Starts with nothing playing, both ears, 0 dB.
@@ -23,9 +23,6 @@ namespace AcousticChamber.Chambers.HearingLoss
         /// <summary>The hearing conditions on the panel, in order.</summary>
         public static readonly Ear[] Ears = { Ear.Both, Ear.Left, Ear.Right };
 
-        /// <summary>The pure tones on the panel in Hz; sounds 0..4. The recordings follow.</summary>
-        public static readonly int[] ToneHz = { 500, 1000, 2000, 4000, 8000 };
-
         /// <summary>The level set when an ear is chosen while at 0 dB.</summary>
         public const HearingLossLevel DefaultLoss = HearingLossLevel.Mild;
 
@@ -36,9 +33,9 @@ namespace AcousticChamber.Chambers.HearingLoss
         }
 
         public int RecordingCount { get; }
-        public int SoundCount => ToneHz.Length + RecordingCount;
+        public int SoundCount => RecordingCount;
 
-        /// <summary>The selected sound (tones first, then recordings), -1 before the first click.</summary>
+        /// <summary>The selected sound (index into the recordings), -1 before the first click.</summary>
         public int Sound { get; private set; } = -1;
         public bool Playing { get; private set; }
         public Ear Ear { get; private set; } = Ear.Both;
@@ -47,9 +44,6 @@ namespace AcousticChamber.Chambers.HearingLoss
         public event Action Changed;
 
         public HearingProfile Profile => HearingProfile.For(Ear, Level);
-
-        public static bool IsTone(int sound) => sound >= 0 && sound < ToneHz.Length;
-        public static int RecordingIndex(int sound) => sound - ToneHz.Length;
 
         /// <summary>A click on sound <paramref name="sound"/>: a new sound plays from the start; the selected one pauses / resumes.</summary>
         public SoundAction ClickSound(int sound)
@@ -100,8 +94,6 @@ namespace AcousticChamber.Chambers.HearingLoss
         public static string LevelButton(HearingLossLevel level) => Db(DeepestDb(level));
 
         public static string EarButton(Ear ear) => ear == Ear.Both ? "Both ears" : ear == Ear.Left ? "Left ear" : "Right ear";
-
-        public static string ToneButton(int hz) => hz < 1000 ? hz + " Hz" : (hz / 1000) + " kHz";
 
         /// <summary>The deepest band of a preset (negative dB; 0 for None).</summary>
         public static int DeepestDb(HearingLossLevel level)

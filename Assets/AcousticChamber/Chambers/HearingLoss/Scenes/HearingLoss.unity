@@ -2710,6 +2710,152 @@ Transform:
   m_Children: []
   m_Father: {fileID: 893814680}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &387173879
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 387173880}
+  - component: {fileID: 387173882}
+  - component: {fileID: 387173881}
+  m_Layer: 0
+  m_Name: Test Tone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &387173880
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387173879}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 835950749}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &387173881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387173879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a07f270ac36c49789466c75ceb88424c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Meta.XR.Audio::MetaXRAudioSource
+  enableSpatialization: 1
+  gainBoostDb: 0
+  enableAcoustics: 0
+  reverbSendDb: 0
+--- !u!82 &387173882
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387173879}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 1
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 2
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &404323803
 GameObject:
   m_ObjectHideFlags: 0
@@ -4861,7 +5007,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 387173880}
   m_Father: {fileID: 919030485}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &835950750
@@ -5863,14 +6010,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: AcousticChamber.Chambers.HearingLoss::AcousticChamber.Chambers.HearingLoss.HearingLossExperience
   speaker: {fileID: 919030486}
   source: {fileID: 835950751}
-  clips:
-  - {fileID: 8300000, guid: 34007ab183fa4d3459efb796ba54de76, type: 3}
-  - {fileID: 8300000, guid: 3a1b8bf5f7473534993d0ef08c0b9f0d, type: 3}
-  - {fileID: 8300000, guid: 07861a3621602024e9e2fe6e9ab6c84e, type: 3}
-  clipNames:
-  - Podcast 1
-  - Podcast 2
-  - Street market
+  toneSource: {fileID: 387173882}
+  libraryClips:
+  - {fileID: 8300000, guid: 407cce36d9f521748a39d2923b2f802d, type: 3}
+  - {fileID: 8300000, guid: ddc16ffa48e457d4ab8856d5a719aec4, type: 3}
+  - {fileID: 8300000, guid: 0568ee8fd5ba4174fbb212c39a6bb391, type: 3}
+  - {fileID: 8300000, guid: dcf358e2a6674f740b25d646436d9d82, type: 3}
+  - {fileID: 8300000, guid: 5164ae6b38cb0674bbde8aea8eb6c9c6, type: 3}
+  - {fileID: 8300000, guid: 5b943271bd4af1948a98297a19a64b8c, type: 3}
+  - {fileID: 8300000, guid: 1d8d809e226b1134d935d314982ade1c, type: 3}
+  libraryNames:
+  - Horn
+  - "Horn \xD72"
+  - Choked horn
+  - Pap horn
+  - Pistol
+  - Opera voice
+  - Trumpet
+  libraryIds:
+  - openair_bicycle_classic
+  - openair_bicycle_classic_double
+  - openair_bicycle_choked
+  - openair_bicycle_pap
+  - openair_starter_pistol
+  - openair_operatic_voice
+  - openair_baroque_trumpet_fanfare
 --- !u!114 &1037657714
 MonoBehaviour:
   m_ObjectHideFlags: 0

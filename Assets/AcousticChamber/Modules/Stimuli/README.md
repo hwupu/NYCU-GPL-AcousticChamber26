@@ -11,11 +11,11 @@ Built 2026-11-09 (ADR-0008) from the lab's stimulus catalog and the HW2 audio no
 | Part | What |
 |---|---|
 | `Core/StimulusRecipe.cs` | immutable recipe: `Tone(hz, dur, ramp, level)`, `WhiteNoise(dur, seed, ramp, level, band)`, `PinkNoise(dur, seed, ramp, level, band)`; `WithSampleRate`, `WithSeed` (token bank); `Name` (`noise_pink_240ms_r20_s3`), `Note()` for logs (`stimulus=noise color=pink dur_s=0.24 ramp_s=0.02 ramp=cos2 rms_dbfs=-26 seed=3 band_hz=20-20000 sr=48000`) |
-| `Core/Synth.cs` | `Render(recipe)` → `float[]`: generate, scale the steady signal to the RMS level, ramps, throws instead of clipping; `Gaussian`, `ShapedNoise` (1/f^x in the frequency domain), `Sine` (exact integer phase), `RampGain`, `ApplyRamps`, `RmsDbfs` |
+| `Core/Synth.cs` | `Render(recipe)` → `float[]`: generate, scale the steady signal to the RMS level, ramps, throws instead of clipping; `Gaussian`, `ShapedNoise` (1/f^x in the frequency domain), `Sine` (exact integer phase), `RampGain`, `ApplyRamps`, `RmsDbfs`, `LevelTo`, `AppendSilence`, `MixToMono` |
 | `Core/Fft.cs` | complex DFT of any length (radix-2, Bluestein otherwise), used for pink and band-limited noise |
 | `Core/StandardRecipes.cs` | `WhiteLoop` (4 s), `PinkLoop` (2^18 samples = 5.46 s at 48 kHz), no ramps, for looping sources, and stimuli rebuilt from papers (table below) |
 | `Core/StimulusLibrary.cs`, `Core/OpenAir.cs` | catalog of the recordings in `Library/`: id, file, title, creator, source, licence, attribution; `Find(id)`, `AssetPath(entry)`, `entry.Note()` for logs |
-| `Runtime/StimulusClips.cs` | `Create(recipe)`, `CreateAtOutputRate(recipe)` → `AudioClip` (mono float PCM in memory), `Leveled(recording, dbfs, out gainDb)` (mono copy of a recording at an RMS level; the file is not changed), `Release(clip)`, `OutputRate` |
+| `Runtime/StimulusClips.cs` | `Create(recipe)`, `CreateAtOutputRate(recipe)` → `AudioClip` (mono float PCM in memory), `Leveled(recording, dbfs, out gainDb, name, silenceAfterS)` (mono copy of a recording at an RMS level, optionally followed by silence so a looped clip repeats with a gap; the file is not changed), `Release(clip)`, `OutputRate` |
 | `Editor/LibraryImport.cs` | import rule for `Library/` (PCM, Decompress On Load, sample rate kept); `Magic > Stimuli > Validate Library` (every entry has its file, every file has an entry) |
 | `Library/` | the recordings (section "Library") |
 | `Tests/EditMode` | FFT vs a naive DFT; white: Gaussian (excess kurtosis ≈ 0), flat; pink: -3.01 ± 0.15 dB/octave, Gaussian, nothing outside 20 Hz-20 kHz, no loop seam; ramp = cos² exactly; level; same seed = same samples; clipping throws; library: unique ids and files, public files present, credits filled, a library WAV imports as PCM and levels to -26 dBFS |

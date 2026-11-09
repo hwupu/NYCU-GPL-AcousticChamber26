@@ -39,3 +39,4 @@ One short line per ticket (status, commit / date). Acceptance: [ProductBacklog](
 | UiKit rebuild (branch uikit-rebuild) | Migration done, manual test pending | Storybook design `9c70bce`; PoC `265670e`; U2a `a42e005` `c4fda22`; U3 `c0269f5` (every panel migrated, old builders deleted); naming `2eafe82` (ADR-0007); 315 tests pass; headset check open (icons, fonts, grabber, panels) |
 | PB-22 GPL.Stimuli | Built, scene re-run + headset check open | HW2 Steps 1-5 + Validate OK headless; library: 7 OpenAIR recordings (CC BY-SA) |
 | PB-23 Asset credits | Open | AssetCredits.md committed 2026-11-10; open: Radio.jpg, slides, SFX-C-04, replace SFX-C-02/03 |
+| PB-24 C03 panel v2 | Built, scene re-run + headset check open | no tone row, 9 GPL.Stimuli sounds in a 4-column grid (no HW2), Config = hearing loss test with tones from the speaker; 346 tests pass |

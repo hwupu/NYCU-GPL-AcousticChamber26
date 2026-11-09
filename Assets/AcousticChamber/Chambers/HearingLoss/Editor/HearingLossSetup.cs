@@ -2,6 +2,7 @@ using System.IO;
 using AcousticChamber.App;
 using AcousticChamber.App.Editor;
 using GPL.SpatialSources;
+using GPL.Stimuli;
 using GPL.UI;
 using GPL.UI.Editor;
 using UnityEditor;
@@ -20,22 +21,20 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         public const string ScenePath = Folder + "/Scenes/HearingLoss.unity";
         public const string DefinitionPath = Folder + "/HearingLoss.ChamberDefinition.asset";
         public const string MaterialsDir = Folder + "/Materials";
-        /// <summary>
-        /// The sounds are HW2's clips in the HumPerHW2 folder, used in place (PO 2026-11-07: not copied, the audio will change).
-        /// A temporary asset link between two chambers (no code link); replace with the chamber's own Audio/ folder later.
-        /// </summary>
-        public const string AudioDir = "Assets/AcousticChamber/Chambers/HumPerHW2/Audio";
         const string PanelName = "Experience Panel";
         const string LaserPath = "Assets/AcousticChamber/Settings/Materials/Laser.mat";
         const string Log = "[Chamber:HearingLoss] ";
 
-        /// <summary>The recordings on the panel after the generated sounds (HW2 clips for now, PO 2026-11-07 and 2026-11-09): file, button label. Their import settings belong to
-        /// HumPerHW2 (01 Decompress On Load, 02-04 Streaming) and are not changed here.</summary>
-        static readonly (string file, string label)[] Sounds =
+        /// <summary>The GPL.Stimuli library recordings after the generated noises (PO 2026-11-10; the HW2 clips are gone): library id, button label. Leveled and looped with a 1 s gap at run time.</summary>
+        public static readonly (string id, string label)[] LibrarySounds =
         {
-            ("SFX-C-02-normalized.wav", "Podcast 1"),
-            ("SFX-C-03-normalized.wav", "Podcast 2"),
-            ("SFX-C-04-normalized.wav", "Street market"),
+            ("openair_bicycle_classic", "Horn"),
+            ("openair_bicycle_classic_double", "Horn ×2"),
+            ("openair_bicycle_choked", "Choked horn"),
+            ("openair_bicycle_pap", "Pap horn"),
+            ("openair_starter_pistol", "Pistol"),
+            ("openair_operatic_voice", "Opera voice"),
+            ("openair_baroque_trumpet_fanfare", "Trumpet"),
         };
 
         public const float FloorSizeM = 30f;
@@ -83,8 +82,9 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
             var old = Object.FindAnyObjectByType<HearingLossExperience>(FindObjectsInactive.Include);
             FloorDragSource speaker = old != null ? old.speaker : null;
             AudioSource source = old != null ? old.source : null;
-            AudioClip[] clips = old != null ? old.clips : null;
-            string[] names = old != null ? old.clipNames : null;
+            AudioSource toneSource = old != null ? old.toneSource : null;
+            AudioClip[] libClips = old != null ? old.libraryClips : null;
+            string[] libNames = old != null ? old.libraryNames : null, libIds = old != null ? old.libraryIds : null;
 
             var canvas = UiSetup.CreateOverlayCanvas(ui, PanelName, HearingLossExperience.Size);
             var panel = canvas.GetComponent<OverlayPanel>();
@@ -93,8 +93,10 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
             var logic = canvas.AddComponent<HearingLossExperience>();
             logic.speaker = speaker;
             logic.source = source;
-            if (clips != null) logic.clips = clips;
-            if (names != null) logic.clipNames = names;
+            logic.toneSource = toneSource;
+            if (libClips != null) logic.libraryClips = libClips;
+            if (libNames != null) logic.libraryNames = libNames;
+            if (libIds != null) logic.libraryIds = libIds;
             UiSetup.EnsurePointer(ui, AssetDatabase.LoadAssetAtPath<Material>(LaserPath));
             HallSetup.EnsureSceneFade();
             UiSetup.MarkSceneDirty();
@@ -107,7 +109,9 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
         /// <summary>
         /// Step 2: Environment/Floor (30 × 30 m, URP Lit with a 1 m grid, no walls: dry, no reverb), Stimuli/Speaker (a box speaker
         /// standing on the floor 2 m ahead, FloorDragSource; child Emitter at 0.3 m with AudioSource + MetaXRAudioSource:
-        /// spatialized, acoustics off, no mixer, volume 1, flat rolloff, loop), the three recordings (HW2 clips in Chambers/HumPerHW2/Audio, import settings untouched; tones and noise are generated at run time, GPL.Stimuli), links to the panel.
+        /// spatialized, acoustics off, no mixer, volume 1, flat rolloff, loop) and its child Test Tone (the same, not looped: the Config
+        /// page's tones), the seven GPL.Stimuli library recordings (Library import rule: PCM, Decompress On Load; noise is generated at
+        /// run time), links to the panel.
         /// </summary>
         [MenuItem("Magic/HearingLoss/Step 2 - Floor, speaker and sounds", priority = 121)]
         public static void SpeakerStep()
@@ -155,25 +159,37 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
 
             var emitter = Child(speakerGo.transform, "Emitter");
             emitter.transform.localPosition = new Vector3(0f, EmitterHeightM, 0f);
-            var clips = new AudioClip[Sounds.Length];
-            var names = new string[Sounds.Length];
-            for (int i = 0; i < Sounds.Length; i++)
+            var libClips = new AudioClip[LibrarySounds.Length];
+            var libNames = new string[LibrarySounds.Length];
+            var libIds = new string[LibrarySounds.Length];
+            for (int i = 0; i < LibrarySounds.Length; i++)
             {
-                string path = AudioDir + "/" + Sounds[i].file;
-                clips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
-                if (clips[i] == null) { Debug.LogError(Log + "Missing " + path); return; }
-                names[i] = Sounds[i].label;
+                var entry = StimulusLibrary.Find(LibrarySounds[i].id);
+                if (entry == null) { Debug.LogError(Log + "No library entry " + LibrarySounds[i].id); return; }
+                string path = StimulusLibrary.AssetPath(entry);
+                libClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                if (libClips[i] == null) { Debug.LogError(Log + "Missing " + path); return; }
+                libNames[i] = LibrarySounds[i].label;
+                libIds[i] = entry.Id;
             }
             var source = Spatial(emitter, null); // the panel sets the clip
+            var toneGo = Child(emitter.transform, "Test Tone");
+            toneGo.transform.localPosition = Vector3.zero;
+            var tone = Spatial(toneGo, null);
+            tone.loop = false;
+            tone.playOnAwake = false;
+            EditorUtility.SetDirty(tone);
 
             Undo.RecordObject(logic, "HearingLoss speaker");
             logic.speaker = drag;
             logic.source = source;
-            logic.clips = clips;
-            logic.clipNames = names;
+            logic.toneSource = tone;
+            logic.libraryClips = libClips;
+            logic.libraryNames = libNames;
+            logic.libraryIds = libIds;
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
-            Debug.Log(Log + "Step 2: floor, speaker and " + clips.Length + " recordings linked. Save the scene.");
+            Debug.Log(Log + "Step 2: floor, speaker, test tone source and " + libClips.Length + " library recordings linked. Save the scene.");
         }
 
         /// <summary>Checks the scene against Design.md.</summary>
@@ -189,16 +205,19 @@ namespace AcousticChamber.Chambers.HearingLoss.Editor
             if (Object.FindAnyObjectByType<GPL.Input.GlobalActions>(FindObjectsInactive.Include) == null) Problem("no Global Actions (Step 1)");
             if (Object.FindAnyObjectByType<UiPointer>(FindObjectsInactive.Include) == null) Problem("no UI Pointer (Step 1)");
             if (logic.speaker == null || logic.source == null) Problem("speaker or source not linked (Step 2)");
-            if (logic.clips == null || logic.clips.Length != Sounds.Length) Problem("sounds not linked (Step 2)");
-            else foreach (var c in logic.clips) if (c == null) Problem("a sound is missing (Step 2)");
-            if (logic.source != null)
+            if (logic.libraryClips == null || logic.libraryClips.Length != LibrarySounds.Length) Problem("library sounds not linked (Step 2)");
+            else foreach (var c in logic.libraryClips)
+                if (c == null) Problem("a library sound is missing (Step 2)");
+                else if (c.loadType != AudioClipLoadType.DecompressOnLoad) Problem(c.name + " is not Decompress On Load (it cannot be leveled)");
+            if (logic.toneSource == null) Problem("test tone source not linked (Step 2)");
+            foreach (var s in new[] { logic.source, logic.toneSource })
             {
-                var s = logic.source;
+                if (s == null) continue;
                 if (!s.spatialize || s.spatialBlend < 1f) Problem("the speaker's source is not spatialized");
                 if (s.outputAudioMixerGroup != null) Problem("the speaker's source is routed to a mixer (the room must stay dry)");
                 var meta = s.GetComponent<MetaXRAudioSource>();
                 if (meta == null || meta.EnableAcoustics) Problem("MetaXRAudioSource missing or acoustics on (the room must stay dry)");
-                if (s.volume != 1f) Problem("source volume is not 1");
+                if (s.volume != 1f) Problem(s.name + ": source volume is not 1");
             }
             if (Object.FindAnyObjectByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include) != null) Problem("a shoebox room is in the scene (the room must stay dry)");
             string spatializer = AudioSettings.GetSpatializerPluginName();
