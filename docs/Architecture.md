@@ -157,7 +157,8 @@ MQDH does not list the per-app folder, so files are managed in the headset.
 
 ## 11. Hearing loss on the device output (`GPL.HearingLoss`)
 - Applied to the **final left/right output** of the app, after the spatializer, room and mixer; not on sources or files.
-- `OnAudioFilterRead` on the `AudioListener` (interleaved L/R), two independent 10-band peaking banks. `Rt60Meter` taps the same point. A per-ear test-tone check is part of the module.
+- `OnAudioFilterRead` on the `AudioListener` (interleaved L/R), two independent 10-band peaking banks. `Rt60Meter` taps the same point; the filter implements `GPL.Core.IOutputFilter`, so RT60 measurements bypass it while they record (ADR-0010). A per-ear test-tone check is part of the module.
+- RT60 reports (not participant data) go to `persistentDataPath/Calibration/`; imported calibration tables to `Assets/AcousticChamber/Calibration/Resources/RT60Calibration/`, their sweep reports to `docs/calibration/` (GPL.Acoustics README, ADR-0010).
 - `HearingProfile { left[10], right[10] }` from None / presets / manual / ANSI S3.44 prediction; unilateral = one side None. Part of the parameters and logged.
 - Limits for every write-up: audibility only (band attenuation, Q = 12); no recruitment, frequency-selectivity or temporal effects; unofficial port of the NIOSH tool (HLSIM_GUIDELINES section 12 decisions open).
 

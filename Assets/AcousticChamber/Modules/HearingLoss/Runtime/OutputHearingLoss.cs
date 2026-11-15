@@ -11,8 +11,17 @@ namespace GPL.HearingLoss
     /// Changes apply at the next audio block, instantly (no ramp, like the original). Allocation-free on the audio thread.
     /// </summary>
     [DisallowMultipleComponent]
-    public class OutputHearingLoss : MonoBehaviour
+    public class OutputHearingLoss : MonoBehaviour, GPL.Core.IOutputFilter
     {
+        volatile bool _bypassed;
+
+        public string FilterName => "OutputHearingLoss";
+
+        /// <summary>True = the output passes unchanged and a requested test tone waits (RT60 measurements, GPL.Acoustics).</summary>
+        public bool Bypassed { get => _bypassed; set => _bypassed = value; }
+
+        public string Describe() => Note() + (_bypassed ? " bypassed=1" : " bypassed=0");
+
         readonly object _gate = new object();
         readonly int[] _pendingLeft = new int[ANSIS344.BandCount];
         readonly int[] _pendingRight = new int[ANSIS344.BandCount];
@@ -105,6 +114,12 @@ namespace GPL.HearingLoss
                     _left.SetGains(_pendingLeft);
                     _right.SetGains(_pendingRight);
                 }
+            }
+            if (_bypassed)
+            {
+                _preL = _postL = RmsDb(data, channels, 0);
+                _preR = _postR = channels > 1 ? RmsDb(data, channels, 1) : _preL;
+                return;
             }
             if (_toneStop) { _toneStop = false; _tone.Stop(); }
             if (_toneRequest)

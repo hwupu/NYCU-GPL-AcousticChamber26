@@ -1,7 +1,7 @@
 {
     "name": "GPL.HearingLoss",
     "rootNamespace": "GPL.HearingLoss",
-    "references": ["GPL.HearingLoss.Core"],
+    "references": ["GPL.Core", "GPL.HearingLoss.Core"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

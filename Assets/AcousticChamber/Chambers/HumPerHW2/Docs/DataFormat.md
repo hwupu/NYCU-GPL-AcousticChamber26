@@ -28,7 +28,7 @@ stage, block, condition, trial, attempt`, then the HumPerHW2 columns, then `note
 | `duration_s` | s, 3 decimals | `trial` | stimulus onset to the A press, Stop-dialog time excluded |
 | `radius_m` | m | `trial` | 2.0 (practice 1.2) |
 | `rt60_target_s` | s | `condition`, `trial`, `rt60_measured` | target RT60 of the condition |
-| `rt60_measured_s` | s (T20) | `trial`, `rt60_measured` | measured at the block start when `rt60.measure_at_block_start` is on; else empty (reference only) |
+| `rt60_measured_s` | s (T_mid) | `trial`, `rt60_measured` | measured at the block start when `rt60.measure_at_block_start` is on: T_mid = mean T30 at 500 Hz and 1 kHz, ear mean, 0°, one repeat (GPL.Acoustics ISO protocol, PB-26; before 2026-11-15: broadband T20); else empty (reference only) |
 | `background` | 0 / 1 | `condition`, `trial` | background playing |
 | `stim_level_dbfs` | dBFS | `trial` | software RMS of the stimulus clip + Meta gain boost (not sound pressure) |
 | `bg_level_dbfs` | dBFS | `condition`, `trial` | power sum of the three background clips (RMS measured from the WAV files by the setup step); empty without background |
@@ -56,8 +56,9 @@ Common (as the Template): `session_start`, `language`, `stage_begin/end`, `hando
 - `practice_choice`: after each practice trial, note `again` or `ready`.
 - `background`: note `on` / `off` and, on `on`, each source's listener-relative position (`bg1=x,y,z;...`) and `spatial=1`.
 - `rt60_measured` (only when `rt60.measure_at_block_start` is on, before a block's first trial; PB-08e, Q46): columns
-  `rt60_target_s`, `rt60_measured_s` (T20, empty when the measurement failed); note
-  `target=0.7 valid=1 t20=0.712 t30=0.698 depth_db=48 source=block_start` (or `valid=0 reason=...`).
+  `rt60_target_s`, `rt60_measured_s` (T_mid, empty when the measurement failed); note
+  `target=0.7 tmid_t30=0.704 completed=1 report=RT60_HumPerHW2_20261115-142301 calibrated=0 source=block_start`; the report pair
+  (CSV + TXT, all bands and both ears) is in `persistentDataPath/Calibration` (PB-26; before 2026-11-15: `valid=1 t20=... t30=... depth_db=...`).
 The Config page's Measure RT60 and acoustics buttons write no rows (Q44): their results appear in the Config status line and the
 console only.
 

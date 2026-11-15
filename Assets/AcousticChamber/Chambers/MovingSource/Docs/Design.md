@@ -7,7 +7,7 @@ proposed by the agent and wait for approval.
 | Item | Value |
 |---|---|
 | Posture | standing or seated; the rig is at floor level (y = 0 is the floor) |
-| Room | floor and a shoebox for the reverb as in C04 (`GPL.Acoustics`); Dry = no Reflection effect |
+| Room | floor and a shoebox for the reverb (`GPL.Acoustics`); no walls, so the shoebox is the open-space default 12 × 12 × 3.5 m (PB-26); Dry = reflection 0 on all surfaces |
 | Source | a small orb (0.25 m, hovering); starts 2 m ahead at 1.2 m height *(default)* |
 | Panel | overlay canvas to the left like C03, 2 m away, 35° left and 8° below eye level *(default)* |
 
@@ -25,7 +25,8 @@ proposed by the agent and wait for approval.
 | Clips | generated **White noise** and **Pink noise** (GPL.Stimuli, ADR-0008, looped, -26 dBFS RMS), then three HW2 recordings (podcasts 1 and 2, street market; PO 2026-11-09: will be replaced); click to play, click again to pause, as in C03. No pure tones *(default)*. Recordings used in place, not copied |
 | Spatialization | Meta XR Audio, acoustics on |
 | Distance cue | switch: **natural** (inverse-distance attenuation) or **flat** (loudness constant, the lab rule). Default natural *(Q38)* |
-| Room | **Dry**, **Room 0.7 s**, **Hall 2.2 s** (HW2 RT60 table). Default Dry *(default)* |
+| Room | **Dry**, **Room 0.7 s**, **Hall 2.2 s** (T_mid targets, GPL.Acoustics table). Default Dry *(default)* |
+| RT60 | toolbar **Measure RT60** (the selected room, 4 positions × 3 repeats, ISO 3382-2 octave bands, report in `persistentDataPath/Calibration`, about 1.5 min; the sound and the path stop) and **Calibrate** (coefficient sweep, about 6 min); clicking the running one cancels it. Under the status, in the debug color: "RT60 not calibrated for this room on this device: values are estimates." until an ISO table for 12 × 12 × 3.5 m on this platform is imported (PB-26, ADR-0010) |
 
 ## Hearing condition
 Two button columns in one row (PO 2026-11-08), default Both + 0 dB (normal hearing): **ear** Both / Left / Right and **level**
