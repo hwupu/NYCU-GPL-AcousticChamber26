@@ -3782,9 +3782,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.Audio::MetaXRAudioRoomAcousticProperties
   lockPositionToListener: 1
-  width: 20
-  height: 6
-  depth: 20
+  width: 12
+  height: 3.5
+  depth: 12
   leftMaterial: 8
   rightMaterial: 8
   ceilingMaterial: 8

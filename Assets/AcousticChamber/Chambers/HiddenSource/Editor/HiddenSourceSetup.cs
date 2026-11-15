@@ -26,8 +26,9 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
         const string PanelName = "Experience Panel";
         const string Log = "[Chamber:HiddenSource] ";
 
-        /// <summary>Room for the audio shoebox: 20 x 20 x 6 m around the listener (sources are at most 6 m away).</summary>
-        const float RoomW = 20f, RoomD = 20f, RoomH = 6f;
+        /// <summary>No walls (open space): the shoebox has the default open-space size 12 x 12 x 3.5 m around the listener (GPL.Acoustics
+        /// Rt60Protocol, PO 2026-11-15); sources at 6 m are at the walls.</summary>
+        const float RoomW = Rt60Protocol.OpenSpaceWidth, RoomD = Rt60Protocol.OpenSpaceDepth, RoomH = Rt60Protocol.OpenSpaceHeight;
 
         /// <summary>Step 1: the ChamberDefinition (C02), the scene (a copy of MainHall), the menu panel with HiddenSourceExperience, Sync Chambers.</summary>
         [MenuItem("Magic/HiddenSource/Step 1 - Chamber, scene and panel", priority = 130)]
@@ -130,6 +131,12 @@ namespace AcousticChamber.Chambers.HiddenSource.Editor
                 Problem(s.name + " is not routed to a mixer with the '" + ReflectionMixer.EffectName + "' effect (room would be dry)");
             if (Object.FindObjectsByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length != 1)
                 Problem("the scene needs exactly one shoebox (Meta allows one)");
+            else
+            {
+                var box = Object.FindAnyObjectByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include);
+                if (Mathf.Abs(box.width - RoomW) > 1e-3f || Mathf.Abs(box.depth - RoomD) > 1e-3f || Mathf.Abs(box.height - RoomH) > 1e-3f)
+                    Problem("shoebox is " + box.width + " x " + box.depth + " x " + box.height + " m, not the open-space default " + RoomW + " x " + RoomD + " x " + RoomH + " m (re-run Step 2)");
+            }
             string spatializer = AudioSettings.GetSpatializerPluginName();
             if (spatializer != "Meta XR Audio") Problem("spatializer plugin is '" + spatializer + "', not 'Meta XR Audio' (Project Settings > Audio)");
             Debug.Log(Log + "Validate: " + (problems == 0 ? "OK." : problems + " problem(s)."));

@@ -5,63 +5,66 @@ using UnityEngine;
 namespace GPL.Acoustics
 {
     /// <summary>
-    /// Measures the reverberation time of the rendered audio. Put it on the AudioListener's GameObject: OnAudioFilterRead there sees
-    /// the final mix (after the Meta spatializer and the mixer's Reflection effect), both ears summed. Procedure: the caller's other
-    /// sounds are silenced, the probe source plays a single-sample impulse, the output is recorded for a few seconds and evaluated with
-    /// <see cref="Rt60Estimator"/>. Takes about settle + record seconds (5 s by default). Runs on scaled time: do not measure while the
-    /// Stop dialog is open.
+    /// Records the rendered impulse response. Lives on the AudioListener's GameObject (<see cref="Ensure"/>): OnAudioFilterRead there
+    /// sees the final interleaved mix (after the Meta spatializer and the mixer's Reflection effect); channel 0 = left ear, 1 = right
+    /// ear (a mono output fills both). Used by <see cref="Rt60Runner"/>; the evaluation is in GPL.Acoustics.Core. Runs on scaled
+    /// time: do not measure while the Stop dialog is open.
     /// </summary>
     public class Rt60Meter : MonoBehaviour
     {
-        [Range(0.05f, 1f)] public float impulseAmplitude = 0.5f;
-        public float recordSeconds = 3.5f;
-        [Tooltip("Silence before the impulse (at least this and 1.2 x the expected reverb time).")]
-        public float settleSeconds = 1f;
+        public const float ImpulseAmplitude = 0.5f;
 
-        float[] _energy = new float[0];
+        float[] _left = new float[0], _right = new float[0];
         volatile int _write;
         volatile bool _recording;
         int _sampleRate = 48000;
         AudioClip _impulse;
 
         public bool Measuring { get; private set; }
+        public int SampleRate => _sampleRate;
+
+        /// <summary>The meter on the active AudioListener, added if missing; null without a listener.</summary>
+        public static Rt60Meter Ensure()
+        {
+            var listener = FindAnyObjectByType<AudioListener>();
+            if (listener == null) return null;
+            var m = listener.GetComponent<Rt60Meter>();
+            return m != null ? m : listener.gameObject.AddComponent<Rt60Meter>();
+        }
 
         void Awake() => _sampleRate = AudioSettings.outputSampleRate;
 
-        // Audio thread: only copies the squared output into a preallocated buffer.
+        // Audio thread: copies the two ears into preallocated buffers.
         void OnAudioFilterRead(float[] data, int channels)
         {
-            if (!_recording) return;
-            var energy = _energy;
+            if (!_recording || channels <= 0) return;
+            var l = _left; var r = _right;
             int frames = data.Length / channels;
             int w = _write;
-            for (int f = 0; f < frames && w < energy.Length; f++, w++)
+            for (int f = 0; f < frames && w < l.Length; f++, w++)
             {
-                float e = 0f;
-                for (int c = 0; c < channels; c++) { float s = data[f * channels + c]; e += s * s; }
-                energy[w] = e;
+                l[w] = data[f * channels];
+                r[w] = channels > 1 ? data[f * channels + 1] : l[w];
             }
             _write = w;
         }
 
         /// <summary>
-        /// One measurement at the current acoustic settings. <paramref name="probe"/> is routed like the stimulus (same mixer group,
-        /// same spatial settings) and is restored afterwards. <paramref name="silenceOthers"/> (true = silence, false = restore) pauses
-        /// the caller's other sounds (background, stimulus).
+        /// Plays one impulse through <paramref name="probe"/> after <paramref name="settleSeconds"/> of silence and records
+        /// <paramref name="recordSeconds"/> from the impulse on. <paramref name="done"/> gets the left and right channels, starting
+        /// at the recording start (the impulse is inside, about 100 ms in), and the sample rate.
         /// </summary>
-        public IEnumerator Measure(AudioSource probe, float expectedRt60, Action<bool> silenceOthers, Action<Rt60Result> done)
+        public IEnumerator Record(AudioSource probe, double settleSeconds, double recordSeconds, Action<float[], float[], int> done)
         {
-            if (probe == null) { done?.Invoke(Rt60Result.Invalid("no probe source")); yield break; }
+            if (probe == null) { done?.Invoke(null, null, _sampleRate); yield break; }
             Measuring = true;
-            int needed = (int)(_sampleRate * (recordSeconds + 1.5f));
-            if (_energy.Length != needed) _energy = new float[needed];
-            if (_impulse == null) _impulse = MakeImpulse(_sampleRate, impulseAmplitude);
+            _sampleRate = AudioSettings.outputSampleRate;
+            int needed = (int)(_sampleRate * (recordSeconds + 0.5));
+            if (_left.Length != needed) { _left = new float[needed]; _right = new float[needed]; }
+            if (_impulse == null || _impulse.frequency != _sampleRate) _impulse = MakeImpulse(_sampleRate, ImpulseAmplitude);
 
-            var clipBefore = probe.clip;
-            bool loopBefore = probe.loop;
             probe.Stop();
-            silenceOthers?.Invoke(true);
-            yield return new WaitForSeconds(Mathf.Max(settleSeconds, 1.2f * expectedRt60));
+            yield return new WaitForSeconds((float)settleSeconds);
 
             _write = 0;
             _recording = true;
@@ -69,26 +72,23 @@ namespace GPL.Acoustics
             probe.clip = _impulse;
             probe.loop = false;
             probe.Play();
-            yield return new WaitForSeconds(recordSeconds);
+            yield return new WaitForSeconds((float)recordSeconds);
             _recording = false;
             probe.Stop();
-            probe.clip = clipBefore;
-            probe.loop = loopBefore;
-            silenceOthers?.Invoke(false);
-
             yield return null;
-            int recorded = _write;
-            // the impulse is the loudest event in the first part of the recording
-            int peak = 0;
-            float max = 0f;
-            int search = Mathf.Min(recorded, (int)(_sampleRate * 1.5f));
-            for (int i = 0; i < search; i++) if (_energy[i] > max) { max = _energy[i]; peak = i; }
-            var result = max <= 0f ? Rt60Result.Invalid("no signal recorded")
-                                   : Rt60Estimator.Estimate(_energy, peak, recorded - peak, _sampleRate);
-            Debug.Log("[GPL] RT60 measurement: " + result + " (expected " + GPL.Core.Fmt.F(expectedRt60, 2) + " s)");
+
+            int n = _write;
+            var l = new float[n]; var r = new float[n];
+            Array.Copy(_left, l, n);
+            Array.Copy(_right, r, n);
             Measuring = false;
-            done?.Invoke(result);
+            done?.Invoke(l, r, _sampleRate);
         }
+
+        /// <summary>Stops a recording that was interrupted (runner cancelled).</summary>
+        public void Abort() { _recording = false; Measuring = false; }
+
+        void OnDisable() => Abort();
 
         static AudioClip MakeImpulse(int sampleRate, float amplitude)
         {

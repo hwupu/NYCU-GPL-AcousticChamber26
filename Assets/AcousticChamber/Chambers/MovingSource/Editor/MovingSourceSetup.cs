@@ -28,7 +28,8 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
         const string PanelName = "Experience Panel";
         const string Log = "[Chamber:MovingSource] ";
         const float OrbDiameterM = 0.25f;
-        const float RoomW = 24f, RoomD = 24f, RoomH = 8f;
+        /// <summary>No walls (open space): the default open-space shoebox 12 x 12 x 3.5 m (GPL.Acoustics Rt60Protocol, PO 2026-11-15).</summary>
+        const float RoomW = Rt60Protocol.OpenSpaceWidth, RoomD = Rt60Protocol.OpenSpaceDepth, RoomH = Rt60Protocol.OpenSpaceHeight;
 
         static readonly (string file, string label)[] Sounds =
         {
@@ -134,6 +135,12 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
                 Problem(s.name + " is not routed to a mixer with the '" + ReflectionMixer.EffectName + "' effect (room would be dry)");
             if (Object.FindObjectsByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length != 1)
                 Problem("the scene needs exactly one shoebox (Meta allows one)");
+            else
+            {
+                var box = Object.FindAnyObjectByType<MetaXRAudioRoomAcousticProperties>(FindObjectsInactive.Include);
+                if (Mathf.Abs(box.width - RoomW) > 1e-3f || Mathf.Abs(box.depth - RoomD) > 1e-3f || Mathf.Abs(box.height - RoomH) > 1e-3f)
+                    Problem("shoebox is " + box.width + " x " + box.depth + " x " + box.height + " m, not the open-space default " + RoomW + " x " + RoomD + " x " + RoomH + " m (re-run Step 2)");
+            }
             string spatializer = AudioSettings.GetSpatializerPluginName();
             if (spatializer != "Meta XR Audio") Problem("spatializer plugin is '" + spatializer + "', not 'Meta XR Audio' (Project Settings > Audio)");
             Debug.Log(Log + "Validate: " + (problems == 0 ? "OK." : problems + " problem(s)."));

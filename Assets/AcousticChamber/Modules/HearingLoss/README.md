@@ -4,7 +4,7 @@ Simulated hearing loss on the app's **final left/right output** (after the Meta 
 peaking filter bank per ear, from fixed presets, manual bands or the ANSI S3.44 prediction. Unofficial port of the NIOSH Hearing Loss
 Simulator (HLSim v4.0.29.0) as decoded in `docs/references/HLSIM_GUIDELINES.md`; not endorsed by NIOSH/CDC (PB-09).
 
-**Copy:** this folder (`Core/`, `Runtime/`, `Tests/`). **Dependencies:** none (no other GPL module, no SDK). `Core/` is pure C#.
+**Copy:** this folder (`Core/`, `Runtime/`, `Tests/`). **Dependencies:** GPL.Core (`Runtime/` only, for `IOutputFilter`); no SDK. `Core/` is pure C#.
 
 ## Parts
 | Part | What |
@@ -15,7 +15,7 @@ Simulator (HLSim v4.0.29.0) as decoded in `docs/references/HLSIM_GUIDELINES.md`;
 | `Core/HearingProfile.cs` | immutable `{ Left[10], Right[10] }`; `For(Ear.Both/Left/Right, preset or bands)` (unilateral = other ear normal); `Note()` / `Parse()` = `L=0,0,0,0,-5,-10,-10,-20,-10,0;R=0,…` for presets and logs |
 | `Core/PeakingBiquad.cs` | `PeakingBiquad` (Audio EQ Cookbook peaking = Web Audio "peaking", TDF-II, double; `ResponseDb(f, fs)` analytic); `EarFilterBank` (10 in series, `DefaultQ` = {24,12,…,12}, `SetGains`, `SetSampleRate`, `Process(interleaved, channels, channel)`, all-zero gains = bit-exact pass-through) |
 | `Core/ToneGenerator.cs` | sine test tone on Left / Right / Both with 10 ms fades, allocation-free |
-| `Runtime/OutputHearingLoss.cs` | on the AudioListener (`OutputHearingLoss.Ensure()` adds it there): `SetProfile(profile)`, `Profile`, `PlayTestTone(ear, hz, dbfs, s)` (mixed in **before** the filters), `InputRmsDbfs(ear)` / `OutputRmsDbfs(ear)` of the last block, `Note()` for the log |
+| `Runtime/OutputHearingLoss.cs` | on the AudioListener (`OutputHearingLoss.Ensure()` adds it there): `SetProfile(profile)`, `Profile`, `PlayTestTone(ear, hz, dbfs, s)` (mixed in **before** the filters), `InputRmsDbfs(ear)` / `OutputRmsDbfs(ear)` of the last block, `Note()` for the log; implements `GPL.Core.IOutputFilter`: `Bypassed` = audio passes unchanged and the test tone is held back (GPL.Acoustics RT60 measurements set it while they record) |
 
 Headset check: open the Sandbox scene, `Magic > App > Hearing Loss Test Panel (open scene)`, Play over Link or build: pure tones (500 Hz-8 kHz, both ears) through a loss on both, the left or the right ear, with the RMS before and after the filters and the expected change per ear.
 

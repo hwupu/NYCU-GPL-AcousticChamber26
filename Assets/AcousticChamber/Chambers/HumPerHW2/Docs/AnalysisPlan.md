@@ -30,5 +30,5 @@ Same tests for the secondary measures, labelled exploratory.
 
 ## Notes for the write-up
 Method of adjustment, not a staircase threshold; adjustment speed 10°/s for everyone; RT60 values are rendered targets from the
-calibration table (measured T20 in `rt60_measured_s` when the measurement was on); levels are software levels, the headset volume
+calibration table (measured T_mid in `rt60_measured_s` when the measurement was on; see the RT60 report and whether the table was calibrated, ADR-0010); levels are software levels, the headset volume
 step is logged.

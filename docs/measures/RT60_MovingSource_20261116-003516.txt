@@ -1,0 +1,48 @@
+RT60 report RT60_MovingSource_20261116-003516
+============================================================
+kind            : measurement
+chamber         : MovingSource
+platform        : Android
+room_m          : 12x12x3.5 (W x D x H)
+room_kind       : open_space_default: the chamber has no walls; the shoebox uses the default open-space size 12x12x3.5 m
+standard        : ISO 3382-2:2008 engineering method; integrated impulse response method (Schroeder backward integration)
+excitation      : single-sample impulse (Dirac), amplitude 0.5, through a probe source with HRTF intensity 0 (omni-microphone substitute)
+filters         : IEC 61260-1 octave bands (base ten), 6th-order Butterworth band-pass, bilinear with pre-warped edges, time-reversed filtering
+evaluation      : onset -20 dB of peak; floor = mean of last 10 %; truncation at floor + 5 dB (10 ms smoothing); EDT 0..-10 dB, T20 -5..-25 dB, T30 -5..-35 dB; peak-to-noise >= 35 dB (T20) / 45 dB (T30)
+single_number   : T_mid = mean of the T30 values at 500 Hz and 1 kHz (ear mean); the RT60 targets refer to T_mid
+date_local      : 2026-11-16 00:35:16
+date_utc        : 2026-11-15 16:35:16
+device          : Oculus Quest 3
+os              : Android OS 14 / API-34 (UP1A.231005.007.A1/52641960034500520)
+unity           : 6000.6.6f1
+app             : AcousticChamber26 0.1.0
+meta_xr_audio   : native 1.117.0 (package 85.0.0)
+spatializer     : Meta XR Audio
+sample_rate_hz  : 24000
+dsp_buffer      : 512 x 4
+speaker_mode    : Stereo
+room_modeling   : room_modeling=on late_reverb=on
+calibration     : calibrated: RT60_MovingSource_20261116-001032.csv [iso3382-2_tmid, Android, 12x12x3.5 m, 18 points]
+walls           : uniform reflection coefficient on all 6 surfaces and all 4 plugin bands; clutter 0; shoebox locked to listener: true
+mixer_group     : MovingSourceMixer/Master
+output_filters  : OutputHearingLoss (hl L=0,0,0,0,0,0,0,0,0,0;R=0,0,0,0,0,0,0,0,0,0 q=24,12,12,12,12,12,12,12,12,12 fs=24000 bypassed=0) -> bypassed during recording
+probe           : own AudioSource: spatialBlend 1, Meta acoustics on, HRTF intensity 0 (HRTF EQ off; Meta keeps ITD/ILD), flat distance curve, Doppler 0, volume 1, impulse amplitude 0.5
+positions       : azimuth 0, -90, 90, 180 deg (0 = ahead, negative = left, relative to the head yaw at the start), 2 m, ear height; listener at the room centre (shoebox locked to the listener)
+repeats         : 3
+ears            : left and right recorded separately; ear mean = mean of the two decay times
+levels          : software levels; headset volume not read
+hearing_condition: Normal (bypassed while recording)
+timing Dry      : settle 1 s, record 3 s; mode=dry reflection=0
+
+SUMMARY (ear mean; mean +/- SD [min, max] over positions x repeats; n = valid recordings)
+
+Dry  reflection 0
+  T_mid (T30)  0.024 +/- 0.021 s [0.003, 0.045] n=12
+  T_mid (T20)  0.003 +/- 0 s [0.003, 0.004] n=12
+  broadband   T30 0.076 +/- 0 s [0.075, 0.076] n=3   T20 n/a (no valid value)
+  125 Hz      T30 0.016 +/- 0.001 s [0.015, 0.016] n=12   T20 0.019 +/- 0 s [0.019, 0.019] n=12
+  250 Hz      T30 0.008 +/- 0 s [0.007, 0.008] n=12   T20 0.009 +/- 0 s [0.009, 0.009] n=12
+  500 Hz      T30 0.018 +/- 0.014 s [0.004, 0.036] n=12   T20 0.005 +/- 0 s [0.005, 0.005] n=12
+  1000 Hz     T30 0.03 +/- 0.027 s [0.002, 0.058] n=12   T20 0.002 +/- 0 s [0.002, 0.003] n=12
+  2000 Hz     T30 0.02 +/- 0.019 s [0.001, 0.044] n=12   T20 0.001 +/- 0 s [0.001, 0.002] n=12
+  4000 Hz     T30 0.005 +/- 0.003 s [0, 0.008] n=12   T20 0.001 +/- 0 s [0, 0.001] n=12
