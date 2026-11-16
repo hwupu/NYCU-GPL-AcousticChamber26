@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4087e31171e87bf47b58877535bd6dc0, type: 3}
+  m_Name: Instructions
+  m_EditorClassIdentifier: GPL.Protocol::GPL.Protocol.SlideSet
+  slides:
+  - id: procedure
+    titleEnglish: 
+    titleChinese: 
+    imageEnglish: {fileID: 2800000, guid: 7117850456c85274eb151fd6f7caade4, type: 3}
+    imageChinese: {fileID: 2800000, guid: ab93ad8b1c51506428d7f06ff78b03cc, type: 3}
+    shortEnglish: Procedure
+    shortChinese: "\u6D41\u7A0B"
+    captionEnglish: 
+    captionChinese: 
+  - id: controllers
+    titleEnglish: 
+    titleChinese: 
+    imageEnglish: {fileID: 2800000, guid: e7ed45c79ee5ceb46b68b792aa581a60, type: 3}
+    imageChinese: {fileID: 2800000, guid: 7745967fc6f5855499dc49bdfadaca95, type: 3}
+    shortEnglish: Controllers
+    shortChinese: "\u63A7\u5236\u5668"
+    captionEnglish: 
+    captionChinese: 
+  - id: practice
+    titleEnglish: 
+    titleChinese: 
+    imageEnglish: {fileID: 2800000, guid: c02978d5c84c52442992d00b26b194ba, type: 3}
+    imageChinese: {fileID: 2800000, guid: bfef639dee314574fa8f0ec593277db1, type: 3}
+    shortEnglish: Practice rounds
+    shortChinese: "\u7DF4\u7FD2\u56DE\u5408"
+    captionEnglish: 
+    captionChinese: 

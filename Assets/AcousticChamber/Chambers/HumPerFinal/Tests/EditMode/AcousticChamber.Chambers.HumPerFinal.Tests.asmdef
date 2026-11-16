@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HumPerFinal.Tests",
+    "rootNamespace": "AcousticChamber.Chambers.HumPerFinal.Tests",
+    "references": ["AcousticChamber.Chambers.HumPerFinal.Core", "AcousticChamber.Chambers.HumPerFinal", "AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Core", "GPL.HearingLoss.Core", "GPL.Responses.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Protocol.Core", "GPL.Input.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
