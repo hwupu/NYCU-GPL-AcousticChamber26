@@ -18,7 +18,27 @@ namespace GPL.Acoustics
     /// </summary>
     public class ReverbTuner : MonoBehaviour
     {
-        public const string UncalibratedWarning = "RT60 not calibrated for this room on this device: values are estimates.";
+        /// <summary>Shown under a chamber's status while <see cref="Calibrated"/> is false (PB-27 wording; a warning, it blocks nothing).</summary>
+        public const string UncalibratedWarning = "Need to calibrate RT60 before running trials.";
+
+        /// <summary>The same fact in reports and logs (what an uncalibrated value means).</summary>
+        public const string UncalibratedNote = "RT60 not calibrated for this room on this device: values are estimates";
+
+        /// <summary>Shown (text2, softer) while the table is a headset table only (C04 "Use on this headset", PO 2026-11-17).</summary>
+        public const string HeadsetTableNote = "RT60 calibrated on this headset only: import it before the study.";
+
+        /// <summary>Imported, headset-only, or none (see <see cref="Rt60TableChoice"/>).</summary>
+        public Rt60TableSource TableSource { get; private set; } = Rt60TableSource.None;
+
+        /// <summary>True when the table in use is a headset table (calibrated, but not imported into the build).</summary>
+        public bool HeadsetTable => TableSource == Rt60TableSource.Headset;
+
+        /// <summary>The line under a chamber's status: the warning (<paramref name="warning"/> true), the headset note, or null.</summary>
+        public string PanelNote(out bool warning)
+        {
+            warning = !Calibrated;
+            return !Calibrated ? UncalibratedWarning : HeadsetTable ? HeadsetTableNote : null;
+        }
 
         public MetaXRAudioRoomAcousticProperties room;
         [Tooltip("The visible room; null = open space (no walls): the shoebox has the default open-space size.")]
@@ -33,6 +53,9 @@ namespace GPL.Acoustics
         /// <summary><c>calibrated: ...</c> or <c>not calibrated: ...</c>, for reports and statuses.</summary>
         public string CalibrationStatus { get; private set; } = "not resolved";
 
+        /// <summary>A shoebox component is linked (callers need no reference to Meta.XR.Audio for the check).</summary>
+        public bool HasRoom => room != null;
+
         /// <summary>No visible room: the shoebox is the open-space default (reports say so).</summary>
         public bool OpenSpace => roomSize == null;
 
@@ -40,16 +63,37 @@ namespace GPL.Acoustics
         public float RoomDepth => roomSize != null ? roomSize.depth : room != null ? room.depth : 0f;
         public float RoomHeight => roomSize != null ? roomSize.height : room != null ? room.height : 0f;
 
+        /// <summary>
+        /// Open space only (no <see cref="roomSize"/>): sets the shoebox to <paramref name="width"/> x <paramref name="depth"/> x
+        /// <paramref name="height"/> m and resolves the calibration for that size again (C04 Reverberation, PB-27). The current custom
+        /// coefficient is pushed with the new size at once.
+        /// </summary>
+        public void SetRoomSize(float width, float depth, float height)
+        {
+            if (room == null) { Debug.LogWarning("[GPL] Reverb: no shoebox component assigned"); return; }
+            if (roomSize != null) { Debug.LogWarning("[GPL] Reverb: the room size follows the visible room (ShoeboxRoom); not changed"); return; }
+            room.width = width;
+            room.depth = depth;
+            room.height = height;
+            ResolveCalibration();
+            if (Custom) Push();
+        }
+
+        /// <summary>The table entry for exactly this room and platform, or null (for a panel line: name, points, range).</summary>
+        public Rt60Calibration CalibratedTable => Calibrated ? Calibration : null;
+
         /// <summary>Chooses the imported table for this room and platform, or the HW2 table (estimate). Called in Awake.</summary>
         public void ResolveCalibration()
         {
             string platform = Rt60Platform.Current;
-            foreach (var c in Rt60CalibrationAsset.LoadAll())
+            var c = Rt60TableChoice.Pick(Rt60CalibrationAsset.LoadAll(), Rt60HeadsetTables.LoadAll(), platform,
+                                         RoomWidth, RoomDepth, RoomHeight, out var source);
+            TableSource = source;
+            if (c != null)
             {
-                if (!c.CalibratedFor(platform, RoomWidth, RoomDepth, RoomHeight)) continue;
                 Calibration = c;
                 Calibrated = true;
-                CalibrationStatus = "calibrated: " + c.Describe();
+                CalibrationStatus = (source == Rt60TableSource.Headset ? "calibrated (headset table, not imported): " : "calibrated: ") + c.Describe();
                 Debug.Log("[GPL] Reverb: " + CalibrationStatus);
                 return;
             }
@@ -139,6 +183,9 @@ namespace GPL.Acoustics
         /// <summary>RT60 the calibration table expects for the current custom coefficient, in this room.</summary>
         public float ExpectedRt60() => (float)Calibration.Rt60ForReflection(Reflection, VolumeOverSurface());
 
+        /// <summary>RT60 the calibration table expects for a coefficient in this room (sweep ranges, time estimates).</summary>
+        public double ExpectedRt60For(double reflection) => Calibration.Rt60ForReflection(reflection, VolumeOverSurface());
+
         /// <summary>Calibrated estimate of the component's material presets (mean over six surfaces and four bands).</summary>
         public float PresetRt60()
         {
@@ -155,7 +202,7 @@ namespace GPL.Acoustics
             ? "mode=dry reflection=0"
             : Custom
             ? "mode=custom rt60_target_s=" + Fmt.F(TargetRt60) + " reflection=" + Fmt.F(Reflection, 4) + " rt60_expected_s=" + Fmt.F(ExpectedRt60(), 2) +
-              " calibrated=" + (Calibrated ? "1" : "0")
+              " calibrated=" + (Calibrated ? "1" : "0") + (HeadsetTable ? " table=headset" : "")
             : "mode=preset preset=" + (room != null ? room.floorMaterial.ToString() : "none") + " rt60_expected_s=" + Fmt.F(PresetRt60(), 2) +
               " calibrated=0";
 
@@ -163,7 +210,7 @@ namespace GPL.Acoustics
         public string Describe() => Dry
             ? "Dry (no reflections, no reverb)"
             : Custom
-            ? "RT60 " + Fmt.F(TargetRt60, 2) + " s (" + (Calibrated ? "calibrated" : "estimate") + ", R " + Fmt.F(Reflection, 3) + ")"
+            ? "RT60 " + Fmt.F(TargetRt60, 2) + " s (" + (HeadsetTable ? "calibrated on this headset only" : Calibrated ? "calibrated" : "estimate") + ", R " + Fmt.F(Reflection, 3) + ")"
             : "Meta preset " + (room != null ? room.floorMaterial.ToString() : "?") + ", RT60 about " + Fmt.F(PresetRt60(), 1) + " s (estimate)";
 
         void Update()

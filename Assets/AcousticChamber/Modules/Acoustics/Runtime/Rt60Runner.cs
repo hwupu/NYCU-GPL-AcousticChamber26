@@ -17,13 +17,15 @@ namespace GPL.Acoustics
         public string Name;
         /// <summary>Target RT60 (s) the T_mid is compared with; NaN for a sweep step.</summary>
         public double TargetRt60 = double.NaN;
+        /// <summary>The coefficient of a sweep step (NaN otherwise); for the time estimate.</summary>
+        public double ReflectionValue = double.NaN;
         public Action Apply;
 
         public static Rt60Condition Rt60(string name, ReverbTuner reverb, float seconds) =>
             new Rt60Condition { Name = name, TargetRt60 = seconds, Apply = () => reverb.SetRt60(seconds) };
 
         public static Rt60Condition Reflection(ReverbTuner reverb, double reflection) =>
-            new Rt60Condition { Name = "R=" + Fmt.F(reflection, 4), Apply = () => reverb.SetReflection((float)reflection) };
+            new Rt60Condition { Name = "R=" + Fmt.F(reflection, 4), ReflectionValue = reflection, Apply = () => reverb.SetReflection((float)reflection) };
     }
 
     /// <summary>What to measure. Defaults = the module protocol (<see cref="Rt60Protocol"/>).</summary>
@@ -48,28 +50,39 @@ namespace GPL.Acoustics
         /// <summary>Extra header lines (chamber settings, headset volume step if known, ...).</summary>
         public List<KeyValuePair<string, string>> Meta = new List<KeyValuePair<string, string>>();
 
-        public static Rt60Plan Sweep(string chamber, ReverbTuner reverb, AudioMixerGroup output)
+        /// <summary>A calibration sweep: <paramref name="reflections"/> (default the whole <see cref="Rt60Protocol.SweepReflections"/> grid), 0 deg, 3 repeats.</summary>
+        public static Rt60Plan Sweep(string chamber, ReverbTuner reverb, AudioMixerGroup output, double[] reflections = null)
         {
             var plan = new Rt60Plan { Kind = Rt60Report.KindSweep, Chamber = chamber, Reverb = reverb, Output = output,
                                       Azimuths = Rt60Protocol.SingleAzimuth };
-            foreach (double r in Rt60Protocol.SweepReflections) plan.Conditions.Add(Rt60Condition.Reflection(reverb, r));
+            foreach (double r in reflections ?? Rt60Protocol.SweepReflections) plan.Conditions.Add(Rt60Condition.Reflection(reverb, r));
             return plan;
         }
 
-        /// <summary>Seconds the plan takes (silence + recording per recording), for a status line.</summary>
+        /// <summary>Seconds the plan takes (silence + recording per recording), for a status line and the progress dialog.</summary>
         public double EstimatedSeconds()
         {
             double s = 0;
-            foreach (var c in Conditions)
-            {
-                double t = double.IsNaN(c.TargetRt60) ? 2.0 : c.TargetRt60;
-                s += (Rt60Protocol.SettleSeconds(t) + Rt60Protocol.RecordSeconds(t) + 0.2) * Azimuths.Length * Repeats;
-            }
+            foreach (var c in Conditions) s += SecondsPerRecording(c) * Azimuths.Length * Repeats;
             return s;
+        }
+
+        /// <summary>Planned seconds of one recording of <paramref name="c"/>: settle + record + about 0.2 s of frames.</summary>
+        public double SecondsPerRecording(Rt60Condition c)
+        {
+            double t = ExpectedRt60(c);
+            return Rt60Protocol.SettleSeconds(t) + Rt60Protocol.RecordSeconds(t) + 0.2;
+        }
+
+        double ExpectedRt60(Rt60Condition c)
+        {
+            if (!double.IsNaN(c.TargetRt60)) return c.TargetRt60;
+            if (!double.IsNaN(c.ReflectionValue) && Reverb != null && Reverb.room != null) return Reverb.ExpectedRt60For(c.ReflectionValue);
+            return 0.5; // Dry or unknown: the protocol minimums (1 s settle, 3 s record)
         }
     }
 
-    /// <summary>Outcome of a run: the report (also when cancelled or refused) and where it was written.</summary>
+    /// <summary>Outcome of a run: the report (in memory also when cancelled or refused) and where it was written (only a completed run is written, PB-27).</summary>
     public sealed class Rt60RunResult
     {
         public Rt60Report Report;
@@ -93,6 +106,33 @@ namespace GPL.Acoustics
             string head = Completed ? "RT60 T_mid: " : "RT60 incomplete (" + Error + "): ";
             return head + string.Join(", ", parts) + (TxtPath != "" ? ". Report: " + Path.GetFileName(TxtPath) : "");
         }
+
+        /// <summary>
+        /// One line per condition for the result dialog (PB-27): <c>Room 0.7 s   T_mid 0.69 ± 0.01 s   -1.4 %   flagged</c>; Dry
+        /// <c>no reverberation</c>; a target outside the table's range adds <c>outside the table</c> (set by the caller via
+        /// <paramref name="outsideTable"/>).
+        /// </summary>
+        public List<string> ResultLines(Func<string, bool> outsideTable = null)
+        {
+            var lines = new List<string>();
+            if (Report == null) return lines;
+            foreach (var c in Report.Conditions())
+            {
+                var first = Report.Rows.First(r => r.Condition == c);
+                if (!double.IsNaN(first.Reflection) && first.Reflection <= 0) { lines.Add(c + "   no reverberation"); continue; }
+                var s = Report.TmidStats(c);
+                string line = c + "   T_mid " + (s.N > 0 ? Fmt.F(s.Mean, 2) + " ± " + Fmt.F(s.Sd, 2) + " s" : "n/a");
+                if (s.N > 0 && !double.IsNaN(first.TargetRt60) && first.TargetRt60 > 0)
+                {
+                    double dev = 100.0 * (s.Mean / first.TargetRt60 - 1.0);
+                    line += "   " + (dev >= 0 ? "+" : "") + Fmt.F(dev, 1) + " %";
+                }
+                if (Report.TmidFlaggedCount(c, out _) > 0) line += "   flagged";
+                if (outsideTable != null && outsideTable(c)) line += "   outside the table";
+                lines.Add(line);
+            }
+            return lines;
+        }
     }
 
     /// <summary>
@@ -101,7 +141,7 @@ namespace GPL.Acoustics
     /// applies each condition, places the probe at each azimuth (relative to the head yaw at the start, distance
     /// <see cref="Rt60Plan.DistanceM"/>, ear height), records each repeat, analyzes both ears in octave bands and writes the CSV and
     /// TXT report. Lives on its own GameObject: destroying it (scene change, <see cref="Cancel"/>) restores the filters, the sounds
-    /// and the room and still writes the partial report.
+    /// and the room; an incomplete run writes no files (PB-27), its report text goes to the Console.
     /// </summary>
     public class Rt60Runner : MonoBehaviour
     {
@@ -116,6 +156,17 @@ namespace GPL.Acoustics
 
         public bool Running => !_finished;
         public Rt60RunResult Result => _result;
+        public Rt60Plan Plan => _plan;
+
+        // ---- progress (PB-27: the progress dialog polls these) ----
+        Rt60Eta _eta;
+        float _startTime;
+        /// <summary>The current step, e.g. <c>Room 0.7 s, -90°, repeat 2 of 3</c> (empty before the first recording).</summary>
+        public string Step { get; private set; } = "";
+        /// <summary>Done part of the planned time, 0..1.</summary>
+        public float Fraction => _eta != null ? (float)_eta.Fraction : 0f;
+        /// <summary>Real seconds still needed (the plan's estimate, corrected by the recordings done so far).</summary>
+        public double SecondsLeft => _eta != null ? _eta.SecondsLeft(Time.realtimeSinceStartup - _startTime) : _plan != null ? _plan.EstimatedSeconds() : 0.0;
 
         /// <summary>Starts a run; <paramref name="progress"/> gets status lines, <paramref name="done"/> the result (always once).</summary>
         public static Rt60Runner Begin(Rt60Plan plan, Action<string> progress, Action<Rt60RunResult> done)
@@ -135,7 +186,7 @@ namespace GPL.Acoustics
             while (this != null && Running) yield return null;
         }
 
-        /// <summary>Stops the run; the partial report is written and everything restored.</summary>
+        /// <summary>Stops the run; everything is restored; no report files are written (PB-27).</summary>
         public void Cancel()
         {
             if (_finished) return;
@@ -214,7 +265,8 @@ namespace GPL.Acoustics
             foreach (var kv in plan.Meta) report.AddMeta(kv.Key, kv.Value);
 
             if (plan.Output == null) report.Problems.Add("probe not routed to a mixer group: the room is not rendered");
-            if (!reverb.Calibrated) report.Problems.Add(ReverbTuner.UncalibratedWarning + " (" + reverb.CalibrationStatus + ")");
+            if (!reverb.Calibrated) report.Problems.Add(ReverbTuner.UncalibratedNote + " (" + reverb.CalibrationStatus + ")");
+            else if (reverb.HeadsetTable) report.Problems.Add("calibration table used on this headset only, not imported into the build (" + reverb.CalibrationStatus + ")");
 
             // reference pose: the listener now
             var listener = meter.transform;
@@ -228,9 +280,15 @@ namespace GPL.Acoustics
             yield return null;
 
             int total = plan.Conditions.Count * plan.Azimuths.Length * plan.Repeats, done = 0;
+            _eta = new Rt60Eta(plan.EstimatedSeconds());
+            _startTime = Time.realtimeSinceStartup;
+            double plannedDone = 0;
+            int conditionIndex = 0;
             Say("measuring " + total + " recordings, about " + Fmt.F(plan.EstimatedSeconds() / 60.0, 1) + " min. Stay still and quiet.");
             foreach (var c in plan.Conditions)
             {
+                conditionIndex++;
+                double perRecording = plan.SecondsPerRecording(c);
                 c.Apply?.Invoke();
                 yield return null;
                 yield return null;
@@ -247,9 +305,12 @@ namespace GPL.Acoustics
                     for (int rep = 1; rep <= plan.Repeats; rep++)
                     {
                         done++;
+                        Step = StepText(plan, c, conditionIndex, az, rep);
                         Say(c.Name + ", " + Fmt.F(az, 0) + " deg, repeat " + rep + " (" + done + "/" + total + ")");
                         float[] left = null, right = null; int fs = 48000;
                         yield return meter.Record(_probe, settle, record, (l, r, rate) => { left = l; right = r; fs = rate; });
+                        plannedDone += perRecording;
+                        _eta.Update(plannedDone, Time.realtimeSinceStartup - _startTime);
                         if (left == null || left.Length < fs / 2)
                         {
                             report.Problems.Add(c.Name + " az " + Fmt.F(az, 0) + " repeat " + rep + ": nothing recorded");
@@ -266,6 +327,16 @@ namespace GPL.Acoustics
             }
             Finish(true, "");
             Destroy(gameObject);
+        }
+
+        /// <summary>Sweep: <c>Reflection 0.85 (14 of 21), repeat 1 of 3</c>; measurement: <c>Room 0.7 s, -90°, repeat 2 of 3</c>.</summary>
+        static string StepText(Rt60Plan plan, Rt60Condition c, int index, float az, int rep)
+        {
+            string repeat = plan.Repeats > 1 ? ", repeat " + rep + " of " + plan.Repeats : "";
+            if (!double.IsNaN(c.ReflectionValue))
+                return "Reflection " + Fmt.F(c.ReflectionValue, 3) + " (" + index + " of " + plan.Conditions.Count + ")" + repeat + ".";
+            string where = plan.Azimuths.Length > 1 ? ", " + Fmt.F(az, 0) + "°" : "";
+            return c.Name + where + repeat + ".";
         }
 
         static BandDecay[] Mean(BandDecay[] l, BandDecay[] r)
@@ -290,7 +361,9 @@ namespace GPL.Acoustics
             _result.Completed = completed;
             _result.Error = error ?? "";
             if (!completed && _result.Report != null) _result.Report.Problems.Insert(0, "INCOMPLETE: " + error);
-            if (_result.Report != null) Write(_result);
+            // PB-27 (PO 2026-11-16): an incomplete run (cancelled, refused, failed) leaves no report files; the Console keeps its text
+            if (_result.Report != null && completed) Write(_result);
+            else if (_result.Report != null) Debug.Log("[GPL] RT60: incomplete run, no report written (PB-27).\n" + _result.Report.Text());
             Debug.Log("[GPL] RT60: " + _result.Summary());
             _done?.Invoke(_result);
         }

@@ -14,9 +14,20 @@ namespace GPL.UI
         public UiPanel Panel { get; private set; }
         /// <summary>Where the actions go (right-aligned row).</summary>
         public RectTransform Actions { get; private set; }
+        /// <summary>
+        /// The default slot (docs/design UiDialog, PB-27): content between the message and the actions (a progress bar, result
+        /// lines), 32 u below the message; null unless created with <c>withSlot</c>.
+        /// </summary>
+        public RectTransform Slot { get; private set; }
+        public TextMeshProUGUI TitleText { get; private set; }
+        /// <summary>The message (null when the dialog was created without one).</summary>
+        public TextMeshProUGUI MessageText { get; private set; }
         public Vector2 Size { get; private set; }
 
-        public static UiDialog Create(Transform canvas, string name, string title, string message = null)
+        public static UiDialog Create(Transform canvas, string name, string title, string message = null) =>
+            Create(canvas, name, title, message, false);
+
+        public static UiDialog Create(Transform canvas, string name, string title, string message, bool withSlot)
         {
             var th = UiKit.Theme;
             var d = new UiDialog { Panel = UiPanel.Create(canvas, name, new Vector2(th.dialogWidth, 400f), startHidden: true) };
@@ -37,6 +48,14 @@ namespace GPL.UI
                 var m = UiKit.Text(pad, "Message", message, th.bodySize, Vector2.zero, Vector2.zero, false, th.text2, TextAlignmentOptions.TopLeft);
                 m.textWrappingMode = TextWrappingModes.Normal;
                 UiKit.Size(m.gameObject, prefW: 0f, flexW: 1f);
+                d.MessageText = m;
+            }
+            d.TitleText = t;
+            if (withSlot)
+            {
+                d.Slot = UiKit.Node(content, "Slot");
+                UiKit.V(d.Slot.gameObject, 12f, UiKit.Pad(0, 32, 0, 0), TextAnchor.UpperLeft);
+                UiKit.Size(d.Slot.gameObject, prefW: 0f, flexW: 1f);
             }
             d.Actions = UiKit.Node(content, "Actions");
             UiKit.H(d.Actions.gameObject, 8f, UiKit.Pad(0, 40, -20, 0), TextAnchor.MiddleRight);
@@ -55,7 +74,7 @@ namespace GPL.UI
         /// <summary>Closes the dialog: the panels behind come forward, then it fades out.</summary>
         public void Close() => Panel.Close();
 
-        /// <summary>Re-measures the content and sets the surface height; call after adding the actions.</summary>
+        /// <summary>Re-measures the content and sets the surface height; call after adding the actions, and after changing texts or the slot of an open dialog.</summary>
         public void Fit()
         {
             var surface = (RectTransform)Panel.Surface.transform;

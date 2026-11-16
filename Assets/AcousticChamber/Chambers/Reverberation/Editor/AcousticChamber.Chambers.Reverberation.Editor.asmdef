@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.Reverberation.Editor",
+    "rootNamespace": "AcousticChamber.Chambers.Reverberation.Editor",
+    "references": ["AcousticChamber.Chambers.Reverberation", "AcousticChamber.Chambers.Reverberation.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Input", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "Meta.XR.Audio", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

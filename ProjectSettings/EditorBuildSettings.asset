@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/AcousticChamber/Chambers/HearingLoss/Scenes/HearingLoss.unity
     guid: 85acbb5d10770354c9549a3637eeeabf
   - enabled: 1
+    path: Assets/AcousticChamber/Chambers/Reverberation/Scenes/Reverberation.unity
+    guid: 9c29c54c363a7164da4501593bf80f39
+  - enabled: 1
     path: Assets/AcousticChamber/Chambers/HumPerHW2/Scenes/HumPerHW2.unity
     guid: 79a197b0c0f6c6c4a9ecb77b86b224b8
   m_configObjects:

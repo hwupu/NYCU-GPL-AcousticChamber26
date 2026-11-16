@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.Reverberation",
+    "rootNamespace": "AcousticChamber.Chambers.Reverberation",
+    "references": ["AcousticChamber.Chambers.Reverberation.Core", "AcousticChamber.App", "GPL.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Acoustics.Core", "GPL.Acoustics", "Unity.TextMeshPro", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

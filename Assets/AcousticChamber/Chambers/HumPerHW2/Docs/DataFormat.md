@@ -1,4 +1,4 @@
-# HumPerHW2 (C04) — Data format
+# HumPerHW2 (C05) — Data format
 
 **Status:** approved by the PO (PB-08a, 2026-11-07). Written for an analyst (human or AI).
 
@@ -52,12 +52,12 @@ Common (as the Template): `session_start`, `language`, `stage_begin/end`, `hando
 `app_paused/app_resumed`, `debug_begin/end`, `param_change`. HumPerHW2:
 - `condition` (PB-08d-3): the acoustics were switched, before the first trial of a block (and of the practice), and again after
   a resume; columns `rt60_target_s`, `background`, `bg_level_dbfs`; note the reverb setting
-  (`mode=custom rt60_target_s= reflection= rt60_expected_s=`) and the plugin status (`room_modeling=on late_reverb=on`).
+  (`mode=custom rt60_target_s= reflection= rt60_expected_s= calibrated=0|1`, plus `table=headset` when the table is a headset table that is not imported yet, PB-27) and the plugin status (`room_modeling=on late_reverb=on`).
 - `practice_choice`: after each practice trial, note `again` or `ready`.
 - `background`: note `on` / `off` and, on `on`, each source's listener-relative position (`bg1=x,y,z;...`) and `spatial=1`.
 - `rt60_measured` (only when `rt60.measure_at_block_start` is on, before a block's first trial; PB-08e, Q46): columns
   `rt60_target_s`, `rt60_measured_s` (T_mid, empty when the measurement failed); note
-  `target=0.7 tmid_t30=0.704 completed=1 report=RT60_HumPerHW2_20261115-142301 calibrated=0 source=block_start`; the report pair
+  `target=0.7 tmid_t30=0.704 completed=1 report=RT60_HumPerHW2_20261115-142301 calibrated=0 source=block_start` (`report=` empty when the measurement did not complete: such runs write no report, PB-27); the report pair
   (CSV + TXT, all bands and both ears) is in `persistentDataPath/Calibration` (PB-26; before 2026-11-15: `valid=1 t20=... t30=... depth_db=...`).
 The Config page's Measure RT60 and acoustics buttons write no rows (Q44): their results appear in the Config status line and the
 console only.

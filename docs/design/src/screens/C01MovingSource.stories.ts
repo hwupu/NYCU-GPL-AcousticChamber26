@@ -10,14 +10,14 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-type State = 'idle' | 'measuring' | 'result'
+type State = 'idle' | 'calibrated' | 'headset'
 const wrap = (state: State) => () => h('div', { class: 'bg-black p-48 pb-200' }, [h(C01MovingSource, { state })])
 
-/** The panel with the RT60 buttons (toolbar, right) and the not-calibrated warning under the status. */
+/** The panel: Measure RT60 (toolbar, right); no table for this room on this device -> the warning under the status. */
 export const Panel: Story = { render: wrap('idle'), parameters: { controls: { disable: true } } }
 
-/** Measure RT60 running (selected): progress in the status; the sound and the path are stopped. */
-export const Measuring: Story = { render: wrap('measuring'), parameters: { controls: { disable: true } } }
+/** An imported table for this room and device: no warning. Measure RT60 opens Screens/RT60 Run Dialog. */
+export const Calibrated: Story = { render: wrap('calibrated'), parameters: { controls: { disable: true } } }
 
-/** After a measurement: T_mid and the report file. */
-export const Result: Story = { render: wrap('result'), parameters: { controls: { disable: true } } }
+/** Only a table used on this headset (C04 "Use on this headset", not imported yet): the softer note in text2 instead of the warning (PO 2026-11-17). */
+export const HeadsetTable: Story = { render: wrap('headset'), parameters: { controls: { disable: true } } }

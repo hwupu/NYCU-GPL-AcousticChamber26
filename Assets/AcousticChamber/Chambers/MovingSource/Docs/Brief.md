@@ -11,6 +11,6 @@ how its direction, distance and echoes change, with or without a simulated heari
   on / off) and the **hearing condition**: Normal (0 dB), Left -20 dB, Right -20 dB, Left -40 dB, Right -40 dB.
 - Leave with **Back to Hall** on the panel or with **Y**.
 
-The hearing loss is `GPL.HearingLoss` on the final output, as in C03; the room is `GPL.Acoustics`, as in C04.
+The hearing loss is `GPL.HearingLoss` on the final output, as in C03; the room is `GPL.Acoustics`, as in C05 (HumPerHW2).
 
 Chamber ID `MovingSource`, label `C01`, folder `Chambers/MovingSource`. Docs: [Design](Design.md). No DataFormat / AnalysisPlan (no data).

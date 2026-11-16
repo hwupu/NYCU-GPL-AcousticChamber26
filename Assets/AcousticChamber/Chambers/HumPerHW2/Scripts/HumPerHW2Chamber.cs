@@ -19,7 +19,7 @@ using UnityEngine;
 namespace AcousticChamber.Chambers.HumPerHW2
 {
     /// <summary>
-    /// HumPerHW2 (C04, Docs/Design.md): HW2's ventriloquist task on the modules. Onboarding (stock stages), a repeatable
+    /// HumPerHW2 (C05, Docs/Design.md): HW2's ventriloquist task on the modules. Onboarding (stock stages), a repeatable
     /// practice, three condition blocks of six trials in the session's condition order, thanks.
     /// PB-08d-1: schema, log columns, plan and the condition order; the practice, the trial and the acoustics follow in 08d-3.
     /// </summary>
@@ -328,7 +328,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
                 .Set("rt60_measured_s", stats.N > 0 ? Fmt.F(stats.Mean, 3) : ""),
                 "target=" + Fmt.F(_rt60Target) + " tmid_t30=" + (stats.N > 0 ? Fmt.F(stats.Mean, 3) : "") +
                 " completed=" + (result != null && result.Completed ? "1" : "0") +
-                " report=" + (result != null && result.Report != null ? result.Report.ReportId : "") +
+                " report=" + (result != null && result.Completed && result.Report != null ? result.Report.ReportId : "") + // PB-27: incomplete runs write no report
                 " calibrated=" + (reverb != null && reverb.Calibrated ? "1" : "0") + " source=block_start");
         }
 
@@ -506,10 +506,9 @@ namespace AcousticChamber.Chambers.HumPerHW2
                 ("2.2 s Reverb", UiStyle.Borderless, () => DebugCondition(Conditions.Reverb)));
             var room = col.Buttons("Room",
                 ("Meta preset", UiStyle.Borderless, DebugPreset),
-                ("Measure RT60", UiStyle.Borderless, DebugMeasure),
-                ("Calibrate", UiStyle.Borderless, DebugCalibrate));
+                ("Measure RT60", UiStyle.Borderless, DebugMeasure)); // Calibrate moved to C04 Reverberation (PB-27)
             _roomButtons = new[] { conditions[0], conditions[1], conditions[2], room[0] };
-            _measureButtons = new[] { room[1], room[2] };
+            _measureButtons = new[] { room[1] };
             col.Label("Playback");
             _playButtons = col.Buttons("Playback",
                 ("Play stimulus", UiStyle.Borderless, DebugToggleStimulus),
@@ -519,7 +518,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
                 ("After confirm", UiStyle.Borderless, () => DebugSphere(false)),
                 ("Always visible", UiStyle.Borderless, () => DebugSphere(true)));
             RefreshDebugButtons();
-            if (reverb != null && !reverb.Calibrated) Status(ReverbTuner.UncalibratedWarning);
+            if (reverb != null && reverb.PanelNote(out _) != null) Status(reverb.PanelNote(out _)); // warning or headset-table note (PB-27)
         }
 
         /// <summary>Selected = on: the room in use, stimulus / background playing (a paused background is off), measuring, the sphere mode.</summary>
@@ -527,7 +526,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
         {
             string[] rooms = { Conditions.Quiet, Conditions.Noisy, Conditions.Reverb, PresetMode };
             UiKit.Select(_roomButtons, i => _debugRoom == rooms[i]);
-            UiKit.Select(_measureButtons, i => _measuring && (i == 1) == (_measureKind == Rt60Report.KindSweep));
+            UiKit.Select(_measureButtons, i => _measuring);
             UiKit.Select(_playButtons, i => i == 0 ? pulse != null && pulse.Playing : background != null && background.Playing && !background.Paused);
             UiKit.Select(_sphereButtons, i => (i == 1) == SphereAlwaysVisible);
         }
@@ -538,7 +537,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
             if (CurrentRun != null) return;
             StopDebugPlayback();
             var values = _bench != null ? _bench.Work.Values : CreateDefaults();
-            if (_rt60Runner != null) _rt60Runner.Cancel(); // restores the room, writes the partial report
+            if (_rt60Run != null) { _rt60Run.Stop(); _rt60Run = null; _measuring = false; } // restores the room; no report (PB-27)
             if (reverb != null && !_measuring)
             {
                 reverb.SetRt60(values.GetFloat(Conditions.Rt60Key(Conditions.Quiet)));
@@ -648,51 +647,38 @@ namespace AcousticChamber.Chambers.HumPerHW2
 
         /// <summary>
         /// Measure RT60 (PB-26): the three conditions at their Playground RT60 values with the GPL.Acoustics protocol (4 positions x
-        /// 3 repeats, octave bands, report in persistentDataPath/Calibration). Q44: status line, console and report, no log row.
+        /// 3 repeats, octave bands, report in persistentDataPath/Calibration). Q44: no log row. PB-27: progress and result in the
+        /// RT60 run dialog; the calibration sweep is in C04 Reverberation.
         /// </summary>
         void DebugMeasure()
         {
             if (DebugBusy()) return;
             if (reverb == null) { Status("No reverb tuner (Step 4)."); return; }
+            if (_bench == null || _bench.Canvas == null) { Status("No Config page canvas."); return; }
             var v = DebugValues;
             var plan = Rt60PlanFor(Rt60Report.KindMeasurement);
             foreach (var c in Conditions.All) plan.Conditions.Add(Rt60Condition.Rt60(c, reverb, v.GetFloat(Conditions.Rt60Key(c))));
             plan.Restore = RestoreDebugRoom;
             plan.Meta.Add(new KeyValuePair<string, string>("values", "Config page (Playground) RT60 values"));
-            StartCoroutine(DebugMeasureRun(plan));
-        }
-
-        /// <summary>Calibrate (PB-26): the calibration sweep (21 coefficients, 0 deg, 3 repeats) for this room; import it in the Editor.</summary>
-        void DebugCalibrate()
-        {
-            if (DebugBusy()) return;
-            if (reverb == null) { Status("No reverb tuner (Step 4)."); return; }
-            var plan = Rt60PlanFor(Rt60Report.KindSweep);
-            var sweep = Rt60Plan.Sweep(Id, reverb, plan.Output);
-            sweep.SilenceOthers = plan.SilenceOthers;
-            sweep.Restore = RestoreDebugRoom;
-            StartCoroutine(DebugMeasureRun(sweep));
-        }
-
-        IEnumerator DebugMeasureRun(Rt60Plan plan)
-        {
             _measuring = true;
-            _measureKind = plan.Kind;
             RefreshDebugButtons();
-            Rt60RunResult result = null;
-            _rt60Runner = Rt60Runner.Begin(plan, line => Status("RT60: " + line + CalibrationNote()), r => result = r);
-            yield return _rt60Runner.Wait();
-            _rt60Runner = null;
-            _measuring = false;
-            RefreshDebugButtons();
-            Status((result != null ? result.Summary() : "RT60: no result") + CalibrationNote());
+            _rt60Run = Rt60RunDialog.Run(_bench.Canvas, plan, r =>
+            {
+                _rt60Run = null;
+                _measuring = false;
+                RefreshDebugButtons();
+                Status((r != null && r.Completed ? r.Summary() : "RT60 measurement stopped; no report.") + CalibrationNote());
+            });
         }
 
-        Rt60Runner _rt60Runner;
-        string _measureKind = "";
+        Rt60RunDialog _rt60Run;
 
-        /// <summary>The uncalibrated warning under the status (PO 2026-11-15).</summary>
-        string CalibrationNote() => reverb != null && !reverb.Calibrated ? "\n" + ReverbTuner.UncalibratedWarning : "";
+        /// <summary>The uncalibrated warning (PO 2026-11-15) or the headset-table note (PB-27) under the status.</summary>
+        string CalibrationNote()
+        {
+            string n = reverb != null ? reverb.PanelNote(out _) : null;
+            return n != null ? "\n" + n : "";
+        }
 
         /// <summary>After a measurement: the room chosen on the Config page again (or Quiet).</summary>
         void RestoreDebugRoom()

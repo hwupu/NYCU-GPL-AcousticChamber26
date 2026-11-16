@@ -33,6 +33,9 @@ namespace GPL.DebugBench
 
         public WorkingCopy Work { get; }
 
+        /// <summary>The canvas sheets and dialogs open on (a chamber's own dialogs, e.g. the RT60 run dialog).</summary>
+        public Transform Canvas => _canvas;
+
         /// <summary>Run experiment trials (real protocol, working copy, <c>_DEBUG</c> log).</summary>
         public event Action RunRequested;
         /// <summary>One practice trial (a Debug run with the working copy, <c>_DEBUG</c> log).</summary>

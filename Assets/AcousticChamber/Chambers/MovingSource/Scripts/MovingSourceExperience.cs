@@ -182,38 +182,31 @@ namespace AcousticChamber.Chambers.MovingSource
             _rt60Warning = UiKit.Text(body, "Rt60Warning", ReverbTuner.UncalibratedWarning, th.smallSize, Vector2.zero, Vector2.zero,
                                       color: th.debug, align: TextAlignmentOptions.TopLeft);
             UiKit.Size(_rt60Warning.gameObject, prefW: 0f, flexW: 1f);
-            _rt60Warning.gameObject.SetActive(reverb == null || !reverb.Calibrated);
+            Rt60RunDialog.ShowPanelNote(_rt60Warning, reverb); // warning, headset-table note (PB-27) or nothing
 
             var toolbar = surface.AddToolbar();
             UiKit.Button(toolbar, "Reset Source", "Reset source", UiStyle.Gray, onClick: ResetSource);
             var spacer = UiKit.Node(toolbar, "Spacer");
             UiKit.Size(spacer.gameObject, flexW: 1f);
-            _measureButton = UiKit.Button(toolbar, "Measure RT60", "Measure RT60", UiStyle.Gray, onClick: () => ClickRt60(Rt60Report.KindMeasurement));
-            _calibrateButton = UiKit.Button(toolbar, "Calibrate", "Calibrate", UiStyle.Gray, onClick: () => ClickRt60(Rt60Report.KindSweep));
+            UiKit.Button(toolbar, "Measure RT60", "Measure RT60", UiStyle.Gray, onClick: MeasureRt60);
         }
 
-        // ---- RT60 (PB-26, GPL.Acoustics protocol) ---------------------------------------------------------------------
+        // ---- RT60 (PB-26 protocol; PB-27: run dialog, calibration in C04 Reverberation) --------------------------------
 
         TextMeshProUGUI _rt60Warning;
-        UiButton _measureButton, _calibrateButton;
-        Rt60Runner _runner;
-        string _runKind = "";
+        Rt60RunDialog _run;
         bool _restoreAfterRun, _restoring;
+        bool Measuring => _run != null && _run.Running;
 
-        /// <summary>Measure RT60 = the selected room, 4 positions x 3 repeats; Calibrate = the sweep. Clicking the running one cancels it.</summary>
-        void ClickRt60(string kind)
+        /// <summary>Measure RT60 = the selected room, 4 positions x 3 repeats, in the RT60 run dialog (progress, Cancel, result).</summary>
+        void MeasureRt60()
         {
-            if (_runner != null) { if (kind == _runKind) _runner.Cancel(); return; }
+            if (Measuring) return;
             if (reverb == null || source == null) { _status.text = "No reverb or source: run Magic > MovingSource > Step 2."; return; }
-            Rt60Plan plan;
-            if (kind == Rt60Report.KindSweep) plan = Rt60Plan.Sweep(Id, reverb, source.outputAudioMixerGroup);
-            else
-            {
-                plan = new Rt60Plan { Chamber = Id, Reverb = reverb, Output = source.outputAudioMixerGroup };
-                plan.Conditions.Add(_room == RoomChoice.Dry
-                    ? new Rt60Condition { Name = RoomChoices.Label(_room), Apply = reverb.SetDry }
-                    : Rt60Condition.Rt60(RoomChoices.Label(_room), reverb, RoomChoices.Rt60(_room)));
-            }
+            var plan = new Rt60Plan { Chamber = Id, Reverb = reverb, Output = source.outputAudioMixerGroup };
+            plan.Conditions.Add(_room == RoomChoice.Dry
+                ? new Rt60Condition { Name = RoomChoices.Label(_room), Apply = reverb.SetDry }
+                : Rt60Condition.Rt60(RoomChoices.Label(_room), reverb, RoomChoices.Rt60(_room)));
             // the sound and the path stop; they stay stopped afterwards (click a sound again)
             plan.SilenceOthers = silence =>
             {
@@ -225,33 +218,16 @@ namespace AcousticChamber.Chambers.MovingSource
             _restoreAfterRun = true;
             plan.Restore = () => { if (!_restoreAfterRun) return; _restoring = true; Apply(); _restoring = false; };
             plan.Meta.Add(new KeyValuePair<string, string>("hearing_condition", HearingConditions.Label(_condition) + " (bypassed while recording)"));
-            _runKind = kind;
-            _runner = Rt60Runner.Begin(plan, line => { if (_status != null) _status.text = "RT60: " + line; }, OnRt60Done);
-            ShowRt60();
-        }
-
-        void OnRt60Done(Rt60RunResult result)
-        {
-            _runner = null;
-            if (this == null) return;
-            if (_status != null) _status.text = result.Summary();
-            ShowRt60();
-        }
-
-        void ShowRt60()
-        {
-            if (_measureButton == null) return;
-            _measureButton.Selected = _runner != null && _runKind == Rt60Report.KindMeasurement;
-            _calibrateButton.Selected = _runner != null && _runKind == Rt60Report.KindSweep;
+            _run = Rt60RunDialog.Run(transform, plan, _ => { _run = null; if (this != null) Show(); });
         }
 
         /// <summary>Leaving the chamber: cancel a run without touching the panel (it is going away).</summary>
         void StopRt60()
         {
-            if (_runner == null) return;
+            if (_run == null) return;
             _restoreAfterRun = false;
-            _runner.Cancel();
-            _runner = null;
+            _run.Stop();
+            _run = null;
         }
 
         /// <summary>A labeled row with one choice group; the group's buttons go to <paramref name="store"/>.</summary>
@@ -268,7 +244,7 @@ namespace AcousticChamber.Chambers.MovingSource
         void Apply()
         {
             if (_output != null) _output.SetProfile(HearingConditions.Profile(_condition));
-            if (reverb != null && (_runner == null || _restoring)) reverb.Apply(_room); // a running RT60 measurement owns the room
+            if (reverb != null && (!Measuring || _restoring)) reverb.Apply(_room); // a running RT60 measurement owns the room
             DistanceCue.Apply(source, _natural);
             UiKit.Select(_roomButtons, i => RoomChoices.All[i] == _room);
             UiKit.Select(_cueButtons, i => (i == 0) == _natural);
@@ -305,7 +281,7 @@ namespace AcousticChamber.Chambers.MovingSource
 
         void ClickSound(int index)
         {
-            if (_runner != null) { Show(); _status.text = "RT60 measurement running: wait or click Measure RT60 / Calibrate to cancel."; return; }
+            if (Measuring) return; // the run dialog is modal; a click cannot reach here
             if (index != _sound)
             {
                 _sound = index;
@@ -324,7 +300,7 @@ namespace AcousticChamber.Chambers.MovingSource
 
         void StartPath(PathKind kind)
         {
-            if (_rig == null || grab.Held || _runner != null) return;
+            if (_rig == null || grab.Held || Measuring) return;
             var head = _rig.centerEyeAnchor;
             Vector3 p = sourceRoot.position;
             // the 0 deg direction is the rig's forward (as the panels use), not where the head looks: the panel is to the left

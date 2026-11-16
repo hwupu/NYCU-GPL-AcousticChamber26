@@ -52,3 +52,30 @@ Also found the same day: switching room modeling off did not make the "Dry" room
 - HumPerHW2 "quiet" (0.3 s) is below the imported table (shortest 0.31 s) and its decay is curved (T_mid 0.278 s, -7.5 %). Not re-swept:
   0.3 s is not used by the final-project protocol (PO 2026-11-16).
 - Calibration stays on the device (README "Why on the Quest, not in Play mode").
+
+**Amendment 2026-11-16 (PB-27)** (PO: "New chamber on C04 on Reverberation ... remove the Calibrate button from C01, C02, and C05 ...
+a dialog should appear ... csv file can be deleted if cancelled"; planning answers of that day)
+- **Calibration has its own chamber**: C04 Reverberation sets the room size (presets of the chambers' rooms or W / D / H steppers), a
+  target RT60 profile (targets to check + sweep range: Experience, HW2 = full grid; Short, Long = the grid points expected within 0.7 x
+  the shortest .. 1.3 x the longest target, plus a neighbour each side; `Rt60Profiles`) and has Calibrate as its main action.
+  HumPerHW2 is relabelled **C05** (ID unchanged, so data and reports are unaffected).
+- **Buttons**: Calibrate is removed from C01, C02 and C05; Measure RT60 stays there.
+- **Run dialog**: Measure and Calibrate run in a modal dialog (App `Rt60RunDialog`: step, progress bar, time left, borderless Cancel)
+  instead of status lines. A calibration ends with "Calibration completed" only; a measurement shows its T_mid per condition; Close.
+- **Incomplete runs leave no files** (PO: "Delete all incomplete"): a cancelled, refused or failed run writes no CSV / TXT; the report
+  text still goes to the Console. Replaces "also cancelled or refused runs" above. HumPerHW2's `rt60_measured` row then has an empty
+  `report=`.
+- **Warning text**: "Need to calibrate RT60 before running trials." (`ReverbTuner.UncalibratedWarning`); a warning only, it blocks
+  nothing. Reports keep the descriptive note (`UncalibratedNote`).
+
+**Amendment 2026-11-17 (PB-27, headset tables)** (PO: "if i did calibration on quest, can it be applied to other chamber automatically
+without re-built? I want an alternative. preserve the process of calibrate -> copy -> import -> build as main protocol"; answers:
+button in the dialog, imported wins, separate state; "C04 is used to generate the csv, so no need to show Calibrated")
+- **Main protocol unchanged**: calibrate -> copy -> import -> build; only imported tables are committed and count for a study.
+- **Alternative**: the "Calibration completed" dialog has **Use on this headset** (Close stays). It copies the sweep CSV to
+  `persistentDataPath/Calibration/Tables/RT60_<platform>_<W>x<D>x<H>.csv` (one per size, newest replaces); every `ReverbTuner` reads them
+  with the import's parser, so the table equals its imported version. An **imported table of the same platform and size always wins**
+  (`Rt60TableChoice`).
+- **Separate state**: with only a headset table a chamber shows "RT60 calibrated on this headset only: import it before the study."
+  (text2) instead of the warning; reports list it under PROBLEMS; `ReverbTuner.Note()` adds `table=headset` (e.g. HumPerHW2 log notes).
+- **C04** shows no table status at all (neither "Calibrated…" nor the warning) and its panel is centered ahead.
