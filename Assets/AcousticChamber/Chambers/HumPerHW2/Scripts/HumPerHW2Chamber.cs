@@ -500,15 +500,15 @@ namespace AcousticChamber.Chambers.HumPerHW2
         {
             _bench = bench;
             col.Label("Acoustics");
-            var conditions = col.Buttons("Conditions",
+            // one choice group for the room in use; Measure RT60 is an action and gets its own group (PB-28, Storybook
+            // Screens/C05 HumPerHW2 Config). Calibrate moved to C04 Reverberation (PB-27).
+            _roomButtons = col.Buttons("Conditions",
                 ("0.3 s Quiet", UiStyle.Borderless, () => DebugCondition(Conditions.Quiet)),
                 ("0.7 s Noisy", UiStyle.Borderless, () => DebugCondition(Conditions.Noisy)),
-                ("2.2 s Reverb", UiStyle.Borderless, () => DebugCondition(Conditions.Reverb)));
-            var room = col.Buttons("Room",
-                ("Meta preset", UiStyle.Borderless, DebugPreset),
-                ("Measure RT60", UiStyle.Borderless, DebugMeasure)); // Calibrate moved to C04 Reverberation (PB-27)
-            _roomButtons = new[] { conditions[0], conditions[1], conditions[2], room[0] };
-            _measureButtons = new[] { room[1] };
+                ("2.2 s Reverb", UiStyle.Borderless, () => DebugCondition(Conditions.Reverb)),
+                ("Meta preset", UiStyle.Borderless, DebugPreset));
+            col.Label("RT60");
+            _measureButtons = col.Buttons("RT60", ("Measure RT60", UiStyle.Borderless, DebugMeasure));
             col.Label("Playback");
             _playButtons = col.Buttons("Playback",
                 ("Play stimulus", UiStyle.Borderless, DebugToggleStimulus),

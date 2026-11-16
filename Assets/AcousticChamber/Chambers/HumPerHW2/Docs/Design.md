@@ -102,7 +102,7 @@ Besides Run / Playground / Presets / Log files / Practice trial:
 - **Acoustics:** 0.3 s Quiet, 0.7 s Noisy (starts the background), 2.2 s Reverb (background on), Preset (Meta Concrete, about 4 s);
   status shows the target, coefficient and calculated RT60.
 - **Playback:** Play stimulus (pulse train ahead at 2 m with the picture, current condition), Play / pause background.
-- **Measure RT60** (PB-26): the three conditions at their Playground values with the GPL.Acoustics ISO 3382-2 protocol (own probe
+- **Measure RT60** (PB-26; its own group "RT60" since PB-28, Storybook `Screens/C05 HumPerHW2 Config`): the three conditions at their Playground values with the GPL.Acoustics ISO 3382-2 protocol (own probe
   source, 4 positions x 3 repeats, octave bands, about 3.5 min); T_mid per condition in the status line, the full report in
   `persistentDataPath/Calibration`. **Calibrate**: the coefficient sweep for this room (about 6 min), imported in the Editor.
   While no ISO table for this room and device is imported, the status says "RT60 not calibrated for this room on this device:
