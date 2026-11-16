@@ -51,6 +51,7 @@ A Vue component = one Unity file of the same name in `Assets/AcousticChamber/Mod
 | `UiDialog` | class `UiDialog` (`ModalDialog` is the facade chambers use) | `alert` | a decision, 820 u, no grabber |
 | `UiSheet` | class `UiSheet` | `sheet` | a window that pushes the one behind it back |
 | `UiCallout` | class `UiCallout` | - | world-space annotation of a 3D object |
+| `UiProgressBar` | `UiKit.ProgressBar`, class `UiProgressBar` | `ProgressView` | read-only bar 0..1 + caption (time left); RT60 run dialog (PB-27) |
 | `UiSlider` | not built | `Slider` | preview only until something uses it |
 
 Not components (no Storybook counterpart): `UiColumn` (scrolling body of the Config-style pages), `UiPointer`, `OverlayPanel`, `ScrollList`, `UiTheme`.

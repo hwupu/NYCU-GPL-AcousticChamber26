@@ -48,9 +48,18 @@ namespace GPL.UI
         /// Opens a dialog: title and message left-aligned, buttons right-aligned in the given order (put the main action last: it
         /// ends up on the right). Each button is as wide as its label needs.
         /// </summary>
-        public static ModalDialog Show(Transform canvas, string title, string message, params DialogButton[] buttons)
+        public static ModalDialog Show(Transform canvas, string title, string message, params DialogButton[] buttons) =>
+            Show(canvas, title, message, null, buttons);
+
+        /// <summary>
+        /// As <see cref="Show(Transform,string,string,DialogButton[])"/>, with content in the dialog's slot between the message and
+        /// the buttons: <paramref name="fill"/> builds it (e.g. <see cref="UiKit.ProgressBar"/>) before the dialog is measured.
+        /// After changing texts or the slot of the open dialog, call <c>Dialog.Fit()</c>.
+        /// </summary>
+        public static ModalDialog Show(Transform canvas, string title, string message, Action<UiDialog> fill, params DialogButton[] buttons)
         {
-            var d = UiDialog.Create(canvas, "Dialog", title, message);
+            var d = UiDialog.Create(canvas, "Dialog", title, message, fill != null);
+            fill?.Invoke(d);
             var dialog = d.Panel.gameObject.AddComponent<ModalDialog>();
             dialog.Dialog = d;
             d.Panel.Closed += () => { Open.Remove(dialog); dialog.Closed?.Invoke(); };

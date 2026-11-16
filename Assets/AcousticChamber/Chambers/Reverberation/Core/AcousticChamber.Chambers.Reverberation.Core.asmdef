@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.Reverberation.Core",
+    "rootNamespace": "AcousticChamber.Chambers.Reverberation",
+    "references": ["GPL.Core", "GPL.Acoustics.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

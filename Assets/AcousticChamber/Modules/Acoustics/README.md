@@ -45,10 +45,25 @@ only the same sweep on both platforms would. Play mode is fine for development (
 and for an optional one-off comparison of both platforms that a paper may cite. The headless verify cannot measure at all (no audio
 device in batch mode).
 
-Workflow for a room size: on the headset press **Calibrate** (the sweep below, about 6 min) -> pull the report pair from
+Workflow for a room size: on the headset open **C04 Reverberation** (PB-27), set the room size and a profile, press **Calibrate** (the
+sweep below; the full grid takes about 6 min) -> pull the report pair from
 `<persistentDataPath>/Calibration/` (Quest: `/sdcard/Android/data/<package>/files/Calibration/`) -> in the Editor
 `Magic > Acoustics > Import RT60 Calibration...` -> it writes `Assets/AcousticChamber/Calibration/Resources/RT60Calibration/RT60_<platform>_<W>x<D>x<H>.asset`
-and copies the CSV + TXT to `docs/calibration/` -> commit both. Then **Measure RT60** in each condition to verify the targets.
+and copies the CSV + TXT to `docs/calibration/` -> commit both. Then **Measure RT60** (C04 with the profile, or in each chamber)
+to verify the targets.
+
+**Alternative without a rebuild: headset tables** (PB-27, PO 2026-11-17). The workflow above stays the main protocol. After a C04
+sweep, **Use on this headset** copies the CSV to `<persistentDataPath>/Calibration/Tables/RT60_<platform>_<W>x<D>x<H>.csv` (one per
+size; `Runtime/Rt60HeadsetTables.cs`). `ReverbTuner.ResolveCalibration` reads them with `FromSweepCsv`, the parser of the import, so
+the table is the same; an **imported table of the same platform and size always wins** (`Core/Rt60TableChoice.cs`). With only a headset
+table the room is calibrated (`Calibrated` true, `TableSource` = `Headset`, `HeadsetTable`), chambers show
+`ReverbTuner.HeadsetTableNote` ("RT60 calibrated on this headset only: import it before the study.", text2) instead of the warning
+(`PanelNote`), reports list it under PROBLEMS and `Note()` adds `table=headset`. Headset tables are not in git; import the CSV before a study.
+
+**Profiles** (`Core/Rt60Profiles.cs`, PO 2026-11-16): the targets a C04 measurement checks and the sweep range of a calibration.
+Experience 0.7, 2.2 s and HW2 0.3, 0.7, 2.2 s sweep the full grid; Short 0.3-1.0 s and Long 1.5-4.0 s sweep only the grid points
+whose expected RT60 (table in use, V/S-scaled) lies within 0.7 x the shortest .. 1.3 x the longest target, plus one neighbour each
+side (at least 4 points). A partial sweep imports like a full one; outside its range the coefficient is clamped to the table's ends.
 
 ## RT60 measurement protocol (ISO 3382-2:2008, engineering method)
 What `Rt60Runner` does, in order. Every value below is also written into the report header, so a report is self-describing.
@@ -73,9 +88,9 @@ What `Rt60Runner` does, in order. Every value below is also written into the rep
 | Summary | per condition: T_mid (T30 and T20) mean ± SD [min, max] over positions × repeats, deviation from the target, flagged count, mean per band | |
 
 Kinds of runs (`Rt60Plan`):
-- **measurement**: the chamber's condition(s), 4 positions × 3 repeats (Measure RT60 buttons).
-- **sweep** (`Rt60Plan.Sweep`): the 21 coefficients of `Rt60Protocol.SweepReflections` (0.20, 0.30, 0.40, then HW2's 0.50 ... 0.99),
-  0° only, 3 repeats -> calibration table (Calibrate buttons). Points below `CoreSweepFloor` (0.50) are **extension points** for short
+- **measurement**: the chamber's condition(s), 4 positions × 3 repeats (Measure RT60 buttons in C01, C02, C04, C05).
+- **sweep** (`Rt60Plan.Sweep`): the 21 coefficients of `Rt60Protocol.SweepReflections` (0.20, 0.30, 0.40, then HW2's 0.50 ... 0.99)
+  or a profile's subset of them, 0° only, 3 repeats -> calibration table (Calibrate in C04 only, PB-27). Points below `CoreSweepFloor` (0.50) are **extension points** for short
   times: the import keeps them only while each lies below the next point and has a valid T_mid, drops the rest and lists them in the
   Console; from 0.50 up the times must rise or the import fails. Tables imported before 2026-11-16 start at 0.50 (shortest about 0.31 s).
   The sweep is at 0° only, the measurement averages 4 positions; 0° gives the longest times, so a 4-position T_mid lands about 1-3 %
@@ -83,8 +98,9 @@ Kinds of runs (`Rt60Plan`):
 - **block_start**: one position, one repeat, at the start of a condition block (HumPerHW2 option); the session log row links the report id.
 
 ### Report (traceability)
-One pair per run in `<persistentDataPath>/Calibration/`, named `RT60_<chamber>_<yyyyMMdd-HHmmss>`; also written when a run is
-cancelled or refused (marked INCOMPLETE). Not participant data (no Study ID).
+One pair per **completed** run in `<persistentDataPath>/Calibration/`, named `RT60_<chamber>_<yyyyMMdd-HHmmss>`. A cancelled, refused
+or failed run writes **no files** (PB-27, PO 2026-11-16: "Delete all incomplete"); its report text, marked INCOMPLETE, goes to the
+Console only. Not participant data (no Study ID).
 - **TXT**: kind, chamber, platform, room size and kind, the method lines above, date (local, UTC), device, OS, Unity, app, Meta XR Audio
   native version, spatializer, sample rate, DSP buffer, speaker mode, room-modeling status, calibration status and table, walls and
   clutter, mixer group, output filters, probe, positions, repeats, timing and the reverb note per condition, chamber extras;
@@ -103,14 +119,17 @@ cancelled or refused (marked INCOMPLETE). Not participant data (no Study ID).
 | `Core/DecayAnalysis.cs` | `BandDecay` (EDT, T20, T30, r, C, peak-to-noise, EDC depth, validity, flag, note); `DecayAnalysis.Analyze(signal, fs, band)`, `Flag`, `FilterLimitSeconds` |
 | `Core/Rt60Protocol.cs` | the protocol constants and texts (positions, repeats, sweep coefficients, open-space size, settle / record times), `Tmid`; `ImpulseResponseAnalysis.Analyze(channel, fs)` (broadband + octaves), ear `Mean` |
 | `Core/Rt60Report.cs` | `Rt60Report` (metadata, rows, problems, `Csv()`, `Text()`, `TmidStats`, `BandStats`, `TmidFlaggedCount`, `QualityProblems`, `FileStem`), `Rt60Stats` |
+| `Core/Rt60Profiles.cs` | `Rt60Profile` (targets, `FullSweep`, `SweepFor(expectedRt60)`, `TargetName`), `Rt60Profiles` (Experience, HW2, Short, Long), `Rt60Eta` (time left from the plan, corrected by the recordings done; `Text`, `Duration`) |
+| `Core/Rt60TableChoice.cs` | `Rt60TableSource` (None, Imported, Headset), `Pick(imported, headset, platform, w, d, h)` (imported wins), `HeadsetFileName`, `SourceName` |
 | `Core/Rt60Estimator.cs` | HW2's broadband Schroeder T20 / T30 (kept for the HW2 table's provenance; new measurements use `DecayAnalysis`) |
 | `Core/WavLevel.cs` | RMS dBFS of a WAV file on disk (PCM 16 / 24 / 32, float 32, EXTENSIBLE), same value as `ClipLevels.RmsDbfs`; lets long clips stream (GetData does not work on Streaming clips) |
 | `Core/AudioLevelMath.cs` | RMS dBFS, power sum of uncorrelated sources, gain → dB; `Silent` = -200 |
 | `Core/RoomChoice.cs` | `RoomChoice` Dry / Room (0.7 s) / Hall (2.2 s) and their RT60 (experience chambers); `ReverbTuner.Apply(choice)` / `SetDry()` |
 | `Runtime/ShoeboxRoom.cs` | room size (one size for the visual room and the shoebox), V/S |
-| `Runtime/ReverbTuner.cs` | `SetRt60(s)` (coefficient from the table, pushed to the plugin every frame, the shoebox component disabled), `SetDry()`, `SetReflection(r)`, `UsePreset()`, `ExpectedRt60()`, `PresetRt60()`, `ResolveCalibration()`, `Calibrated`, `CalibrationStatus`, `OpenSpace`, `UncalibratedWarning`, `Note()` for the log, `Describe()` for a Debug status |
-| `Runtime/Rt60Runner.cs` | `Rt60Runner.Begin(plan, progress, done)` runs an `Rt60Plan` (conditions, positions, repeats, mixer group, silence / restore callbacks, extra metadata) and writes the report; `Wait()`, `Cancel()`; destroying it restores everything; `Rt60RunResult.Summary()` for a status line |
+| `Runtime/ReverbTuner.cs` | `SetRt60(s)` (coefficient from the table, pushed to the plugin every frame, the shoebox component disabled), `SetDry()`, `SetReflection(r)`, `UsePreset()`, `ExpectedRt60()`, `PresetRt60()`, `ResolveCalibration()`, `Calibrated`, `CalibratedTable`, `CalibrationStatus`, `OpenSpace`, `HasRoom`, `SetRoomSize(w, d, h)` (open space only; C04), `ExpectedRt60For(r)`, `UncalibratedWarning` ("Need to calibrate RT60 before running trials.") / `UncalibratedNote` (reports), `TableSource`, `HeadsetTable`, `HeadsetTableNote`, `PanelNote(out warning)`, `Note()` for the log, `Describe()` for a Debug status |
+| `Runtime/Rt60Runner.cs` | `Rt60Runner.Begin(plan, progress, done)` runs an `Rt60Plan` (conditions, positions, repeats, mixer group, silence / restore callbacks, extra metadata) and writes the report of a completed run; `Wait()`, `Cancel()`; destroying it restores everything; progress for a dialog: `Step`, `Fraction`, `SecondsLeft`; `Rt60Plan.EstimatedSeconds()`, `Sweep(..., reflections)`; `Rt60RunResult.Summary()` for a status line, `ResultLines()` for a dialog. The dialog itself is App `Rt60RunDialog` (GPL.UI) |
 | `Runtime/Rt60Meter.cs` | on the AudioListener (`Ensure()`): `Record(probe, settle, record, done)` plays the impulse and returns the left and right channels |
+| `Runtime/Rt60HeadsetTables.cs` | `Use(sweepCsvPath)` (validate + copy to `Calibration/Tables`), `LoadAll()`, `Directory` |
 | `Runtime/Rt60CalibrationAsset.cs` | imported table (ScriptableObject in `Resources/RT60Calibration`), `LoadAll()`; `Rt60Platform.Current` |
 | `Runtime/ClipLevels.cs` | clip RMS dBFS (needs Decompress On Load), source level = RMS + gain boost + volume |
 | `Editor/Rt60CalibrationImport.cs` | `Magic > Acoustics > Import RT60 Calibration...`: sweep CSV -> table asset + report copies in `docs/calibration/` |
@@ -141,8 +160,11 @@ plan.Conditions.Add(Rt60Condition.Rt60("noisy", reverb, 0.7f));
 var runner = Rt60Runner.Begin(plan, line => status.text = line, r => status.text = r.Summary());
 yield return runner.Wait();                            // or runner.Cancel()
 
-// Calibrate this room on this device
-Rt60Runner.Begin(Rt60Plan.Sweep("<Id>", reverb, group), line => status.text = line, r => status.text = r.Summary());
+// in the AcousticChamber app, with the run dialog (progress, Cancel, result): AcousticChamber.App.Rt60RunDialog.Run(canvas, plan)
+
+// Calibrate this room on this device (C04 Reverberation does this; a profile may narrow the sweep)
+var sweep = Rt60Plan.Sweep("<Id>", reverb, group, Rt60Profiles.Short.SweepFor(reverb.ExpectedRt60For));
+Rt60Runner.Begin(sweep, line => status.text = line, r => status.text = r.Summary());
 ```
 
 ## Limits

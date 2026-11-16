@@ -159,80 +159,54 @@ namespace AcousticChamber.Chambers.HiddenSource
             _rt60Warning = UiKit.Text(body, "Rt60Warning", ReverbTuner.UncalibratedWarning, th.smallSize, Vector2.zero, Vector2.zero,
                                       color: th.debug, align: TextAlignmentOptions.TopLeft);
             UiKit.Size(_rt60Warning.gameObject, prefW: 0f, flexW: 1f);
-            _rt60Warning.gameObject.SetActive(reverb == null || !reverb.Calibrated);
+            Rt60RunDialog.ShowPanelNote(_rt60Warning, reverb); // warning, headset-table note (PB-27) or nothing
 
             var toolbar = surface.AddToolbar();
-            _measureButton = UiKit.Button(toolbar, "Measure RT60", "Measure RT60", UiStyle.Gray, onClick: () => ClickRt60(Rt60Report.KindMeasurement));
-            _calibrateButton = UiKit.Button(toolbar, "Calibrate", "Calibrate", UiStyle.Gray, onClick: () => ClickRt60(Rt60Report.KindSweep));
+            UiKit.Button(toolbar, "Measure RT60", "Measure RT60", UiStyle.Gray, onClick: MeasureRt60);
             var spacer = UiKit.Node(toolbar, "Spacer");
             UiKit.Size(spacer.gameObject, flexW: 1f);
-            _startButton = UiKit.Button(toolbar, "Start", "Start", UiStyle.Prominent, onClick: StartRound);
+            UiKit.Button(toolbar, "Start", "Start", UiStyle.Prominent, onClick: StartRound);
         }
 
-        // ---- RT60 (PB-26, GPL.Acoustics protocol) ---------------------------------------------------------------------
+        // ---- RT60 (PB-26 protocol; PB-27: run dialog, calibration in C04 Reverberation) --------------------------------
 
         TextMeshProUGUI _rt60Warning;
-        UiButton _measureButton, _calibrateButton, _startButton;
-        Rt60Runner _runner;
-        string _runKind = "";
+        Rt60RunDialog _run;
         bool _restoreAfterRun, _restoring;
+        bool Measuring => _run != null && _run.Running;
 
-        /// <summary>Measure RT60 = the selected room, 4 positions x 3 repeats; Calibrate = the sweep. Clicking the running one cancels it.</summary>
-        void ClickRt60(string kind)
+        /// <summary>Measure RT60 = the selected room, 4 positions x 3 repeats, in the RT60 run dialog (progress, Cancel, result).</summary>
+        void MeasureRt60()
         {
-            if (_runner != null) { if (kind == _runKind) _runner.Cancel(); return; }
-            if (_phase != Phase.Menu) return;
+            if (Measuring || _phase != Phase.Menu) return;
             if (reverb == null || source == null) { _status.text = "No reverb or source: run Magic > HiddenSource > Step 2."; return; }
             pulse.Stop();
             _soundUntil = -1f;
-            Rt60Plan plan;
-            if (kind == Rt60Report.KindSweep) plan = Rt60Plan.Sweep(Id, reverb, source.outputAudioMixerGroup);
-            else
-            {
-                plan = new Rt60Plan { Chamber = Id, Reverb = reverb, Output = source.outputAudioMixerGroup };
-                plan.Conditions.Add(_room == RoomChoice.Dry
-                    ? new Rt60Condition { Name = RoomChoices.Label(_room), Apply = reverb.SetDry }
-                    : Rt60Condition.Rt60(RoomChoices.Label(_room), reverb, RoomChoices.Rt60(_room)));
-            }
+            var plan = new Rt60Plan { Chamber = Id, Reverb = reverb, Output = source.outputAudioMixerGroup };
+            plan.Conditions.Add(_room == RoomChoice.Dry
+                ? new Rt60Condition { Name = RoomChoices.Label(_room), Apply = reverb.SetDry }
+                : Rt60Condition.Rt60(RoomChoices.Label(_room), reverb, RoomChoices.Rt60(_room)));
             plan.SilenceOthers = silence => { if (silence && pulse != null) pulse.Stop(); };
             _restoreAfterRun = true;
             plan.Restore = () => { if (!_restoreAfterRun) return; _restoring = true; Apply(); _restoring = false; };
             plan.Meta.Add(new KeyValuePair<string, string>("hearing_condition", HearingConditions.Label(_condition) + " (bypassed while recording)"));
-            _runKind = kind;
-            _runner = Rt60Runner.Begin(plan, line => { if (_status != null) _status.text = "RT60: " + line; }, OnRt60Done);
-            ShowRt60();
-        }
-
-        void OnRt60Done(Rt60RunResult result)
-        {
-            _runner = null;
-            if (this == null) return;
-            if (_status != null) _status.text = result.Summary();
-            ShowRt60();
-        }
-
-        void ShowRt60()
-        {
-            if (_measureButton == null) return;
-            _measureButton.Selected = _runner != null && _runKind == Rt60Report.KindMeasurement;
-            _calibrateButton.Selected = _runner != null && _runKind == Rt60Report.KindSweep;
-            _startButton.interactable = _runner == null;
+            _run = Rt60RunDialog.Run(transform, plan, _ => _run = null);
         }
 
         /// <summary>Leaving the chamber: cancel a run without touching the panel (it is going away).</summary>
         void StopRt60()
         {
-            if (_runner == null) return;
+            if (_run == null) return;
             _restoreAfterRun = false;
-            _runner.Cancel();
-            _runner = null;
+            _run.Stop();
+            _run = null;
         }
 
         /// <summary>Applies the choices to the sound and the output and shows them on the buttons.</summary>
         void Apply()
         {
             if (_output != null) _output.SetProfile(HearingConditions.Profile(_condition));
-            if (reverb != null && (_runner == null || _restoring)) reverb.Apply(_room); // a running RT60 measurement owns the room
+            if (reverb != null && (!Measuring || _restoring)) reverb.Apply(_room); // a running RT60 measurement owns the room
             DistanceCue.Apply(source, _natural);
             UiKit.Select(_roomButtons, i => RoomChoices.All[i] == _room);
             UiKit.Select(_cueButtons, i => (i == 0) == _natural);
@@ -244,7 +218,7 @@ namespace AcousticChamber.Chambers.HiddenSource
 
         void StartRound()
         {
-            if (_phase != Phase.Menu || _rig == null || _runner != null) return;
+            if (_phase != Phase.Menu || _rig == null || Measuring) return;
             if (HeadPose.NotTrackedYet(_rig))
             {
                 _status.text = "Waiting for head tracking. Look around and press Start again.";

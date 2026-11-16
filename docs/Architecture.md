@@ -179,7 +179,8 @@ asset has an entry in `docs/AssetCredits.md` before it is committed ([ADR-0008](
 **Chamber logic:** a chamber's MonoBehaviour derives from `ProtocolChamber` (App; itself a `ChamberBehaviour`), which owns the run loop (walker + structure rows), the onboarding stages, the head gate before a trial, block break, thanks, recenter rows, the plan-hash check on resume and the cleanup after Stop. The chamber overrides `Schema`, `LogSchema`, `CreatePlan`, `RunTrial` and optionally `RunStage` / `BlockEnd` / `OnAbort` / `BeforeRow` (sets context columns such as `condition` before a structure row). A chamber without a staged protocol may derive from `ChamberBehaviour` directly. A chamber supplies a protocol (stages + resume policies), a trial runner, condition appliers (push parameter values into modules; shared by real runs and Debug), log columns, parameter schema, bindings, posture and docs.
 
 Chambers (independent; order is a backlog decision):
-- **C04 HumPerHW2** — HW2 rebuilt on the modules (same data format where possible).
+- **C05 HumPerHW2** — HW2 rebuilt on the modules (same data format where possible); C04 until PB-27.
+- **C04 Reverberation** — tool chamber (experience-style panel, no data): RT60 calibration per room size, profiles, run dialog (PB-27, ADR-0010).
 - **C03 HearingLoss**, **C01 MovingSource**, **C02 HiddenSource** — experience chambers (ADR-0006): own panel, no logs.
 - Realistic room, outdoor (later).
 - **_Template** (C00, hidden) — minimal working chamber to copy: `Magic > App > New Chamber...` copies it to `Chambers/<Id>` with new GUIDs and renamed code, menus and paths; docs become skeletons.

@@ -3,9 +3,9 @@
  * C01 · Moving Source experience panel (Unity: Chambers/MovingSource MovingSourceExperience). 1100 x 1040 u, movable.
  * Rows: Sound (generated sounds + the scene's recordings), Room, Distance, Hearing (ear + level), Path (+ Stop), Speed; Status (text2)
  * and, under it, the RT60 warning (debug color) while the room is not calibrated on this device (PB-26, PO 2026-11-15).
- * Toolbar: Reset source (left); Measure RT60, Calibrate (right). Measure RT60 = the selected room, 4 positions x 3 repeats; the
- * sound and the path stop while it runs. Calibrate = the coefficient sweep. Selected = running.
- * Result line variants (2026-11-16): Dry -> "Dry no reverberation"; a flagged T_mid ends "(flagged, see report)".
+ * Toolbar: Reset source (left); Measure RT60 (right) = the selected room, 4 positions x 3 repeats; the sound and the path stop while
+ * it runs. Progress and result are shown in the RT60 run dialog (Screens/RT60 Run Dialog), not in the status (PB-27).
+ * Calibrate moved to C04 Reverberation (PB-27); warning text PB-27.
  */
 import { ref } from 'vue'
 import UiPanel from '@/components/UiPanel/UiPanel.vue'
@@ -13,15 +13,11 @@ import UiNavigationBar from '@/components/UiNavigationBar/UiNavigationBar.vue'
 import UiChoiceGroup from '@/components/UiChoiceGroup/UiChoiceGroup.vue'
 import UiButton from '@/components/UiButton/UiButton.vue'
 
-const props = withDefaults(defineProps<{ state?: 'idle' | 'measuring' | 'result' }>(), { state: 'idle' })
+const props = withDefaults(defineProps<{ state?: 'idle' | 'calibrated' | 'headset' }>(), { state: 'idle' })
 
 const sound = ref(''), room = ref('Hall 2.2 s'), cue = ref('Natural'), ear = ref('Both'), level = ref('0 dB'), path = ref(''), speed = ref('1 ×')
 const opts = (l: string[]) => l.map((x) => ({ value: x, label: x }))
-const status = {
-  idle: 'Click a sound to play it; click it again to pause.\nPoint at the source and press the grip to move it.  Hearing: Normal.',
-  measuring: 'RT60: Hall 2.2 s, 180 deg, repeat 1 (10/12)',
-  result: 'RT60 T_mid: Hall 2.2 s 2.17 ± 0.04 s. Report: RT60_MovingSource_20261115-150210.txt',
-}[props.state]
+const status = 'Click a sound to play it; click it again to pause.\nPoint at the source and press the grip to move it.  Hearing: Normal.'
 </script>
 
 <template>
@@ -58,15 +54,13 @@ const status = {
         <UiChoiceGroup v-model="speed" class="flex-1" :options="opts(['0.5 ×', '1 ×', '2 ×'])" />
       </div>
       <span class="whitespace-pre-line text-small text-text2">{{ status }}</span>
-      <span class="text-small text-debug">RT60 not calibrated for this room on this device: values are estimates.</span>
+      <span v-if="props.state === 'idle'" class="text-small text-debug">Need to calibrate RT60 before running trials.</span>
+      <span v-if="props.state === 'headset'" class="text-small text-text2">RT60 calibrated on this headset only: import it before the study.</span>
     </div>
 
     <template #toolbar>
       <UiButton label="Reset source" />
-      <div class="flex gap-12">
-        <UiButton label="Measure RT60" :selected="props.state === 'measuring'" />
-        <UiButton label="Calibrate" />
-      </div>
+      <UiButton label="Measure RT60" />
     </template>
   </UiPanel>
 </template>

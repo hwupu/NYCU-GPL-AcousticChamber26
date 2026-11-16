@@ -11,7 +11,7 @@
  * No description, no "N unfinished" pill (PO 2026-11-10; the launch routing still opens a chamber with unfinished sessions).
  * Geometry (HallGrid, content 904 - 2 x 8 = 888 u): card = cover 432 x 243 u; 2 rows = 514 u.
  * Covers: one pool, Assets/AcousticChamber/App/Covers/IMG-C-NN.jpeg (Gemini; the ID is the credit ID, not the chamber); each
- * ChamberDefinition.thumbnail picks one: C01 = IMG-C-01, C02 = 02, C03 = 05, C04 = 04 (IMG-C-03 spare).
+ * ChamberDefinition.thumbnail picks one: C01 = IMG-C-01, C02 = 02, C03 = 05, C04 Reverberation = 03, C05 HumPerHW2 = 04 (PB-27).
  *
  *  covers   false = placeholders (no thumbnails)
  *  hover    force the hover state on one card (index)
@@ -20,6 +20,7 @@ import UiPanel from '@/components/UiPanel/UiPanel.vue'
 import UiNavigationBar from '@/components/UiNavigationBar/UiNavigationBar.vue'
 import c01 from '../../../../Assets/AcousticChamber/App/Covers/IMG-C-01.jpeg'
 import c02 from '../../../../Assets/AcousticChamber/App/Covers/IMG-C-02.jpeg'
+import c03 from '../../../../Assets/AcousticChamber/App/Covers/IMG-C-03.jpeg'
 import c04 from '../../../../Assets/AcousticChamber/App/Covers/IMG-C-04.jpeg'
 import c05 from '../../../../Assets/AcousticChamber/App/Covers/IMG-C-05.jpeg'
 
@@ -29,7 +30,8 @@ const chambers = [
   { label: 'C01', title: 'Moving Source', cover: c01 },
   { label: 'C02', title: 'Hidden Source', cover: c02 },
   { label: 'C03', title: 'Hearing Loss', cover: c05 },
-  { label: 'C04', title: 'HumPerHW2', cover: c04 },
+  { label: 'C04', title: 'Reverberation', cover: c03 },
+  { label: 'C05', title: 'HumPerHW2', cover: c04 },
 ]
 </script>
 
