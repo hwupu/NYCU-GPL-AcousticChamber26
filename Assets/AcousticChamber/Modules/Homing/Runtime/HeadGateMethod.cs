@@ -44,7 +44,7 @@ namespace GPL.Homing
             var outcome = HomingOutcome.Done;
             try
             {
-                if (_cue != null) _cue.Show(_rig);
+                if (_cue != null) _cue.Show(_rig, Gate.Settings.DotElevationDeg);
                 while (true)
                 {
                     if (_cancel) { outcome = HomingOutcome.Cancelled; break; }
@@ -77,6 +77,7 @@ namespace GPL.Homing
                 EyeHeightM = Last.EyeHeightM,
                 Breaks = Gate.Breaks,
                 HintAtSec = Gate.HintAt,
+                DotElevationDeg = Gate.Settings.DotElevationDeg,
             };
             Debug.Log("[GPL] Homing: " + r.Note());
             done?.Invoke(r);

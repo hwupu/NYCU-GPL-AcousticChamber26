@@ -7,9 +7,9 @@ odd with the time, so it can be found in the CSV.
 | # | Do | Expect |
 |---|---|---|
 | 1 | Open Config | Acoustics **Room 0.7 s** selected, Hearing **Normal**, Anchors **Off**, Sound sphere **After confirm**; RT60 warning only if this headset has no table |
-| 2 | **Play stimulus** | white-noise pulses (2 s on, **0.7 s** off) straight ahead at 2 m, gray radio box in front of them at eye height |
+| 2 | **Play stimulus** | white-noise pulses (2 s on, **0.7 s** off) straight ahead at 3 m, gray radio box in front of them at eye height |
 | 3 | Hearing **L −80**, then **R −80**, **L −40**, **R −40**, **Normal** (stimulus playing) | the pulse goes muffled and moves toward the good ear; −80 clearly stronger than −40; Normal = as before |
-| 4 | Anchors **On** | yellow cube ahead, brass bar to the right at 2 m; horn, 1.5 s, trumpet fanfare (placeholder, about 15 s), 2.5 s, horn, ... one at a time |
+| 4 | Anchors **On** | yellow cube ahead, brass bar to the right at 3 m; rubber-duck quacks (about 5 s), 1.5 s, trumpet fanfare (about 15 s), 2.5 s, quacks, ... one at a time |
 | 5 | Turn the head 90° | the anchors stay where they were in the room |
 | 6 | Hearing **L −80** with anchors on | the anchors are filtered too (the filter is on the whole output) |
 | 7 | **Measure RT60** (Anchors on) | the anchors pause during the measurement and resume after; status T_mid close to 0.7 s; Measure RT60 is selected only while it runs and never changes the Acoustics choice |
@@ -18,7 +18,7 @@ odd with the time, so it can be found in the CSV.
 ## 2. Debug run (Config > Run experiment trials)
 | # | Do | Expect |
 |---|---|---|
-| 9 | Onboarding (placeholder C05 slides), practice | radio box at 0°, 1.2 m, start +30°, normal hearing, no anchors, no helper text |
+| 9 | Onboarding, practice | slides "Before we start" (Meta recenter), "Procedure", "Controllers", "Trials", "Ready?" with the PO's pictures (中文 too); Back on "Procedure" reads "← Back" ("← 上一頁"); the dot afterwards sits slightly above eye level (3°); practice: radio box at 0°, 1.5 m, start +30°, normal hearing, no anchors, no helper text |
 | 10 | Hold one trigger for over 40 s | the sound goes all the way round (behind you and back in front); no stop at ±90° |
 | 11 | Answer after a full turn | the Debug line shows the difference within ±180° |
 | 12 | Experiment (fixed or Williams order) | no break screen between blocks; anchors appear / disappear between trials when the cell changes; hearing changes without notice |

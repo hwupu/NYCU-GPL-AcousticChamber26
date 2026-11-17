@@ -2,7 +2,8 @@
 /**
  * Main Hall (Unity: App HallMenu + HallGrid; DesignSystem section 7). Fixed window 1000 x 700 u, no ‹, title "Acoustic Chambers", centered (PO 2026-11-10).
  * Body: a scrolling 2-column grid of cards with 8 u of room around it (a hovered card grows into it), column gap 24 u,
- * row gap 28 u (PO 2026-11-10: room to scale). A card is only its cover, one target (no fill around it, nothing below it):
+ * row gap 28 u (PO 2026-11-10: room to scale). Inside the scrolling area 56 u below the last row (= 48 u side padding + 8 u), and
+ * the area runs to the panel's bottom edge, so scrolled to the end the cards sit evenly in the window (PO 2026-11-17). A card is only its cover, one target (no fill around it, nothing below it):
  *  - a 16:9 cover (radius 36; the chamber's image, or the solid `cover` color);
  *  - on it, top left the C-ID (small, bold), bottom left the title (title size 56 u, bold, letter spacing -3 %, line height 1),
  *    both 24 u in, white (`text`) at 75 %, soft shadow drop-shadow(0 0 4px rgb(0 0 0 / 0.3)) (Unity: UiKit.SoftShadow, TMP underlay);
@@ -52,7 +53,10 @@ const chambers = [
 
 <style scoped>
 .chambers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* equal columns whatever the text (Unity: minW 0) */
-            column-gap: 24px; row-gap: 28px; padding: 8px; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+            column-gap: 24px; row-gap: 28px; padding: 8px 8px 56px; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+/* the grid scrolls down to the panel's bottom edge; scrolled to the end, the last cards stay 56 u above it, the same as the
+   48 + 8 u at the sides (PO 2026-11-17; Unity: HallMenu.BottomPadding) */
+:deep(.slot-body) { padding-bottom: 0; }
 .card { position: relative; aspect-ratio: 16 / 9; border-radius: 36px; background: var(--color-cover); overflow: hidden; color: var(--color-text); cursor: pointer;
         transition: transform var(--hover-out) var(--ease-settle); }
 .image { position: absolute; inset: 0; background: center / cover no-repeat; filter: saturate(1); transition: filter var(--hover-out) var(--ease-settle); }

@@ -152,7 +152,8 @@ namespace AcousticChamber.App.Tests
             Assert.AreEqual("Safety", Page.NavigationBar.Find("Title Box/Label").GetComponent<TextMeshProUGUI>().text);
             Assert.IsTrue(ButtonNamed(Page, "Back").gameObject.activeSelf);
             Assert.AreEqual("← Procedure", ButtonNamed(Page, "Back").GetComponentInChildren<TextMeshProUGUI>().text);
-            Assert.AreEqual("Continue", ButtonNamed(Page, "Next").GetComponentInChildren<TextMeshProUGUI>().text, "the last slide ends with Continue");
+            Assert.AreEqual("Continue" + ProtocolScreens.NextArrow, ButtonNamed(Page, "Next").GetComponentInChildren<TextMeshProUGUI>().text,
+                            "the last slide ends with Continue →: every slide button has an arrow (PO 2026-11-17)");
         }
     }
 }

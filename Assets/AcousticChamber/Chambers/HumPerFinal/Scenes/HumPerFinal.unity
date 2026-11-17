@@ -3911,7 +3911,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.5
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -7371,7 +7371,7 @@ Light:
   serializedVersion: 13
   m_Type: 3
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 2
+  m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -11841,12 +11841,12 @@ MonoBehaviour:
   instructions: {fileID: 11400000, guid: 3017061e12caac349b2c82f482648518, type: 2}
   recenterSlide:
     id: recenter
-    titleEnglish: 
-    titleChinese: 
-    imageEnglish: {fileID: 0}
-    imageChinese: {fileID: 0}
-    shortEnglish: 
-    shortChinese: 
+    titleEnglish: Before we start
+    titleChinese: "\u958B\u59CB\u4E4B\u524D"
+    imageEnglish: {fileID: 2800000, guid: 894dda378d11cf14b9139619f79ed28c, type: 3}
+    imageChinese: {fileID: 2800000, guid: 00da3fc2a323a834ab7fe0b075eba45e, type: 3}
+    shortEnglish: Back
+    shortChinese: "\u4E0A\u4E00\u9801"
     captionEnglish: 
     captionChinese: 
   stimulus: {fileID: 914549586}
@@ -12072,7 +12072,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: AcousticChamber.Chambers.HumPerFinal::AcousticChamber.Chambers.HumPerFinal.AnchorLoop
   duck: {fileID: 1211749725}
   trumpet: {fileID: 61962684}
-  duckRecording: {fileID: 8300000, guid: 407cce36d9f521748a39d2923b2f802d, type: 3}
+  duckRecording: {fileID: 8300000, guid: aaebea6a6d34cbd4aa4c83ff17fd76b6, type: 3}
   trumpetRecording: {fileID: 8300000, guid: 1d8d809e226b1134d935d314982ade1c, type: 3}
   levelDbfs: -26
 --- !u!1 &1959816434

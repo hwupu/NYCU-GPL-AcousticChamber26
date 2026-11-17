@@ -123,6 +123,7 @@ Editor step with `AssetDatabase.LoadAssetAtPath<AudioClip>(StimulusLibrary.Asset
 | Folder | What | Licence | In git |
 |---|---|---|---|
 | `Library/OpenAIR/` | 7 anechoic recordings from the OpenAIR library (Univ. of York): 4 bicycle horns (0.5-1.5 s), a starter-pistol shot (impulsive, 1.1 s), an operatic voice (4.9 s), a natural baroque trumpet fanfare (14.7 s). Mono, 44.1 / 48 / 96 kHz, 16-bit, 3.7 MB | CC BY-SA (snapshot record CC BY-SA 4.0); credit "www.openairlib.net" + Murphy & Shelley 2010; a changed copy stays CC BY-SA | yes (LFS) |
+| `Library/Freesound/` | 2 Freesound clips added by the PO (2026-11-17), kept as downloaded (MP3, Freesound file names): **Toy Ducks Quacking** (348791, nebyoolae; mono, about 4.9 s, several squeezes; C06's duck anchor) and **quack** (791152, Mari0411; stereo, about 0.34 s). Catalog `Core/Freesound.cs`. Imported as PCM like the rest (Unity decodes the MP3 at import; an MP3 starts with a few ms of encoder padding); `Leveled` mixes stereo to mono | CC0 1.0 (credit not required; given anyway) | yes (LFS) |
 
 Taken from the OpenAIR snapshot (doi:10.5281/zenodo.1186905, 575 MB, 2026-11-09): its zip has no central directory (the last file is
 cut off), so the entries were read by their local headers and every chosen file's CRC was checked. The snapshot holds only the CC BY-SA

@@ -137,7 +137,7 @@ Decision (Default and Custom presets, Playground, Save as Custom, Make active, r
 ## 9. Input bindings and text entry
 - **Global actions** are the same in every chamber. Reserved: **Y (left) = Stop dialog**; the Meta button belongs to the system. A chamber may remap a global action only by declaring it in its `ChamberDefinition` bindings table; its menu then shows the binding.
 - **Chamber actions** (confirm, adjust, grab, ...) are declared in the same table (`ChamberBehaviour.DeclareActions`, called by the chamber menu after `confirm` and `back`) and read through `GPL.Input`.
-- **Standard actions** (a chamber declares only those it uses): `confirm` = A, `back` = B, `trigger_left/right`, `grip_left/right`, `stick_left/right`; X is free. Y works only while a session (real or Debug run) is running.
+- **Standard actions** (a chamber declares only those it uses): `confirm` = A, mirrored on X (left-handed participants, PO 2026-11-17), `back` = B, `trigger_left/right`, `grip_left/right`, `stick_left/right`; Y works only while a session (real or Debug run) is running.
 - **Stop dialog (Y)**: modal, session frozen (time scale 0, audio paused); scene objects that could cover it (`ProtocolChamber.ViewBlockers`) are hidden. Real: Keep going / Drop out (`participant_dropout`, not resumable); Debug: Keep going / Back to the chamber menu. Behaviour: [ADR-0003](decisions/ADR-0003-sessions-resume-input.md); look: [DesignSystem](DesignSystem.md) section 7.
 - **Text entry** is swappable (`ITextEntry`): `UiNumberPad` (on-canvas, default), `KeypadEntry` (letters + digits), `NativeKeyboardEntry` (Unity `TouchScreenKeyboard`; PB-14, deferred). Meta's in-app Virtual Keyboard is not in Core SDK 207.
 

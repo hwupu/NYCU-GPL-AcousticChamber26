@@ -29,3 +29,4 @@ gate.yaw_tol_deg=5
 gate.pitch_tol_deg=10
 gate.hold_s=1
 gate.hint_after_s=4
+gate.dot_elevation_deg=3

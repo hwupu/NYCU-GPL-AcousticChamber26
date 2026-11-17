@@ -13,6 +13,7 @@ namespace GPL.Homing
         public const string PitchTolerance = "gate.pitch_tol_deg";
         public const string Hold = "gate.hold_s";
         public const string HintAfter = "gate.hint_after_s";
+        public const string DotElevation = "gate.dot_elevation_deg";
 
         public static IEnumerable<ParamDef> GateDefs(string group = "Head gate")
         {
@@ -25,6 +26,8 @@ namespace GPL.Homing
                 .Describe("time inside the tolerance without a break");
             yield return ParamDef.Float(HintAfter, d.HintAfterSec, 0f, 30f, 1f, "Hint after", "s", group)
                 .Describe("\"Look at the dot\" after this long; 0 = never");
+            yield return ParamDef.Float(DotElevation, d.DotElevationDeg, -30f, 30f, 0.5f, "Dot elevation", "°", group)
+                .Describe("dot above (+) or below (−) eye level; the pitch tolerance is centred on it");
         }
 
         /// <summary>Gate settings from a parameter set; keys missing from its schema keep their defaults.</summary>
@@ -37,6 +40,7 @@ namespace GPL.Homing
             if (schema.Contains(PitchTolerance)) s.PitchToleranceDeg = values.GetFloat(PitchTolerance);
             if (schema.Contains(Hold)) s.HoldSec = values.GetFloat(Hold);
             if (schema.Contains(HintAfter)) s.HintAfterSec = values.GetFloat(HintAfter);
+            if (schema.Contains(DotElevation)) s.DotElevationDeg = values.GetFloat(DotElevation);
             return s.Validated();
         }
     }

@@ -24,7 +24,6 @@ namespace GPL.Protocol
         public const string RecenterShort = "protocol.recenter_short";
         public const string HandoverTitle = "protocol.handover_title";
         public const string LanguageButton = "protocol.language_button";
-        public const string LookAtDotToBegin = "protocol.look_at_dot_to_begin";
         public const string SlideNext = "protocol.slide_next";
         public const string SlideBack = "protocol.slide_back";
 
@@ -36,12 +35,11 @@ namespace GPL.Protocol
             .Add(HandoverTitle, "Protocol", "流程")
             .Add(LanguageButton, "Language", "語言")
             .Add(HoldMeta, "Look straight ahead.\nHold the Meta button until the view recenters.", "請直視前方，\n長按 Meta 按鈕，直到畫面重新置中。")
-            .Add(LookAtDotToBegin, "Look at the dot to begin", "請看圓點以開始")
             .Add(BlockDone, "Block {0} of {1} done.", "第 {0} 段（共 {1} 段）完成。")
             .Add(Thanks, "Thank you.\nPlease return the headset.", "謝謝您的參與。\n請將頭戴裝置交還給實驗人員。")
             .Add(Finish, "Finish", "完成")
             .Add(LookAtDot, "Look at the dot", "請看圓點")
-            .Add(PressA, "Press A", "請按 A")
+            .Add(PressA, "Press A or X", "請按 A 或 X")
             .Add(SlideNext, "Next", "下一頁")
             .Add(SlideBack, "Back", "上一頁");
 
@@ -62,6 +60,8 @@ namespace GPL.Protocol
     {
         /// <summary>Cue text sits this far below the canvas center (the canvas is already below eye level; clear of the dot).</summary>
         public const float CueY = -260f;
+        /// <summary>Cue text color: black, the rooms are white (PO 2026-11-17).</summary>
+        public static readonly Color CueColor = Color.black;
 
         readonly Transform _canvas;
         readonly GlobalActions _actions;
@@ -249,22 +249,36 @@ namespace GPL.Protocol
         };
 
         /// <summary>
-        /// The final check before the trials (PB-20b): "Look at the dot to begin" under the fixation dot, then the head gate
-        /// (<paramref name="settings"/>). The gate result goes to <paramref name="done"/>. Without a rig or a dot it ends at once
-        /// with outcome <c>unavailable</c>.
+        /// The final check before the trials (PB-20b): the fixation dot and the head gate (<paramref name="settings"/>), as before
+        /// every trial (<see cref="HeadGate"/>: no text unless the hint is due). The gate result goes to <paramref name="done"/>.
+        /// Without a rig or a dot it ends at once with outcome <c>unavailable</c>.
         /// </summary>
         public IEnumerator DotCheck(OVRCameraRig rig, FixationCue dot, GateSettings settings, Action<HomingResult> done)
         {
             Hide();
             HomingResult result = null;
             if (rig != null && dot != null)
-            {
-                Cue(Loc.Get(ProtocolStrings.LookAtDotToBegin));
-                yield return new HeadGateMethod(rig, dot, settings).Run(r => result = r);
-                Cue(null);
-            }
+                yield return HeadGate(new HeadGateMethod(rig, dot, settings), r => result = r);
             else result = new HomingResult { Method = HomingMethods.HeadGate, Outcome = HomingOutcome.Unavailable, Detail = rig == null ? "no rig" : "no dot" };
             done?.Invoke(result);
+        }
+
+        /// <summary>
+        /// Runs a head gate with the standard hint: only the dot while the participant finds it; "Look at the dot" (<see cref="Cue"/>)
+        /// only when the gate is not passed after <c>gate.hint_after_s</c>, gone when it passes (PO 2026-11-17: as little to see as
+        /// possible). Every head gate of a protocol (the final dot check, each trial, Debug trials) goes through here.
+        /// </summary>
+        public IEnumerator HeadGate(HeadGateMethod gate, Action<HomingResult> done)
+        {
+            if (gate == null) throw new ArgumentNullException(nameof(gate));
+            Action<bool> hint = on => Cue(on ? Loc.Get(ProtocolStrings.LookAtDot) : null);
+            gate.HintChanged += hint;
+            try { yield return gate.Run(done); }
+            finally
+            {
+                gate.HintChanged -= hint;
+                Cue(null);
+            }
         }
 
         /// <summary>Arrow before the Back label and after the Next label of a slide.</summary>
@@ -295,7 +309,7 @@ namespace GPL.Protocol
         /// "&lt;next slide's short title&gt; →", "← Back" / "Next →" when that slide has no title.
         /// On the first slide Back is shown only with <paramref name="firstBack"/> (another screen, e.g. the language choice or
         /// the previous stage's slide), labelled <paramref name="firstBackLabel"/>; the slide comes back afterwards (how
-        /// <c>again</c>). On the last slide Next reads "Continue" without an arrow (the slides end), or, with
+        /// <c>again</c>). On the last slide Next reads "Continue →" (the slides end; PO 2026-11-17: every slide button has an arrow), or, with
         /// <paramref name="lastLabel"/>, names what follows ("Next →" when it returns empty). Next is inactive while a page's
         /// <see cref="SlidePage.Ready"/> is false. Opens on slide <paramref name="start"/>; <paramref name="shown"/> runs for
         /// every slide that comes on screen (store its index, log it). No pages: nothing shown.
@@ -350,10 +364,10 @@ namespace GPL.Protocol
                     image.color = tex != null ? Color.white : th.raised; // no image: an empty gray area with the caption
                     caption.text = tex == null && page.Caption != null ? page.Caption(lang) : "";
                     back.gameObject.SetActive(!deck.IsFirst || firstWithBack);
-                    // buttons name where they lead, with arrows; a final Continue (the slides end) has none
+                    // buttons name where they lead, all with arrows (the final Continue too: PO 2026-11-17)
                     string backName = deck.IsFirst ? (firstBackLabel != null ? firstBackLabel(lang) : null) : ButtonName(pages[deck.Index - 1], lang);
                     backLabel.text = BackArrow + (string.IsNullOrEmpty(backName) ? Loc.Get(ProtocolStrings.SlideBack) : backName);
-                    if (deck.IsLast && lastLabel == null) nextLabel.text = Loc.Get(UiStrings.Continue);
+                    if (deck.IsLast && lastLabel == null) nextLabel.text = Loc.Get(UiStrings.Continue) + NextArrow;
                     else
                     {
                         string nextName = deck.IsLast ? lastLabel(lang) : ButtonName(pages[deck.Index + 1], lang);
@@ -391,7 +405,10 @@ namespace GPL.Protocol
             yield return null;
         }
 
-        /// <summary>Bare text on the canvas without a panel (the panel is hidden), below the center. Null or empty hides it.</summary>
+        /// <summary>
+        /// Bare text on the canvas without a panel (the panel is hidden), below the center, in <see cref="CueColor"/> (it stands on
+        /// the room, not on a panel). Null or empty hides it.
+        /// </summary>
         public void Cue(string text, float y = CueY)
         {
             if (string.IsNullOrEmpty(text))
@@ -402,7 +419,7 @@ namespace GPL.Protocol
             if (_cue == null)
             {
                 var th = UiKit.Theme;
-                _cue = UiKit.Text(_canvas, "Protocol Cue", "", th.titleSize, Vector2.zero, new Vector2(Size.x, 90f), bold: true);
+                _cue = UiKit.Text(_canvas, "Protocol Cue", "", th.titleSize, Vector2.zero, new Vector2(Size.x, 90f), bold: true, color: CueColor);
             }
             _cue.rectTransform.anchoredPosition = new Vector2(0f, y);
             _cue.text = text;

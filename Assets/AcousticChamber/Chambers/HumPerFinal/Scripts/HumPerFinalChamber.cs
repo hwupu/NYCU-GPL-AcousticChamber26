@@ -79,8 +79,8 @@ namespace AcousticChamber.Chambers.HumPerFinal
                         .Describe("williams: row = Study ID mod 10; fixed: cells 0-9"),
                 ParamDef.Float("iti_s", 0.6f, 0f, 5f, 0.1f, "Inter-trial interval", "s", "Procedure"),
                 ParamDef.Int("repeats", 2, 1, 4, "Repeats", "", "Procedure").Describe("per radio position × start side and block"),
-                ParamDef.Float("radius_m", 2f, 0.5f, 5f, 0.1f, "Radius", "m", "Stimuli"),
-                ParamDef.Float("practice.radius_m", 1.2f, 0.5f, 5f, 0.1f, "Practice radius", "m", "Stimuli"),
+                ParamDef.Float("radius_m", 3f, 0.5f, 5f, 0.1f, "Radius", "m", "Stimuli"),
+                ParamDef.Float("practice.radius_m", 1.5f, 0.5f, 5f, 0.1f, "Practice radius", "m", "Stimuli"),
                 ParamDef.Float("audio_start_deg", 60f, 0f, 90f, 2.5f, "Sound start", "deg", "Stimuli").Describe("−a or +a"),
                 ParamDef.Float("practice.audio_start_deg", 30f, -90f, 90f, 2.5f, "Practice sound start", "deg", "Stimuli"),
                 ParamDef.Float("practice.visual_deg", 0f, -90f, 90f, 2.5f, "Practice radio", "deg", "Stimuli"),
@@ -89,7 +89,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 ParamDef.Float("stim.off_s", 0.7f, 0f, 5f, 0.1f, "Pulse off", "s", "Stimuli"),
                 ParamDef.Float("anchor.duck_deg", 0f, -180f, 180f, 2.5f, "Duck azimuth", "deg", "Anchors"),
                 ParamDef.Float("anchor.trumpet_deg", 90f, -180f, 180f, 2.5f, "Trumpet azimuth", "deg", "Anchors"),
-                ParamDef.Float("anchor.radius_m", 2f, 0.5f, 5f, 0.1f, "Anchor radius", "m", "Anchors"),
+                ParamDef.Float("anchor.radius_m", 3f, 0.5f, 5f, 0.1f, "Anchor radius", "m", "Anchors"),
                 ParamDef.Float("anchor.gap_after_duck_s", 1.5f, 0f, 10f, 0.1f, "Pause after duck", "s", "Anchors"),
                 ParamDef.Float("anchor.gap_after_trumpet_s", 2.5f, 0f, 10f, 0.1f, "Pause after trumpet", "s", "Anchors"),
                 ParamDef.Float("adjust.rate_deg_s", 10f, 1f, 60f, 1f, "Adjust speed", "deg/s", "Response"),
@@ -477,7 +477,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 {
                     if (marker != null) marker.ShowAt(answer);
                     double diff = Angles.SignedDiff(result.FinalDeg, spec.VisualAzDeg);
-                    Screens.Cue("Sound " + (diff >= 0 ? "+" : "−") + Fmt.F(System.Math.Abs(diff), 1) + "° from the radio   (A: continue)");
+                    Screens.Cue("Sound " + (diff >= 0 ? "+" : "−") + Fmt.F(System.Math.Abs(diff), 1) + "° from the radio   (A or X: continue)");
                     yield return null;
                     while (!Screens.PressedA()) yield return null;
                     Screens.Cue(null);

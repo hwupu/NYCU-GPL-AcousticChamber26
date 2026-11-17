@@ -111,9 +111,10 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
 
         public const string AudioDir = Folder + "/Audio";
         public const string MixerPath = AudioDir + "/HumPerFinalMixer.mixer";
-        /// <summary>Placeholder anchor recordings (Design.md "Stimuli"; GPL.Stimuli OpenAIR library, credited in docs/AssetCredits.md).</summary>
-        public const string DuckClipPath = "Assets/AcousticChamber/Modules/Stimuli/Library/OpenAIR/Bicycle_Horn/classichorn.wav";
-        public const string TrumpetClipPath = "Assets/AcousticChamber/Modules/Stimuli/Library/OpenAIR/Natural_Baroque_Trumpet/tr-1780d-fanfare.wav";
+        /// <summary>Anchor recordings from the GPL.Stimuli library (Design.md "Stimuli"; PO 2026-11-17: Freesound 348791 for the duck, the library's trumpet).</summary>
+        public const string DuckClipId = "freesound_toy_ducks_quacking", TrumpetClipId = "openair_baroque_trumpet_fanfare";
+        public static string DuckClipPath => GPL.Stimuli.StimulusLibrary.AssetPath(GPL.Stimuli.StimulusLibrary.Find(DuckClipId));
+        public static string TrumpetClipPath => GPL.Stimuli.StimulusLibrary.AssetPath(GPL.Stimuli.StimulusLibrary.Find(TrumpetClipId));
         /// <summary>Placeholder boxes (Design.md "Stimuli"), metres: width × height × depth.</summary>
         public static readonly Vector3 RadioSize = new Vector3(0.25f, 0.18f, 0.12f);
         public static readonly Vector3 DuckSize = new Vector3(0.15f, 0.15f, 0.15f);
@@ -141,7 +142,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
 
             // target
             var stimGo = Child(stimuli, "Stimulus");
-            stimGo.transform.localPosition = new Vector3(0f, EyeLevelM, 2f);
+            stimGo.transform.localPosition = new Vector3(0f, EyeLevelM, 3f);
             Spatial(stimGo, null, group);
             var placed = Get<PlacedSource>(stimGo);
             placed.Anchor = PlacedSource.Anchoring.Replaced;
@@ -149,7 +150,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
 
             // radio (box placeholder)
             var radio = Child(stimuli, "Radio");
-            radio.transform.localPosition = new Vector3(0f, EyeLevelM, 2f);
+            radio.transform.localPosition = new Vector3(0f, EyeLevelM, 3f);
             radio.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             Box(radio.transform, "Model", RadioSize, LitMat("Radio", new Color(0.25f, 0.25f, 0.28f)));
             radio.SetActive(false);
@@ -202,11 +203,11 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             Debug.Log(Log + "Step 4: target, radio, anchors (duck 0°, trumpet +90°), marker and reverb linked; all sources routed to " + MixerPath + ". Save the scene.");
         }
 
-        /// <summary>An anchor: spatial source at <paramref name="az"/> on the 2 m circle (room-fixed) with a box child 'Model' (hidden until the loop starts).</summary>
+        /// <summary>An anchor: spatial source at <paramref name="az"/> on the 3 m circle (room-fixed) with a box child 'Model' (hidden until the loop starts).</summary>
         static PlacedSource Anchor(Transform parent, string name, float az, Vector3 size, Material mat, UnityEngine.Audio.AudioMixerGroup group)
         {
             var go = Child(parent, name);
-            go.transform.localPosition = Ring.Position(new Vector3(0f, EyeLevelM, 0f), Quaternion.identity, 2f, az);
+            go.transform.localPosition = Ring.Position(new Vector3(0f, EyeLevelM, 0f), Quaternion.identity, 3f, az);
             go.transform.localRotation = Ring.FacingOrigin(go.transform.localPosition, new Vector3(0f, EyeLevelM, 0f));
             Spatial(go, null, group); // the leveled clip is made at run time (AnchorLoop)
             var placed = Get<PlacedSource>(go);
@@ -215,50 +216,72 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             return placed;
         }
 
-        // ---- Step 5: instruction slides (placeholders: C05's slides 3-5 until the PO supplies C06's) ------
+        // ---- Step 5: onboarding slides (the PO's C06 illustrations, 2026-11-17) ------------------------------
 
         public const string SlidesFolder = Folder + "/Slides";
         public const string SlidesPath = SlidesFolder + "/Instructions.asset";
 
-        static readonly (string id, string stem, string en, string zh)[] SlideList =
+        /// <summary>
+        /// The C06 onboarding slides (PO 2026-11-17): id, file stem (<c>Slides/&lt;en|zh&gt;-&lt;stem&gt;.jpg</c>, 2000 × 936), title
+        /// English / 中文, and the label of the Back / Next buttons that lead to the slide (empty = the title). Slide 1 is the
+        /// recenter slide (stage <c>recenter</c>; its buttons read "Back" / "上一頁"); 2-5 are the instruction deck. The last one
+        /// announces the fixation dot; the dot itself is the stock <c>ready</c> stage (GPL.Protocol with the GPL.Homing gate).
+        /// </summary>
+        static readonly (string id, string stem, string en, string zh, string shortEn, string shortZh)[] SlideList =
         {
-            ("procedure", "3-procedure", "Procedure", "流程"),
-            ("controllers", "4-controller", "Controllers", "控制器"),
-            ("practice", "5-practise", "Practice rounds", "練習回合"),
+            ("recenter", "1-reposition", "Before we start", "開始之前", "Back", "上一頁"),
+            ("procedure", "2-procedure", "Procedure", "實驗說明", "", ""),
+            ("controllers", "3-controller", "Controllers", "操作說明", "", ""),
+            ("practice", "4-practice", "Trials", "練習回合", "", ""),
+            ("ready", "5-black-dot", "Ready?", "準備就緒？", "", ""),
         };
 
-        /// <summary>Step 5: the SlideSet <c>Slides/Instructions.asset</c> from the fitted PNGs in Slides/ (copies of C05's, placeholders), linked to the chamber.</summary>
-        [MenuItem("Magic/HumPerFinal/Step 5 - Instruction slides (placeholders)", priority = 114)]
+        /// <summary>The number of instruction slides (all but the recenter slide).</summary>
+        public const int InstructionCount = 4;
+
+        /// <summary>
+        /// Step 5: the recenter slide on the chamber (slide 1) and the SlideSet <c>Slides/Instructions.asset</c> (slides 2-5) from the
+        /// PO's JPGs, linked to the chamber. The deck is rewritten from <see cref="SlideList"/> every time (titles and images live
+        /// here, not in the Inspector); the asset and its GUID stay.
+        /// </summary>
+        [MenuItem("Magic/HumPerFinal/Step 5 - Onboarding slides", priority = 114)]
         public static void SlidesStep()
         {
             if (!ChamberSetup.IsOpen(ScenePath)) return;
             var logic = Logic();
             if (logic == null) return;
-            var images = new Dictionary<string, Texture2D>();
+            var slides = new List<GPL.Protocol.SlideSet.Slide>();
             foreach (var s in SlideList)
+            {
+                var image = new Dictionary<string, Texture2D>();
                 foreach (var lang in new[] { "en", "zh" })
                 {
-                    string path = SlidesFolder + "/" + lang + "-" + s.stem + ".png";
+                    string path = SlidesFolder + "/" + lang + "-" + s.stem + ".jpg";
                     if (!File.Exists(path)) { Debug.LogError(Log + "Missing " + path); return; }
                     GPL.Protocol.Editor.SlideSetup.ImportForSlides(path);
-                    images[lang + s.id] = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                    image[lang] = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                    if (image[lang] == null) { Debug.LogError(Log + "Not a texture: " + path); return; }
+                    if (image[lang].width != GPL.Protocol.Editor.SlideSetup.Width || image[lang].height != GPL.Protocol.Editor.SlideSetup.Height)
+                        Debug.LogWarning(Log + path + " is " + image[lang].width + " × " + image[lang].height + ", slides are " +
+                                         GPL.Protocol.Editor.SlideSetup.Width + " × " + GPL.Protocol.Editor.SlideSetup.Height + ".");
                 }
-            var set = GPL.Protocol.Editor.SlideSetup.EnsureSet(SlidesPath, () =>
-            {
-                var list = new List<GPL.Protocol.SlideSet.Slide>();
-                foreach (var s in SlideList)
-                    list.Add(new GPL.Protocol.SlideSet.Slide
-                    {
-                        id = s.id, titleEnglish = "", titleChinese = "", shortEnglish = s.en, shortChinese = s.zh,
-                        imageEnglish = images["en" + s.id], imageChinese = images["zh" + s.id],
-                    });
-                return list;
-            });
+                slides.Add(new GPL.Protocol.SlideSet.Slide
+                {
+                    id = s.id, titleEnglish = s.en, titleChinese = s.zh, shortEnglish = s.shortEn, shortChinese = s.shortZh,
+                    imageEnglish = image["en"], imageChinese = image["zh"],
+                });
+            }
+            var set = GPL.Protocol.Editor.SlideSetup.EnsureSet(SlidesPath, null);
+            Undo.RecordObject(set, "HumPerFinal slides");
+            set.slides = slides.GetRange(1, InstructionCount);
+            EditorUtility.SetDirty(set);
+            AssetDatabase.SaveAssets();
             Undo.RecordObject(logic, "HumPerFinal slides");
+            logic.recenterSlide = slides[0];
             logic.instructions = set;
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
-            Debug.Log(Log + "Step 5: " + set.Count + " instruction slides linked (placeholders). Save the scene.");
+            Debug.Log(Log + "Step 5: recenter slide and " + set.Count + " instruction slides linked. Save the scene.");
         }
 
         // ---- Validate ---------------------------------------------------------------------------------------
@@ -285,7 +308,8 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
                 if (a.duck.Anchor != PlacedSource.Anchoring.RoomFixed || a.trumpet.Anchor != PlacedSource.Anchoring.RoomFixed) Problem("anchors must be room-fixed");
             }
             if (logic.reverb == null || logic.reverb.room == null) Problem("reverb tuner or its shoebox missing (Steps 3-4)");
-            if (GPL.Protocol.SlideSet.CountOf(logic.instructions) != 3) Problem("instruction slides not linked (Step 5)");
+            if (GPL.Protocol.SlideSet.CountOf(logic.instructions) != InstructionCount) Problem("instruction slides not linked (Step 5)");
+            if (logic.recenterSlide == null || logic.recenterSlide.imageEnglish == null) Problem("recenter slide has no illustration (Step 5)");
             if (logic.stimulus != null && logic.stimulus.GetComponent<AudioSource>().clip != null)
                 Problem("stimulus still has a clip asset (the white noise is generated at run time)");
             foreach (var s in ReflectionMixer.Unrouted()) Problem(s.name + " is not routed to a mixer with the '" + ReflectionMixer.EffectName + "' effect (room would be dry)");

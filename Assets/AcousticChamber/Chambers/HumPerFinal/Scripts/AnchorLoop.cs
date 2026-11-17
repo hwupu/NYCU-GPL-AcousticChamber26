@@ -18,7 +18,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
         public PlacedSource duck;
         [Tooltip("Trumpet source (child 'Model' = the visible placeholder).")]
         public PlacedSource trumpet;
-        [Tooltip("Recordings (Decompress On Load). Placeholders: OpenAIR classichorn.wav and tr-1780d-fanfare.wav.")]
+        [Tooltip("Recordings (Decompress On Load). GPL.Stimuli library: Freesound 348791 toy ducks quacking, OpenAIR tr-1780d-fanfare.wav (Step 4).")]
         public AudioClip duckRecording, trumpetRecording;
         public float levelDbfs = -26f;
 
@@ -145,7 +145,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
 
         /// <summary>
         /// Log note of the <c>anchors</c> event: listener-relative positions, clips, gaps:
-        /// <c>duck=x,y,z;trumpet=x,y,z clip_duck=classichorn gain_duck_db=.. clip_trumpet=.. gap_duck_s=1.5 gap_trumpet_s=2.5</c>.
+        /// <c>duck=x,y,z;trumpet=x,y,z clip_duck=348791__nebyoolae__toy-ducks-quacking gain_duck_db=.. clip_trumpet=.. gap_duck_s=1.5 gap_trumpet_s=2.5</c>.
         /// </summary>
         public string Note(Transform head)
         {

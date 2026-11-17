@@ -81,7 +81,7 @@ left, right; each side's three azimuths once per condition, shuffled with seed `
 | `bg.radius_m`, `bg.azimuths_deg` | 2, `-90,90,180` | | Acoustics |
 | `rt60.measure_at_block_start` | false (Q25) | switch | Acoustics |
 | `resume_from` | `next_trial` | as Template | Resume |
-| `gate.yaw_tol_deg`, `gate.pitch_tol_deg`, `gate.hold_s`, `gate.hint_after_s` | 5, 10, 1, 4 | GPL.Homing | Head gate |
+| `gate.yaw_tol_deg`, `gate.pitch_tol_deg`, `gate.hold_s`, `gate.hint_after_s`, `gate.dot_elevation_deg` | 5, 10, 1, 4, +3 (GPL.Homing default since 2026-11-17) | GPL.Homing | Head gate |
 | `volume.target_step` | 8 | 0-15 | Audio |
 | `onboarding.*` | true | switch | Onboarding |
 

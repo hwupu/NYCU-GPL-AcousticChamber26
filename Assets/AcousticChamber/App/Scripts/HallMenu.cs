@@ -23,6 +23,11 @@ namespace AcousticChamber.App
         public const float CoverRadius = 36f;
         /// <summary>Room around the card grid inside the list, so a hovered card (103 %) is not clipped.</summary>
         public const float GridMargin = 8f;
+        /// <summary>
+        /// Room below the last row inside the scrolling list (the list runs to the panel's bottom edge): 56 u = the 48 u side padding
+        /// + 8 u, so scrolled to the end the cards sit evenly in the window (PO 2026-11-17; Storybook Screens/Main Hall).
+        /// </summary>
+        public const float BottomPadding = 56f;
         /// <summary>C-ID and title: 24 u in from the cover edges, white at 75 %, soft shadow (CSS drop-shadow(0 0 4px rgb(0 0 0 / 0.3))).</summary>
         public const float TextInset = 24f, TitleBottom = 12f, TextAlpha = 0.75f, ShadowBlur = 4f, ShadowAlpha = 0.3f, TitleSpacing = -3f;
         public const string Title = "Acoustic Chambers"; // centered (PO 2026-11-10)
@@ -94,7 +99,7 @@ namespace AcousticChamber.App
             var grid = new HallGrid(Size.x - 2f * th.surfacePaddingX - 2f * GridMargin, chambers.Count);
             var column = content.GetComponent<VerticalLayoutGroup>();
             column.spacing = grid.RowGap;
-            column.padding = UiKit.Pad((int)GridMargin, (int)GridMargin, (int)(UiKit.IndicatorMargin + GridMargin), (int)GridMargin); // the list keeps its indicator margin on the right
+            column.padding = UiKit.Pad((int)GridMargin, (int)GridMargin, (int)(UiKit.IndicatorMargin + GridMargin), (int)BottomPadding); // the list keeps its indicator margin on the right
             RectTransform row = null;
             for (int i = 0; i < chambers.Count; i++)
             {

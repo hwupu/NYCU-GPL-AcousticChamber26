@@ -36,7 +36,7 @@ params_hash, stage, block, condition, trial, attempt`, then the HumPerFinal colu
 | `duration_s` | s, 3 decimals | `trial`, `trial_restart` | stimulus onset to A, Stop-dialog time excluded |
 | `restarts` | int ≥ 0 | `trial`, `trial_restart` | `trial`: how many times this trial was restarted before it was completed; `trial_restart`: earlier restarts of this trial (0 on the first) |
 | `reversals` | int | `trial`, `trial_restart` | changes of movement direction |
-| `radius_m` | m | `trial` | 2.0 (practice 1.2) |
+| `radius_m` | m | `trial` | 3.0 (practice 1.5) |
 | `rt60_target_s` | s | `condition`, `trial` | 0.7 |
 | `rt60_measured_s` | s (T_mid) | `trial`, `rt60_measured` | only with `rt60.measure_at_block_start`; else empty |
 | `stim_level_dbfs` | dBFS | `trial` | software RMS of the target |
@@ -53,7 +53,7 @@ Common (as C05): `session_start`, `language`, `stage_begin/end`, `handover`, `ho
 - `condition`: the cell was applied (before a block's first trial, the practice, and again after a resume); note
   `hearing=left80 left_db=-80 right_db=0 curve=severe_x2 anchors=on rt60_target_s=0.7 <reverb note> calibrated=0|1 hl L=...;R=... q=... fs=48000`.
 - `anchors`: note `on` / `off`; on `on` each anchor's listener-relative position (`duck=x,y,z;trumpet=x,y,z`), the clips and their
-  leveling gains, the levels and the gaps (`clip_duck=classichorn gain_duck_db=.. ... gap_duck_s=1.5 gap_trumpet_s=2.5`).
+  leveling gains, the levels and the gaps (`clip_duck=348791__nebyoolae__toy-ducks-quacking gain_duck_db=.. ... gap_duck_s=1.5 gap_trumpet_s=2.5`).
 - `trial_restart`: a trial interrupted by the Stop dialog (Keep going; note `reason=stop_dialog` + the adjustment note) or by the
   app closing (written at the resume; note `reason=app_closed`, answer columns empty); the interrupted try's columns. The trial
   then runs again; its completed `trial` row carries `restarts`. Rows are never deleted.

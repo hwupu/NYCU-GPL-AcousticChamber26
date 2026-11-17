@@ -16,6 +16,8 @@ namespace GPL.Acoustics.Editor
     {
         public const string RoomName = "Room";
         public const string ShoeboxName = "Shoebox Acoustics";
+        /// <summary>Baked area light intensities: ceiling (down) and fill (up). PO 2026-11-17, set in the editor on C05 / C06 (was 2 / 1, too white).</summary>
+        public const float CeilingIntensity = 1f, FillIntensity = 0.5f;
 
         public struct Options
         {
@@ -98,9 +100,9 @@ namespace GPL.Acoustics.Editor
             var lighting = new GameObject("Lighting");
             lighting.transform.SetParent(room.transform, false);
             var areaSize = new Vector2(Mathf.Max(0.5f, w - 1f), Mathf.Max(0.5f, d - 1f));
-            AreaLight(lighting.transform, "Ceiling Area Light", new Vector3(0f, h - 0.05f, 0f), 90f, areaSize, 2f);
+            AreaLight(lighting.transform, "Ceiling Area Light", new Vector3(0f, h - 0.05f, 0f), 90f, areaSize, CeilingIntensity);
             // the underside of the ceiling bakes black without it: a fainter light faces up
-            AreaLight(lighting.transform, "Ceiling Fill Light", new Vector3(0f, h - 0.4f, 0f), -90f, areaSize, 1f);
+            AreaLight(lighting.transform, "Ceiling Fill Light", new Vector3(0f, h - 0.4f, 0f), -90f, areaSize, FillIntensity);
 
             var probes = new GameObject("Light Probes").AddComponent<LightProbeGroup>();
             probes.transform.SetParent(lighting.transform, false);

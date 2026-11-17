@@ -124,8 +124,9 @@ namespace AcousticChamber.Chambers.Template
                     var rig = HeadPose.FindRig();
                     var dot = cue != null ? cue : FindAnyObjectByType<FixationCue>();
                     if (rig == null || dot == null) { bench.SetStatus("No camera rig or fixation dot in the scene (Magic > Template > Step 2)."); return; }
-                    dot.Show(rig);
-                    bench.SetStatus("Fixation dot shown " + Fmt.F(dot.distanceM, 1) + " m ahead at head height.");
+                    float elevation = HomingParams.ReadGate(bench.Work.Values).DotElevationDeg;
+                    dot.Show(rig, elevation);
+                    bench.SetStatus("Fixation dot shown " + Fmt.F(dot.distanceM, 1) + " m ahead, " + Fmt.F(elevation, 1) + "° from eye level.");
                 }),
                 ("Hide", UiStyle.Borderless, () =>
                 {

@@ -37,7 +37,14 @@ namespace GPL.Stimuli
     {
         public const string Folder = "Assets/AcousticChamber/Modules/Stimuli/Library";
 
-        static readonly List<LibraryEntry> _all = new List<LibraryEntry>(OpenAir.Entries);
+        static readonly List<LibraryEntry> _all = Concat(OpenAir.Entries, Freesound.Entries);
+
+        static List<LibraryEntry> Concat(params LibraryEntry[][] parts)
+        {
+            var list = new List<LibraryEntry>();
+            foreach (var p in parts) list.AddRange(p);
+            return list;
+        }
 
         public static IReadOnlyList<LibraryEntry> All => _all;
 

@@ -422,7 +422,7 @@ namespace AcousticChamber.Chambers.HumPerHW2
             {
                 if (marker != null) marker.ShowAt(answer);
                 double diff = result.SignedErrorDeg;
-                Screens.Cue("Sound " + (diff >= 0 ? "+" : "−") + Fmt.F(System.Math.Abs(diff), 1) + "° from the picture   (A: continue)");
+                Screens.Cue("Sound " + (diff >= 0 ? "+" : "−") + Fmt.F(System.Math.Abs(diff), 1) + "° from the picture   (A or X: continue)");
                 yield return null; // the confirming press is not the continue press
                 while (!Screens.PressedA()) yield return null;
                 Screens.Cue(null);

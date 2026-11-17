@@ -19,15 +19,28 @@ namespace GPL.Input.Tests
         }
 
         [Test]
-        public void StandardActionsHaveTheirDefaultsAndXStaysFree()
+        public void StandardActionsHaveTheirDefaultsAndXMirrorsConfirm()
         {
             var t = new BindingTable();
             foreach (var a in InputActions.Standard.Keys) t.DeclareStandard(a);
             Assert.AreEqual(Control.A, t.ControlOf(InputActions.Confirm));
+            Assert.AreEqual(Control.X, t.MirrorOf(InputActions.Confirm));
             Assert.AreEqual(Control.B, t.ControlOf(InputActions.Back));
-            Assert.IsNull(t.ActionOn(Control.X));
+            Assert.AreEqual(Control.None, t.MirrorOf(InputActions.Back));
+            Assert.AreEqual(InputActions.Confirm, t.ActionOn(Control.X), "left-handed: X confirms too");
             Assert.AreEqual("Y (left): Stop", t.Describe().First(), "globals listed first");
+            Assert.Contains("A (right) / X (left): Confirm", t.Describe().ToList());
             Assert.AreEqual(9, t.All.Count);
+        }
+
+        [Test]
+        public void TheMirrorIsTakenLikeAControl()
+        {
+            var t = new BindingTable().DeclareStandard(InputActions.Confirm);
+            Assert.Throws<ArgumentException>(() => t.Declare("answer", Control.X), "X mirrors confirm");
+            Assert.Throws<ArgumentException>(() => t.RemapGlobal(InputActions.Stop, Control.X));
+            Assert.Throws<ArgumentException>(() => new BindingTable().Declare("answer", Control.A, Control.A));
+            Assert.Throws<ArgumentException>(() => new BindingTable().Declare("answer", Control.B, Control.Y), "Y is Stop");
         }
 
         [Test]
@@ -78,6 +91,17 @@ namespace GPL.Input.Tests
             src.Values[Control.TriggerRight] = 0.7f;
             Assert.IsTrue(r.Down(InputActions.Confirm));
             Assert.AreEqual(0.7f, r.Value(InputActions.TriggerRight), 1e-6);
+        }
+
+        [Test]
+        public void XConfirmsLikeA()
+        {
+            var src = new FakeSource();
+            var r = new ActionReader(new BindingTable().DeclareStandard(InputActions.Confirm), src);
+            Assert.IsFalse(r.Down(InputActions.Confirm));
+            src.DownNow.Add(Control.X);
+            Assert.IsTrue(r.Down(InputActions.Confirm));
+            Assert.IsTrue(r.Held(InputActions.Confirm));
         }
 
         [Test]

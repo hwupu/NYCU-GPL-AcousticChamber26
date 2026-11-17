@@ -17,9 +17,9 @@ background noise (silent room).
 | | Target (audio) | Radio (visual) | Anchors **(new)** |
 |---|---|---|---|
 | Object | Gaussian white noise, GPL.Stimuli (ADR-0008): 2 s, 20 ms cos² ramps, −26 dBFS RMS, seed 1; **looped 2 s on, 0.7 s off (new)** until A | Radio model; for now a **box placeholder** (`Stimuli/Radio/Model`, built by Step 4) 0.25 × 0.18 × 0.12 m, URP Lit, facing the participant *(default size)* | Rubber duck at **0°**, trumpet at **+90°**; for now **box placeholders** (`Stimuli/Anchors/Duck/Model`, `.../Trumpet/Model`: duck 0.15 m cube, yellow; trumpet 0.30 × 0.10 × 0.10 m, brass) *(default)*; a real model replaces the `Model` child |
-| Sound | invisible | none | One at a time, looped: **duck sound, 1.5 s silence, trumpet sound, 2.5 s silence**, repeat. Each recording leveled to −26 dBFS RMS at load like the target (`StimulusClips.Leveled`). Placeholders until the PO adds recordings: duck = OpenAIR `Bicycle_Horn/classichorn.wav`, trumpet = OpenAIR `Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` (both credited; the fanfare is **14.72 s** long, so one loop is about 19 s until the real trumpet recording replaces it) |
+| Sound | invisible | none | One at a time, looped: **duck sound, 1.5 s silence, trumpet sound, 2.5 s silence**, repeat. Each recording leveled to −26 dBFS RMS at load like the target (`StimulusClips.Leveled`). Both from the GPL.Stimuli library (PO 2026-11-17): duck = Freesound 348791 "Toy Ducks Quacking" (`Freesound/348791__nebyoolae__toy-ducks-quacking.mp3`, CC0, about 4.9 s), trumpet = OpenAIR `Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` (**14.72 s**); one loop is about 24 s |
 | Height | eye height | centre at eye height | centre at eye height |
-| Distance | 2 m (practice 1.2 m), radius locked | 2 m (practice 1.2 m) | 2 m |
+| Distance | **3 m** (practice **1.5 m**), radius locked (PO 2026-11-17; C05: 2 m / 1.2 m) | 3 m (practice 1.5 m) | 3 m |
 | Azimuth | starts at **−60° or +60°** (practice +30°) | **−22.5, −7.5, +7.5, +22.5°** (practice 0°) | 0° and +90° |
 | When | from stimulus onset to A | with the target | the whole anchor block, visible and sounding: placed around the head position when an anchor block starts (after the inter-trial interval, before the first head gate), fixed in the room (not moved by a recenter), until the next no-anchor block starts *(default)*; two anchor blocks in a row keep the same loop and positions; models hidden and the loop paused while the Stop dialog is open; hidden and silent in no-anchor blocks and the practice |
 
@@ -79,10 +79,10 @@ Chamber menu → (Start) → stages as C05 (onboarding stages switchable by `onb
 | — | menu | Study ID, Start, Config; "Audio level: N (target 8)" | — |
 | 1 | `handover` | stock; again after every resume | StageStart |
 | 2 | `language` | English / 中文; skipped on a resume | StageStart |
-| 3 | `recenter` | stock Meta-button recenter; again after every resume | StageStart |
-| 4 | `instructions` | onboarding illustrations, **supplied by the PO at the last step** (until then C05's three slides as placeholders); they show the Y pause | StageStart |
-| 5 | `ready` | stock dot + head gate, `volume_check`; again after every resume | StageStart |
-| 6 | `practice` | as C05 with the radio: 0°, 1.2 m, start +30°, **normal hearing, no anchors**, no helper text; after each trial "Practice again" / "I'm ready"; at least one trial | StageStart |
+| 3 | `recenter` | stock Meta-button recenter on the PO's slide 1 "Before we start" / "開始之前" (`Slides/*-1-reposition.jpg`; the buttons leading back to it read "Back" / "上一頁"); again after every resume | StageStart |
+| 4 | `instructions` | the PO's illustrations (2026-11-17), titles English / 中文: "Procedure" / "實驗說明", "Controllers" / "操作說明", "Trials" / "練習回合", "Ready?" / "準備就緒？" (announces the dot); the Back / Next buttons carry the neighbouring titles; they show the Y pause | StageStart |
+| 5 | `ready` | stock dot + head gate (GPL.Protocol with GPL.Homing; the dot 3° above eye level, `gate.dot_elevation_deg`), `volume_check`; again after every resume | StageStart |
+| 6 | `practice` | as C05 with the radio: 0°, 1.5 m, start +30°, **normal hearing, no anchors**, no helper text; after each trial "Practice again" / "I'm ready"; at least one trial | StageStart |
 | 7 | `experiment` | **10 blocks × 16 trials = 160, back to back: no block break screens, no prompted breaks (new)**; the cell changes silently in the inter-trial interval (the anchors appear or disappear) | `next_trial` |
 | 8 | `thanks` | "Thank you. Please return the headset." | — |
 
@@ -92,12 +92,13 @@ onboarding and practice.
 
 ## Trial
 1. **Inter-trial interval** `iti_s` = 0.6 s, empty view (not before the first trial of the session or after a resume).
-2. **Head gate:** fixation dot ahead; GPL.Homing, C05 values (yaw ±5°, pitch ±10°, held 1 s, hint after 4 s). `homing` row.
-3. **Stimuli on:** radio at `visual_az_deg`, target at `audio_start_az_deg`, both on the 2 m circle around the trial origin; the
+2. **Head gate:** fixation dot ahead, 3° above eye level (GPL.Homing default since 2026-11-17: the head drops while resting, the dot sits higher); C05
+   values otherwise (yaw ±5°, pitch ±10° around the dot, held 1 s, hint after 4 s: only the dot, the black text "Look at the dot" appears only when the gate is not passed by then, PO 2026-11-17). `homing` row.
+3. **Stimuli on:** radio at `visual_az_deg`, target at `audio_start_az_deg`, both on the 3 m circle around the trial origin; the
    pulse loop starts.
 4. **Adjustment:** left trigger held = the sound moves left, right trigger = right, 10°/s; both or none = still. **No limit
    (new): the sound can go round the full circle any number of times.**
-5. **Confirm:** A (right controller), ignored during the first 0.3 s. `duration_s` = stimulus onset to A. No timeout.
+5. **Confirm:** A (right controller) or X (left; left-handed participants, PO 2026-11-17), ignored during the first 0.3 s. `duration_s` = stimulus onset to A. No timeout.
 6. Target and radio off; `trial` row. The anchors keep looping until the block ends.
 
 ## Pause and restart (Stop dialog, Y) (new)
@@ -118,18 +119,18 @@ illustration presents it as the pause). While it is open everything is frozen: t
 |---|---|---|---|
 | `condition_order` | `williams` | `williams`, `fixed` | Procedure |
 | `iti_s` | 0.6 | 0-5, step 0.1 | Procedure |
-| `radius_m`, `practice.radius_m` | 2.0, 1.2 | 0.5-5, step 0.1 | Stimuli |
+| `radius_m`, `practice.radius_m` | 3.0, 1.5 | 0.5-5, step 0.1 | Stimuli |
 | `audio_start_deg`, `practice.audio_start_deg`, `practice.visual_deg` | 60, 30, 0 | −90..90 | Stimuli |
 | `visual_pool_deg` | `7.5,22.5` (mirrored left) | list | Stimuli |
 | `repeats` | 2 | 1-4 | Procedure |
 | `stim.on_s`, `stim.off_s` | 2, 0.7 | 0.1-5 | Stimuli |
-| `anchor.duck_deg`, `anchor.trumpet_deg`, `anchor.radius_m` | 0, 90, 2 | | Anchors |
+| `anchor.duck_deg`, `anchor.trumpet_deg`, `anchor.radius_m` | 0, 90, 3 | | Anchors |
 | `anchor.gap_after_duck_s`, `anchor.gap_after_trumpet_s` | 1.5, 2.5 | 0-10, step 0.1 | Anchors |
 | `adjust.rate_deg_s`, `confirm_ignore_s` | 10, 0.3 | | Response |
 | `rt60_s` | 0.7 | 0.3-6 (table range) | Acoustics |
 | `rt60.measure_at_block_start` | false | switch | Acoustics |
 | `resume_from` | `next_trial` | as Template | Resume |
-| `gate.*` | C05 values | GPL.Homing | Head gate |
+| `gate.*` | C05 values; `gate.dot_elevation_deg` +3 | GPL.Homing | Head gate |
 | `volume.target_step` | 8 | 0-15 | Audio |
 | `onboarding.*` | true | switch | Onboarding |
 

@@ -32,10 +32,11 @@ namespace GPL.Homing.Tests
             Assert.AreEqual(15f, gate.Settings.PitchToleranceDeg);
             Assert.AreEqual(0.5f, gate.Settings.HoldSec);
             Assert.AreEqual(4f, gate.Settings.HintAfterSec);
+            Assert.AreEqual(3f, gate.Settings.DotElevationDeg, "dot 3 deg above eye level (PO 2026-11-17)");
 
             Assert.IsFalse(gate.Update(30f, 0f, Dt), "outside");
             Assert.AreEqual(30f, gate.YawAtStart);
-            Assert.IsFalse(gate.Update(9f, -14f, Dt), "the entering frame starts the hold at 0");
+            Assert.IsFalse(gate.Update(9f, 17f, Dt), "the entering frame starts the hold at 0");
             Assert.AreEqual(0f, gate.Held);
             for (int i = 0; i < 3; i++) Assert.IsFalse(gate.Update(5f, 0f, Dt));
             Assert.IsTrue(gate.Update(-2f, 1f, Dt), "0.5 s held");
@@ -54,12 +55,15 @@ namespace GPL.Homing.Tests
             gate.Update(0f, 0f, Dt);
             gate.Update(0f, 0f, Dt);
             Assert.AreEqual(0.25f, gate.Held, 1e-5f);
-            gate.Update(0f, 16f, Dt); // pitch out
+            gate.Update(0f, 19f, Dt); // pitch out (above the dot at +3 + 15)
             Assert.AreEqual(0f, gate.Held);
             Assert.AreEqual(1, gate.Breaks);
             gate.Update(10.5f, 0f, Dt); // still out: no second break
             Assert.AreEqual(1, gate.Breaks);
-            Assert.IsTrue(gate.Inside(10f, -15f), "the edges are inside");
+            Assert.IsTrue(gate.Inside(10f, 18f), "the edges are inside (pitch centred on the dot at +3)");
+            Assert.IsTrue(gate.Inside(-10f, -12f));
+            Assert.IsFalse(gate.Inside(0f, -12.5f), "more than 15 deg below the dot");
+            Assert.IsTrue(new HeadGate(new GateSettings { DotElevationDeg = 0f }).Inside(0f, 15f), "dot at eye level");
             Assert.IsFalse(gate.ShowHint, "hint 0 = never");
         }
 
@@ -89,6 +93,7 @@ namespace GPL.Homing.Tests
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new HeadGate(new GateSettings { HoldSec = -1f }));
             Assert.Throws<ArgumentOutOfRangeException>(() => new GateSettings { YawToleranceDeg = float.NaN }.Validated());
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GateSettings { DotElevationDeg = -50f }.Validated());
         }
 
         [Test]
@@ -97,10 +102,10 @@ namespace GPL.Homing.Tests
             var r = new HomingResult
             {
                 Method = HomingMethods.HeadGate, DurationSec = 0.7342f, YawBeforeDeg = -12.5f, PitchBeforeDeg = 3f,
-                YawAfterDeg = 1.25f, PitchAfterDeg = -0.5f, EyeHeightM = 1.2346f, Breaks = 2, HintAtSec = -1f,
+                YawAfterDeg = 1.25f, PitchAfterDeg = -0.5f, EyeHeightM = 1.2346f, Breaks = 2, HintAtSec = -1f, DotElevationDeg = -3f,
             };
             Assert.AreEqual("method=head_gate outcome=done duration_s=0.734 yaw_before_deg=-12.5 pitch_before_deg=3 " +
-                            "yaw_after_deg=1.25 pitch_after_deg=-0.5 eye_height_m=1.235 breaks=2 hint_at_s=", r.Note());
+                            "yaw_after_deg=1.25 pitch_after_deg=-0.5 eye_height_m=1.235 breaks=2 hint_at_s= dot_elevation_deg=-3", r.Note());
 
             var u = new HomingResult { Method = HomingMethods.SystemRecenter, Outcome = HomingOutcome.Unavailable, Detail = "no headset" };
             StringAssert.StartsWith("method=system_recenter outcome=unavailable ", u.Note());
@@ -113,7 +118,7 @@ namespace GPL.Homing.Tests
         public void GateParamsRoundTripThroughAPreset()
         {
             var schema = new ParameterSchema(HomingParams.GateDefs());
-            Assert.AreEqual(4, schema.Count);
+            Assert.AreEqual(5, schema.Count);
             Assert.IsTrue(schema.Defs.All(d => d.Group == "Head gate"));
             var set = schema.Defaults();
             var s = HomingParams.ReadGate(set);
@@ -126,6 +131,9 @@ namespace GPL.Homing.Tests
             Assert.AreEqual(5f, s.YawToleranceDeg);
             Assert.AreEqual(1f, s.HoldSec);
             Assert.AreEqual(15f, s.PitchToleranceDeg);
+            Assert.AreEqual(3f, s.DotElevationDeg);
+            set.Set(HomingParams.DotElevation, 0f);
+            Assert.AreEqual(0f, HomingParams.ReadGate(set).DotElevationDeg);
 
             var other = new ParameterSchema(ParamDef.Int("trials", 6, 1, 10, "Trials")).Defaults();
             Assert.AreEqual(10f, HomingParams.ReadGate(other).YawToleranceDeg, "missing keys keep the defaults");
@@ -135,6 +143,9 @@ namespace GPL.Homing.Tests
         public void FixationDotIsOneAndAHalfDegrees()
         {
             Assert.AreEqual(0.05236f, FixationCue.DiameterM(1.5f, 2f), 1e-4f);
+            var d = FixationCue.Direction(-3f);
+            Assert.AreEqual(-3f, HeadAngles.Pitch(d.x, d.y, d.z), 1e-4f, "the dot sits at the gate's elevation");
+            Assert.AreEqual(1f, d.magnitude, 1e-5f);
         }
     }
 }

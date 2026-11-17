@@ -42,6 +42,8 @@ namespace GPL.Homing
         /// <summary>Head gate only: breaks during the hold, and when the hint showed (s; -1 = never).</summary>
         public int Breaks;
         public float HintAtSec = -1f;
+        /// <summary>Head gate only: the dot's elevation from eye level (deg; the pitch tolerance is centred on it).</summary>
+        public float DotElevationDeg;
         /// <summary>Free text (e.g. why it was unavailable).</summary>
         public string Detail = "";
 
@@ -62,6 +64,7 @@ namespace GPL.Homing
             {
                 yield return P("breaks", Fmt.I(Breaks));
                 yield return P("hint_at_s", HintAtSec < 0f ? "" : Fmt.F(HintAtSec, 3));
+                yield return P("dot_elevation_deg", Fmt.F(DotElevationDeg, 1));
             }
             if (!string.IsNullOrEmpty(Detail)) yield return P("detail", Detail);
         }

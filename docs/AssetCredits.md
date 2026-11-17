@@ -2,6 +2,7 @@
 
 Every asset in the project that we did not generate in code (ADR-0009). Add an entry **before** committing a new asset; "to check"
 = source or licence unknown, do not commit until resolved. Not legal advice; when in doubt ask NYCU's copyright office.
+**Not listed:** the chambers' instruction-slide illustrations (`Chambers/*/Slides/`; PO 2026-11-17).
 
 Paths are relative to `Assets/AcousticChamber/` unless they start with `Assets/` or `docs/`.
 Columns: path · title · creator · source · licence · attribution / notes · retrieved · changes · redistributable in this public repo.
@@ -14,13 +15,15 @@ Columns: path · title · creator · source · licence · attribution / notes ·
 | `Chambers/HumPerHW2/Audio/SFX-C-03-normalized.wav` | 年輕人沒錢了！？消費數字看出中美經濟問題！需要全民普發現金？ | 阿淇博士 Dr. Achi | https://www.youtube.com/watch?v=3A5dGUcrjZU (2026-01-16) | **all rights reserved** (YouTube) | **to replace**, as SFX-C-02 | 2026 | 14 min, mono, -23 LUFS | **no** |
 | `Chambers/HumPerHW2/Audio/SFX-C-04-normalized.wav` | 迪化街：買年貨 (Dihua Street: Lunar New Year shopping), 捷運聲音地景計畫 | 大禾音樂 (Harvest Music), 2018 | https://taiwan.md/soundscape (file `mrt-soundscape-dihua-street-lunar-new-year-shopping.mp3`) | **to check** (no licence found) | ask Taiwan.md / 大禾音樂, or replace | 2026 | 8 s, mono, -23 LUFS | to check |
 
-### GPL.Stimuli library (`Modules/Stimuli/Library/`; catalog `StimulusLibrary`, `OpenAir`)
+### GPL.Stimuli library (`Modules/Stimuli/Library/`; catalog `StimulusLibrary`, `OpenAir`, `Freesound`)
 | Path | Title | Creator | Source | Licence | Notes | Retrieved | Changes | Public repo |
 |---|---|---|---|---|---|---|---|---|
 | `Library/OpenAIR/Bicycle_Horn/{classichorn, classichorn_double, chokedhorn, paphorn}.wav` | Bicycle horn (4 variants), anechoic | OpenAIR, Univ. of York AudioLab (performer: **to check** on the item page) | www.openairlib.net/anechoicdb, via snapshot doi:10.5281/zenodo.1186905 (A. Perez-Lopez, 2018) | CC BY-SA (snapshot record: CC BY-SA 4.0; version on the original item page **to check**) | Credit: "Anechoic recording from the OpenAIR library, www.openairlib.net (Univ. of York AudioLab), CC BY-SA" + Murphy & Shelley 2010, AES paper 8226 | 2026-11-09 | none (CRC checked) | yes |
 | `Library/OpenAIR/Starter_Pistol/anechoic_gunshot_0.wav` | Starter pistol shot, anechoic | as above | as above | as above | as above | 2026-11-09 | none | yes |
 | `Library/OpenAIR/Operatic_Voice/singing.wav` | Operatic voice, singing, anechoic | as above | as above | as above | as above | 2026-11-09 | none | yes |
 | `Library/OpenAIR/Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` | Natural baroque trumpet (1780), fanfare, anechoic | as above | as above | as above | as above | 2026-11-09 | none | yes |
+| `Library/Freesound/348791__nebyoolae__toy-ducks-quacking.mp3` | Toy Ducks Quacking | nebyoolae | https://freesound.org/s/348791/ | CC0 1.0 | "Toy Ducks Quacking by nebyoolae -- https://freesound.org/s/348791/ -- License: Creative Commons 0" (no credit required). Used by C06 as the rubber-duck anchor | 2026-11-17 (added by the PO) | none | yes |
+| `Library/Freesound/791152__mari0411__quack.mp3` | quack | Mari0411 | https://freesound.org/s/791152/ | CC0 1.0 | "quack by Mari0411 -- https://freesound.org/s/791152/ -- License: Creative Commons 0" (no credit required) | 2026-11-17 (added by the PO) | none | yes |
 
 Generated (no credit needed): every tone and noise made by GPL.Stimuli (recipes in the chambers' code and `StandardRecipes`).
 
@@ -28,9 +31,6 @@ Generated (no credit needed): every tone and noise made by GPL.Stimuli (recipes 
 | Path | Title | Creator | Source | Licence | Notes | Retrieved | Changes | Public repo |
 |---|---|---|---|---|---|---|---|---|
 | `Chambers/HumPerHW2/Images/Radio.jpg` | Radio | **to check** | **to check** (from HW2) | **to check** | PO: where is it from? | — | — | to check |
-| `Chambers/HumPerHW2/Slides/*.png`, `Slides/Source/*.jpg` | HW2 instruction slides (en, zh) | **to check** (lab?) | HW2 | **to check** | PO: own work? any third-party pictures inside? | — | resized to PNG | to check |
-| `Chambers/HumPerFinal/Slides/*.png` | Placeholder copies of the HW2 slides above (C06 onboarding until the PO supplies its own illustrations) | as above | as above | as above | as above | 2026-11-17 | none (copied) | to check |
-| `Chambers/_Template/Slides/Placeholder-*.png` | placeholders | **to check** | — | — | likely generated / own work | — | — | to check |
 | `App/Covers/IMG-C-*.jpeg` | Main Hall cover pool (abstract gradients, 1376 x 768); in use: C01 = 01, C02 = 02, C03 = 05, C04 Reverberation = 03, C05 HumPerHW2 = 04 (PB-27); spare: 06-11 (added by the PO 2026-11-17; 03 replaced the same day) | PO, generated with Google Gemini | AI-generated (Gemini) | AI output, no third-party work (Gemini terms of use) | new covers go into this folder with the next ID | 2026-11-10 | none | yes |
 | `Settings/Skyboxes/skybox-{day,morning,night,space,alien}.png` | Skyboxes 1.0 (360° panoramas, 4096 x 2048) | Kenney (www.kenney.nl) | https://kenney.nl/assets/skyboxes | CC0 1.0 (`Kenney-Skyboxes-License.txt` alongside) | credit optional; a `Skybox-<Name>.mat` (Skybox/Panoramic) per image; Main Hall uses "day" | 2026-11-10 | none | yes |
 | `Chambers/*/Materials/FloorGrid.png` | floor grid | project | generated by `ExperienceScene` / `HearingLossSetup` | own work | — | — | — | yes |
