@@ -187,7 +187,8 @@ namespace AcousticChamber.App
         }
 
         /// <summary>
-        /// The head gate before a trial (HW2): the fixation dot, "Look at the dot" after the hint time, the result to
+        /// The head gate before a trial (HW2): the fixation dot only, "Look at the dot" (black) only after the hint time
+        /// (<see cref="ProtocolScreens.HeadGate"/>), the result to
         /// <paramref name="done"/> and a <c>homing</c> row. Without a rig nothing happens and the result is null.
         /// </summary>
         protected IEnumerator HeadGate(Action<HomingResult> done)
@@ -195,8 +196,7 @@ namespace AcousticChamber.App
             if (Rig == null) { done?.Invoke(null); yield break; }
             HomingResult result = null;
             _gate = new HeadGateMethod(Rig, cue, Gate);
-            _gate.HintChanged += on => Screens.Cue(on ? Loc.Get(ProtocolStrings.LookAtDot) : null);
-            yield return _gate.Run(r => result = r);
+            yield return Screens.HeadGate(_gate, r => result = r);
             _gate = null;
             CurrentRun.Log.Write(GPL.Logging.LogEvents.Homing, result.Note());
             done?.Invoke(result);

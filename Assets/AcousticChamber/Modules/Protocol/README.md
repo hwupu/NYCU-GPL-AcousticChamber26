@@ -66,9 +66,11 @@ chamber may override a key by registering its own table later).
   comes back), Next always active (no A button). The result goes to `done` (log it as
   `homing`): the user recenter the `RecenterListener` reported, or outcome `cancelled` when Next came without one. Slide
   buttons (360 u, … when too long) name where they lead: "← <previous slide>" and "<next slide> →" (short title, else title;
-  "← Back" / "Next →" when unknown); a final Continue has no arrow. Instruction slide 1 goes back to the recenter slide.
-- `DotCheck(rig, dot, gate, done)`: the final check before the trials: "Look at the dot to begin" and the head gate; the result
+  "← Back" / "Next →" when unknown); the final "Continue →" has one too (PO 2026-11-17). Instruction slide 1 goes back to the recenter slide.
+- `DotCheck(rig, dot, gate, done)`: the final check before the trials: the fixation dot and the head gate (no text; the hint as in `HeadGate`); the result
   goes to `done`. Log the final headset volume after it (`volume_check`, see the App's `HeadsetVolume`).
+- `HeadGate(gate, done)`: runs a `HeadGateMethod` with the standard hint: only the dot, "Look at the dot" (black cue) only after
+  `gate.hint_after_s` without passing, hidden when it passes. The dot check and every trial gate use it (PO 2026-11-17).
 - `Slides(set, start, resumed, shown)` (PB-20): instruction slides from a `SlideSet` asset (per slide: id, title English /
   中文, image English / 中文; 中文 falls back to English). Layout and image size: DesignSystem section 9 (images: import with
   Non-Power of 2 = None, no mipmaps). Back is hidden on the first slide unless a first Back is given; Continue on the
@@ -79,7 +81,7 @@ chamber may override a key by registering its own table later).
   (`firstBackKey`, `firstBack`) and the last Next label (`lastKey`).
 - `Message(text, buttonKey, until)`: the Message layout; waits for the button or until `until()` is true. No screen waits for A.
 - `Choice(text, leftKey, rightKey, chosen)` (PB-08d-3): the Message layout with two buttons (left gray, right prominent); reports 0 / 1.
-- `Cue(text, y)`: bare text without a panel while the world is visible (gate hint, "Press A"); `Cue(null)` hides it.
+- `Cue(text, y)`: bare black text without a panel while the world is visible (`CueColor`; gate hint, "Press A or X"); `Cue(null)` hides it.
 - `PressedA()`: A this frame, ignored while the Stop dialog is open (`InputOpen`).
 
 ## Onboarding (`OnboardingStages`, Core; `Onboarding`, Runtime; PB-21)

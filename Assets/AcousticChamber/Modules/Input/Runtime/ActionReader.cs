@@ -20,11 +20,24 @@ namespace GPL.Input
             Source = source;
         }
 
-        public bool Down(string action) { var c = ControlOf(action); return c != Control.None && Source.Down(c); }
-        public bool Held(string action) { var c = ControlOf(action); return c != Control.None && Source.Held(c); }
-        public bool Up(string action) { var c = ControlOf(action); return c != Control.None && Source.Up(c); }
-        public float Value(string action) { var c = ControlOf(action); return c != Control.None ? Source.Value(c) : 0f; }
+        // an action with a mirror (Confirm: A and X) reads either control
+        public bool Down(string action) { var c = ControlOf(action); return c != Control.None && (Source.Down(c) || Mirror(action, Source.Down)); }
+        public bool Held(string action) { var c = ControlOf(action); return c != Control.None && (Source.Held(c) || Mirror(action, Source.Held)); }
+        public bool Up(string action) { var c = ControlOf(action); return c != Control.None && (Source.Up(c) || Mirror(action, Source.Up)); }
+        public float Value(string action)
+        {
+            var c = ControlOf(action);
+            if (c == Control.None) return 0f;
+            var m = Bindings.MirrorOf(action);
+            return m != Control.None ? Mathf.Max(Source.Value(c), Source.Value(m)) : Source.Value(c);
+        }
         public Vector2 Stick(string action) { var c = ControlOf(action); return c != Control.None ? Source.Stick(c) : Vector2.zero; }
+
+        bool Mirror(string action, System.Func<Control, bool> read)
+        {
+            var m = Bindings.MirrorOf(action);
+            return m != Control.None && read(m);
+        }
 
         Control ControlOf(string action)
         {

@@ -1,0 +1,694 @@
+{
+ "note": "Written by step4_export_unity.py from C05.blend; read by HumPerFinalSetup (Steps 3-4). Do not edit by hand.",
+ "duckSurfaceY": 0.7779,
+ "trumpetSurfaceY": 0.0131,
+ "bellAboveFloorM": 1.6093,
+ "duckHeightM": 0.1134,
+ "models": [
+  {
+   "file": "Room.fbx",
+   "objects": [
+    {
+     "name": "house",
+     "materials": [
+      "C05_house1_C05"
+     ]
+    },
+    {
+     "name": "jar2",
+     "materials": [
+      "C05_jar2"
+     ]
+    },
+    {
+     "name": "jar3",
+     "materials": [
+      "C05_jar3"
+     ]
+    },
+    {
+     "name": "lighting",
+     "materials": [
+      "C05_lighting"
+     ]
+    },
+    {
+     "name": "jar1",
+     "materials": [
+      "C05_jar1"
+     ]
+    },
+    {
+     "name": "window",
+     "materials": [
+      "C05_window"
+     ]
+    },
+    {
+     "name": "cabinet",
+     "materials": [
+      "C05_cabinet1"
+     ]
+    },
+    {
+     "name": "chopping board1",
+     "materials": [
+      "C05_CHOPPING_BOARD1"
+     ]
+    },
+    {
+     "name": "table",
+     "materials": [
+      "C05_TABLE"
+     ]
+    },
+    {
+     "name": "IKEA seat",
+     "materials": [
+      "C05_IKEA_SEAT2"
+     ]
+    },
+    {
+     "name": "faucet",
+     "materials": [
+      "C05_faucet1"
+     ]
+    },
+    {
+     "name": "chopping board2",
+     "materials": [
+      "C05_CHOPPING_BOARD2"
+     ]
+    },
+    {
+     "name": "seat",
+     "materials": [
+      "C05_seat1"
+     ]
+    },
+    {
+     "name": "bowl",
+     "materials": [
+      "C05_bowl"
+     ]
+    },
+    {
+     "name": "candle",
+     "materials": [
+      "C05_candle"
+     ]
+    },
+    {
+     "name": "floor",
+     "materials": [
+      "C05_FLOOR_C05"
+     ]
+    },
+    {
+     "name": "jar4",
+     "materials": [
+      "C05_jar4"
+     ]
+    },
+    {
+     "name": "painting",
+     "materials": [
+      "C05_painting1"
+     ]
+    },
+    {
+     "name": "carpet",
+     "materials": [
+      "C05_CARPET"
+     ]
+    },
+    {
+     "name": "MusicStand_0",
+     "materials": [
+      "C05_BlackMetal"
+     ]
+    },
+    {
+     "name": "MusicStand_1",
+     "materials": [
+      "C05_Paper"
+     ]
+    },
+    {
+     "name": "MusicStand_ContactShadow",
+     "materials": [
+      "C05_ContactShadow"
+     ]
+    }
+   ]
+  },
+  {
+   "file": "Duck.fbx",
+   "objects": [
+    {
+     "name": "Duck_0",
+     "materials": [
+      "C05_Duck_Material_003"
+     ]
+    },
+    {
+     "name": "Duck_1",
+     "materials": [
+      "C05_Duck_Material"
+     ]
+    },
+    {
+     "name": "Duck_2",
+     "materials": [
+      "C05_Duck_Material_001"
+     ]
+    },
+    {
+     "name": "Duck_ContactShadow",
+     "materials": [
+      "C05_ContactShadow"
+     ]
+    }
+   ]
+  },
+  {
+   "file": "TrumpetPlayer.fbx",
+   "objects": [
+    {
+     "name": "Player_0",
+     "materials": [
+      "C05_Player_Skin"
+     ]
+    },
+    {
+     "name": "Player_1",
+     "materials": [
+      "C05_Player_Shirt"
+     ]
+    },
+    {
+     "name": "Player_2",
+     "materials": [
+      "C05_Player_Trousers"
+     ]
+    },
+    {
+     "name": "Player_3",
+     "materials": [
+      "C05_Player_Shoes"
+     ]
+    },
+    {
+     "name": "Trumpet",
+     "materials": [
+      "C05_TrumpetPlayer_Trumpet"
+     ]
+    },
+    {
+     "name": "Player_ContactShadow",
+     "materials": [
+      "C05_ContactShadow"
+     ]
+    }
+   ]
+  },
+  {
+   "file": "Radio.fbx",
+   "objects": [
+    {
+     "name": "Radio",
+     "materials": [
+      "C05_Radio"
+     ]
+    }
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "name": "C05_house1_C05",
+   "shader": "unlit",
+   "baseMap": "Textures/house1_C05.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_jar2",
+   "shader": "unlit",
+   "baseMap": "Textures/jar2.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_jar3",
+   "shader": "unlit",
+   "baseMap": "Textures/jar3.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_lighting",
+   "shader": "unlit",
+   "baseMap": "Textures/lighting.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_jar1",
+   "shader": "unlit",
+   "baseMap": "Textures/jar1.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_window",
+   "shader": "unlit",
+   "baseMap": "Textures/window.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_cabinet1",
+   "shader": "unlit",
+   "baseMap": "Textures/cabinet1.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_CHOPPING_BOARD1",
+   "shader": "unlit",
+   "baseMap": "Textures/CHOPPING_BOARD1.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_TABLE",
+   "shader": "unlit",
+   "baseMap": "Textures/TABLE_C05.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_IKEA_SEAT2",
+   "shader": "unlit",
+   "baseMap": "Textures/IKEA_SEAT2.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_faucet1",
+   "shader": "unlit",
+   "baseMap": "Textures/faucet1.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_CHOPPING_BOARD2",
+   "shader": "unlit",
+   "baseMap": "Textures/CHOPPING_BOARD2.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_seat1",
+   "shader": "unlit",
+   "baseMap": "Textures/seat1.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_bowl",
+   "shader": "unlit",
+   "baseMap": "Textures/bowl.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_candle",
+   "shader": "unlit",
+   "baseMap": "Textures/candle.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_FLOOR_C05",
+   "shader": "unlit",
+   "baseMap": "Textures/FLOOR_C05.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_jar4",
+   "shader": "unlit",
+   "baseMap": "Textures/jar4.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_painting1",
+   "shader": "unlit",
+   "baseMap": "Textures/painting1.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_CARPET",
+   "shader": "unlit",
+   "baseMap": "Textures/CARPET.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_BlackMetal",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    0.02,
+    0.02,
+    0.022,
+    1.0
+   ],
+   "metallic": 0.6,
+   "smoothness": 0.55,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Paper",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    0.9,
+    0.89,
+    0.86,
+    1.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.2,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_ContactShadow",
+   "shader": "shadow",
+   "baseMap": "Textures/C05_ContactShadow.png",
+   "color": [
+    0,
+    0,
+    0,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.0,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Duck_Material_003",
+   "shader": "lit",
+   "baseMap": "Textures/Material.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.5,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Duck_Material",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    1.0,
+    0.4798,
+    0.0,
+    1.0
+   ],
+   "metallic": 0.008,
+   "smoothness": 0.608,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Duck_Material_001",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    1.0,
+    0.0938,
+    0.0,
+    1.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.525,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Player_Skin",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    0.78,
+    0.58,
+    0.46,
+    1.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.2,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Player_Shirt",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    0.13,
+    0.25,
+    0.42,
+    1.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.2,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Player_Trousers",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    0.16,
+    0.16,
+    0.18,
+    1.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.2,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Player_Shoes",
+   "shader": "lit",
+   "baseMap": "",
+   "color": [
+    0.04,
+    0.035,
+    0.03,
+    1.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.2,
+   "normalMap": "",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_TrumpetPlayer_Trumpet",
+   "shader": "lit",
+   "baseMap": "Textures/Bell_001_Bake1_PBR_Diffuse.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.883,
+   "smoothness": 0.895,
+   "normalMap": "Textures/Bell_001_Bake1_PBR_Normal.png",
+   "emissionMap": ""
+  },
+  {
+   "name": "C05_Radio",
+   "shader": "lit",
+   "baseMap": "Textures/SM_Radio_T_Radio_BaseColor.png",
+   "color": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.5,
+   "normalMap": "Textures/SM_Radio_T_Radio_Normal.png",
+   "emissionMap": "Textures/Emissive.png"
+  }
+ ]
+}

@@ -9,7 +9,7 @@
 | **C01** | 🎯 **MovingSource** | *Grab a sound and throw it around.* Move a source around the room and hear its direction, distance and echoes change. |
 | **C02** | 🙈 **HiddenSource** | *Hide and seek, by ear only.* A sound is hidden somewhere around you. Point to it. How close can you get? |
 | **C03** | 🦻 **HearingLoss** | *Hear the world with someone else's ears.* Turn down the highs in one ear or both, and listen to how speech and space fall apart. |
-| **C04** | 🗣️ **HumPerHW2** | *Can your eyes fool your ears?* Steer an invisible noise until it seems to come from a little card in front of you. Find out how far apart sound and sight can drift before you notice. |
+| **C05** | 🦆 **HumPerFinal** | *Can your eyes fool your ears?* Steer an invisible noise until it seems to come from a little radio in front of you, with one ear dulled and a duck and a trumpet as landmarks. Find out how far apart sound and sight can drift before you notice. |
 
 ## 📲 Get the app onto your headset
 You need: a **Meta Quest 3** in developer mode, a USB-C cable, **Unity 6000.6.6f1** with Android Build Support, **Git LFS**

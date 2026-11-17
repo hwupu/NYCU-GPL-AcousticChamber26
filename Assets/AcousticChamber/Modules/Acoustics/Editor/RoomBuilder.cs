@@ -16,6 +16,8 @@ namespace GPL.Acoustics.Editor
     {
         public const string RoomName = "Room";
         public const string ShoeboxName = "Shoebox Acoustics";
+        /// <summary>Baked area light intensities: ceiling (down) and fill (up). PO 2026-11-17, set in the editor on HumPerHW2 and HumPerFinal (was 2 / 1, too white).</summary>
+        public const float CeilingIntensity = 1f, FillIntensity = 0.5f;
 
         public struct Options
         {
@@ -98,9 +100,9 @@ namespace GPL.Acoustics.Editor
             var lighting = new GameObject("Lighting");
             lighting.transform.SetParent(room.transform, false);
             var areaSize = new Vector2(Mathf.Max(0.5f, w - 1f), Mathf.Max(0.5f, d - 1f));
-            AreaLight(lighting.transform, "Ceiling Area Light", new Vector3(0f, h - 0.05f, 0f), 90f, areaSize, 2f);
+            AreaLight(lighting.transform, "Ceiling Area Light", new Vector3(0f, h - 0.05f, 0f), 90f, areaSize, CeilingIntensity);
             // the underside of the ceiling bakes black without it: a fainter light faces up
-            AreaLight(lighting.transform, "Ceiling Fill Light", new Vector3(0f, h - 0.4f, 0f), -90f, areaSize, 1f);
+            AreaLight(lighting.transform, "Ceiling Fill Light", new Vector3(0f, h - 0.4f, 0f), -90f, areaSize, FillIntensity);
 
             var probes = new GameObject("Light Probes").AddComponent<LightProbeGroup>();
             probes.transform.SetParent(lighting.transform, false);
@@ -111,12 +113,24 @@ namespace GPL.Acoustics.Editor
                         positions.Add(new Vector3(fx * w, Mathf.Min(y, h - 0.2f), fz * d));
             probes.probePositions = positions.ToArray();
 
+            Shoebox(parent, o);
+            Debug.Log("[GPL] Room built: " + w + " x " + d + " m, height " + h + " m, shoebox material " + o.Material + ".");
+            return info;
+        }
+
+        /// <summary>
+        /// The Meta XR Audio shoebox alone, for a chamber with its own visual room: child "Shoebox Acoustics" of
+        /// <paramref name="parent"/> (rebuilt), centered in x/z, at mid-height, size and one material from <paramref name="o"/>.
+        /// </summary>
+        public static MetaXRAudioRoomAcousticProperties Shoebox(Transform parent, Options o)
+        {
+            DestroyChild(parent, ShoeboxName);
             var shoeboxGo = new GameObject(ShoeboxName);
             shoeboxGo.transform.SetParent(parent, false);
-            shoeboxGo.transform.localPosition = new Vector3(0f, h / 2f, 0f); // room center, mid-height
+            shoeboxGo.transform.localPosition = new Vector3(0f, o.Height / 2f, 0f); // room center, mid-height
             var shoebox = shoeboxGo.AddComponent<MetaXRAudioRoomAcousticProperties>();
             shoebox.lockPositionToListener = false;
-            shoebox.width = w; shoebox.height = h; shoebox.depth = d;
+            shoebox.width = o.Width; shoebox.height = o.Height; shoebox.depth = o.Depth;
             shoebox.clutterFactor = 0f;
             shoebox.leftMaterial = shoebox.rightMaterial = shoebox.frontMaterial = shoebox.backMaterial =
                 shoebox.ceilingMaterial = shoebox.floorMaterial = o.Material;
@@ -125,8 +139,7 @@ namespace GPL.Acoustics.Editor
                 Debug.LogWarning("[GPL] More than one MetaXRAudioRoomAcousticProperties in the scene; Meta allows only one.");
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-            Debug.Log("[GPL] Room built: " + w + " x " + d + " m, height " + h + " m, shoebox material " + o.Material + ".");
-            return info;
+            return shoebox;
         }
 
         /// <summary>Saves the open scene and bakes its lightmaps (slow). False if the scene has no path or the bake failed.</summary>

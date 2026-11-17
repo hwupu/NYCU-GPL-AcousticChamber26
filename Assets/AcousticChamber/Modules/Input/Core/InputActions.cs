@@ -26,7 +26,16 @@ namespace GPL.Input
             { Stop, Control.Y },
         };
 
-        /// <summary>Standard chamber actions and their default controls (X is left free).</summary>
+        /// <summary>
+        /// Standard actions that the other hand's matching button does too (left-handed participants, PO 2026-11-17):
+        /// Confirm on A and X. <see cref="BindingTable.DeclareStandard"/> binds both.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, Control> StandardMirror = new Dictionary<string, Control>
+        {
+            { Confirm, Control.X },
+        };
+
+        /// <summary>Standard chamber actions and their default controls (X mirrors A: <see cref="StandardMirror"/>).</summary>
         public static readonly IReadOnlyDictionary<string, Control> Standard = new Dictionary<string, Control>
         {
             { Confirm, Control.A },

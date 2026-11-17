@@ -27,7 +27,7 @@ OVROverlayCanvas, OVRControllerHelper), uGUI + TextMeshPro (`com.unity.ugui` 2.x
 | `Runtime/UiColumn` | not a Storybook component: the scrolling body of Debug-style pages (Config, Parameters, Presets, Log files): `Label`, `Group`, `Buttons`, `Gap` |
 | `Runtime/UiRoot` | one per scene: sets the theme (old theme assets: current defaults + a warning), registers the module strings |
 | `UiKit/UiGrabber` | `OverlayPanel.Movable = true` adds a pill grabber below the panel (a real 3D object and `IRayTarget`; the overlay canvas would clip it): 120 x 8 u, 16 u below the surface, 220 x 16 u on hover. Trigger held + swing the ray turns the panel around the head (yaw, pitch) at a fixed distance (no distance move: the canvas scale follows the distance, so it looked the same). `OverlayPanel.Place` lifts a panel that would reach the floor. `UiPointer.ActiveRay` / `HasActiveRay` give chamber code the active controller's ray |
-| `Runtime/OverlayPanel` | places a canvas 2 m ahead (`yawOffsetDeg` to the side, negative = left), 8° below eye level, facing the eye; scale follows distance; waits for valid head height; re-places 2 frames after a system recenter; hides layers 30/31 from the eye cameras |
+| `Runtime/OverlayPanel` | places a canvas 2 m ahead (`yawOffsetDeg` to the side, negative = left), 8° below eye level, facing the eye; scale follows distance; `minBottomM` (default 0.15 m above the floor): when the panel or its move handle would reach lower, it is tilted up around the eye until it clears (furniture nearer than the panel covers it); `standOnBottom`: upright (0°) with its lowest point on `minBottomM`, e.g. standing on a table top (C05); waits for valid head height; re-places 2 frames after a system recenter; hides layers 30/31 from the eye cameras |
 | `Runtime/UiPointer` | ray from the controller (last trigger owns the ray), white laser; hit regions grown to 60 x 60 u; trigger down presses a `UiButton` and clicks it; inside a `ScrollList` the click waits for the release and the right thumbstick scrolls the list under the ray; content under a canvas group that does not block the ray (leaving, pushed back, hidden) is not hit; `UiPointer.Modal` limits it to the top modal panel |
 | `Runtime/RayTarget` | `IRayTarget` (3D objects the pointer can hover, press and drag; `RayTargets.Register`): the nearer of a UI hit and a target wins; a held target owns the trigger until release |
 | `Runtime/ITextEntry`, `UiKit/UiNumberPad` | swappable text entry; the number pad (`CreateLayout`: a text field above 3 x 4 borderless keys in a raised container, Clear, ←) shows the formatted value live (`StudyId.FromDigits`: `1` -> `S0001`) |
@@ -50,7 +50,7 @@ Run time (screens are built by code into the canvas):
 var panel = UiPanel.Create(canvas.transform, "Menu", new Vector2(1000, 700));
 var surface = panel.Surface;
 surface.RootBack = BackToHall;
-UiNavigationBar.Create(surface, "C05 · HumPerHW2", UiNavigationBar.Leading.Back, debugTag: true);
+UiNavigationBar.Create(surface, "C05 · HumPerFinal", UiNavigationBar.Leading.Back, debugTag: true);
 var status = surface.AddStatus("");                       // status line (or surface.AddToolbar())
 var section = UiKit.Section(surface.Body, "Path", "PATH");
 UiKit.Row(section, "Circle", "Circle", "Around the head", iconLeading: "arrow-clockwise", onClick: OnCircle);

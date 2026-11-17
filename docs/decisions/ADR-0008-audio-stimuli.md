@@ -35,3 +35,4 @@ question but no information. The lab's stimulus catalog (2026-11-09) listed the 
   them yet. OpenAIR's speech (the lab's Q032 female voice) is not in the CC BY-SA snapshot.
 - The catalog (`docs/references/AUDIO_STIMULI_CATALOG.md`) and HW2's `Audio/README.md` were merged into the module README; the PO
   removes the originals.
+- 2026-11-17 (PB-29): HW2's files are deleted with the HumPerHW2 chamber: `SFX-C-01` (unused) and the recordings `SFX-C-02` to `04`, which had no licence (two YouTube podcasts, a soundscape). MovingSource lost its three recordings and offers the generated White / Pink noise only; no chamber links to another chamber's audio any more.

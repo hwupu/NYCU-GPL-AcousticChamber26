@@ -23,7 +23,7 @@ namespace GPL.Stimuli.Tests
                 Assert.IsNotEmpty(e.Source, e.Id);
                 Assert.IsTrue(File.Exists(StimulusLibrary.AssetPath(e)), "missing " + StimulusLibrary.AssetPath(e));
             }
-            Assert.AreEqual(7, StimulusLibrary.All.Count);
+            Assert.AreEqual(9, StimulusLibrary.All.Count, "7 OpenAIR + 2 Freesound");
         }
 
         [Test]

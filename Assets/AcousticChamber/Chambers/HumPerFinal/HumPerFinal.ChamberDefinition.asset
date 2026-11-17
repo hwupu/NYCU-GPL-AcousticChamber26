@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab546a98cb82ee45860a0928343f1f5, type: 3}
+  m_Name: HumPerFinal.ChamberDefinition
+  m_EditorClassIdentifier: AcousticChamber.App::AcousticChamber.App.ChamberDefinition
+  id: HumPerFinal
+  label: C05
+  title: HumPerFinal
+  description: Ventriloquist effect with simulated one-sided hearing loss and audio anchors (duck, trumpet) in a 0.7 s room.
+  thumbnail: {fileID: 2800000, guid: 7304e86dcf5a8a74a9f0fec6d1ed6778, type: 3}
+  scenePath: Assets/AcousticChamber/Chambers/HumPerFinal/Scenes/HumPerFinal.unity
+  version: 0.1
+  enabled: 1

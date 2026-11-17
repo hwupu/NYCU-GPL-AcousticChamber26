@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4087e31171e87bf47b58877535bd6dc0, type: 3}
+  m_Name: Instructions
+  m_EditorClassIdentifier: GPL.Protocol::GPL.Protocol.SlideSet
+  slides:
+  - id: procedure
+    titleEnglish: Procedure
+    titleChinese: "\u5BE6\u9A57\u8AAA\u660E"
+    imageEnglish: {fileID: 2800000, guid: e6af31a2c46f8464ab92c15fb1ef4cd6, type: 3}
+    imageChinese: {fileID: 2800000, guid: e6425b12168c0b840a396d920d058745, type: 3}
+    shortEnglish: 
+    shortChinese: 
+    captionEnglish: 
+    captionChinese: 
+  - id: controllers
+    titleEnglish: Controllers
+    titleChinese: "\u64CD\u4F5C\u8AAA\u660E"
+    imageEnglish: {fileID: 2800000, guid: 05e95550412315b41840046a0b795963, type: 3}
+    imageChinese: {fileID: 2800000, guid: 5f1db8f30846f2f4494e6aab2b14ced1, type: 3}
+    shortEnglish: 
+    shortChinese: 
+    captionEnglish: 
+    captionChinese: 
+  - id: practice
+    titleEnglish: Trials
+    titleChinese: "\u7DF4\u7FD2\u56DE\u5408"
+    imageEnglish: {fileID: 2800000, guid: 08cda3297a6bf904ebc50de8dbc61fcd, type: 3}
+    imageChinese: {fileID: 2800000, guid: bfbe75917ff677a4dbd90487254177e7, type: 3}
+    shortEnglish: 
+    shortChinese: 
+    captionEnglish: 
+    captionChinese: 
+  - id: ready
+    titleEnglish: Ready?
+    titleChinese: "\u6E96\u5099\u5C31\u7DD2\uFF1F"
+    imageEnglish: {fileID: 2800000, guid: b6ba5397eb9d09542b340b6b71ee88a6, type: 3}
+    imageChinese: {fileID: 2800000, guid: cf3c9cbba13493a40821f99d80b324f2, type: 3}
+    shortEnglish: 
+    shortChinese: 
+    captionEnglish: 
+    captionChinese: 

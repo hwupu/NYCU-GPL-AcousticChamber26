@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HumPerFinal.Editor",
+    "rootNamespace": "AcousticChamber.Chambers.HumPerFinal.Editor",
+    "references": ["AcousticChamber.Chambers.HumPerFinal", "AcousticChamber.Chambers.HumPerFinal.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "AcousticChamber.App.Editor", "GPL.Core", "GPL.Params.Core", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol", "GPL.Protocol.Editor", "GPL.UI.Core", "GPL.UI", "GPL.UI.Editor", "GPL.Acoustics.Core", "GPL.Acoustics", "GPL.Acoustics.Editor", "GPL.SpatialSources", "GPL.Stimuli.Core", "Meta.XR.Audio", "Oculus.VR"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

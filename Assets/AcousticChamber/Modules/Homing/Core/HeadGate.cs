@@ -42,9 +42,10 @@ namespace GPL.Homing
             YawAtPass = PitchAtPass = YawAtStart = PitchAtStart = 0f;
         }
 
-        /// <summary>True when yaw error and pitch are inside the tolerance (inclusive).</summary>
+        /// <summary>True when the yaw error and the pitch (head pitch, around the dot's elevation) are inside the tolerance (inclusive).</summary>
         public bool Inside(float yawErrorDeg, float pitchDeg) =>
-            System.Math.Abs(yawErrorDeg) <= Settings.YawToleranceDeg && System.Math.Abs(pitchDeg) <= Settings.PitchToleranceDeg;
+            System.Math.Abs(yawErrorDeg) <= Settings.YawToleranceDeg &&
+            System.Math.Abs(pitchDeg - Settings.DotElevationDeg) <= Settings.PitchToleranceDeg;
 
         /// <summary>One frame. Returns <see cref="Passed"/>. After passing, further updates change nothing.</summary>
         public bool Update(float yawErrorDeg, float pitchDeg, float dt)

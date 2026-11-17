@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HumPerFinal",
+    "rootNamespace": "AcousticChamber.Chambers.HumPerFinal",
+    "references": ["AcousticChamber.Chambers.HumPerFinal.Core", "AcousticChamber.App", "AcousticChamber.App.Core", "GPL.Core", "GPL.Params.Core", "GPL.Session.Core", "GPL.Logging.Core", "GPL.Input.Core", "GPL.Input", "GPL.UI.Core", "GPL.UI", "GPL.Homing.Core", "GPL.Homing", "GPL.Protocol.Core", "GPL.Protocol", "GPL.DebugBench.Core", "GPL.DebugBench","GPL.Acoustics.Core", "GPL.Acoustics", "GPL.SpatialSources.Core", "GPL.SpatialSources", "GPL.Stimuli.Core", "GPL.Stimuli", "GPL.Responses.Core", "GPL.Responses", "GPL.HearingLoss.Core", "GPL.HearingLoss", "Meta.XR.Audio", "Unity.TextMeshPro", "Oculus.VR"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

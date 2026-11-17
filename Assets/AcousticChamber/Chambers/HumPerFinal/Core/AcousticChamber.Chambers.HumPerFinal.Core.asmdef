@@ -1,0 +1,14 @@
+{
+    "name": "AcousticChamber.Chambers.HumPerFinal.Core",
+    "rootNamespace": "AcousticChamber.Chambers.HumPerFinal",
+    "references": ["GPL.Core", "GPL.HearingLoss.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

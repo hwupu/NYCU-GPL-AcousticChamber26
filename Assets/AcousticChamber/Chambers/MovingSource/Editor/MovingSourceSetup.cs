@@ -23,20 +23,11 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
         public const string DefinitionPath = Folder + "/MovingSource.ChamberDefinition.asset";
         public const string MaterialsDir = Folder + "/Materials";
         public const string MixerPath = Folder + "/Audio/MovingSourceMixer.mixer";
-        /// <summary>HW2's clips used in place (a temporary asset link between chambers, as in HearingLoss); import settings untouched.</summary>
-        public const string AudioDir = "Assets/AcousticChamber/Chambers/HumPerHW2/Audio";
         const string PanelName = "Experience Panel";
         const string Log = "[Chamber:MovingSource] ";
         const float OrbDiameterM = 0.25f;
         /// <summary>No walls (open space): the default open-space shoebox 12 x 12 x 3.5 m (GPL.Acoustics Rt60Protocol, PO 2026-11-15).</summary>
         const float RoomW = Rt60Protocol.OpenSpaceWidth, RoomD = Rt60Protocol.OpenSpaceDepth, RoomH = Rt60Protocol.OpenSpaceHeight;
-
-        static readonly (string file, string label)[] Sounds =
-        {
-            ("SFX-C-02-normalized.wav", "Podcast 1"),
-            ("SFX-C-03-normalized.wav", "Podcast 2"),
-            ("SFX-C-04-normalized.wav", "Street market"),
-        };
 
         /// <summary>Step 1: the ChamberDefinition (C01), the scene (a copy of MainHall), the panel with MovingSourceExperience, Sync Chambers.</summary>
         [MenuItem("Magic/MovingSource/Step 1 - Chamber, scene and panel", priority = 140)]
@@ -51,7 +42,7 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
 
         /// <summary>
         /// Step 2: the floor, Stimuli/Source (an orb with GrabSource; child Emitter with AudioSource + MetaXRAudioSource, routed to the
-        /// Reflection mixer), the three recordings (white and pink noise are generated at run time, GPL.Stimuli), Audio/Reverb with the shoebox; links all to the panel.
+        /// Reflection mixer; white and pink noise are generated at run time, GPL.Stimuli; no recordings), Audio/Reverb with the shoebox; links all to the panel.
         /// </summary>
         [MenuItem("Magic/MovingSource/Step 2 - Floor, source and room", priority = 141)]
         public static void SourceStep()
@@ -62,15 +53,10 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
             var group = ReflectionMixer.Ensure(MixerPath);
             if (group == null) return;
 
-            var clips = new AudioClip[Sounds.Length];
-            var names = new string[Sounds.Length];
-            for (int i = 0; i < Sounds.Length; i++)
-            {
-                string path = AudioDir + "/" + Sounds[i].file;
-                clips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
-                if (clips[i] == null) { Debug.LogError(Log + "Missing " + path); return; }
-                names[i] = Sounds[i].label;
-            }
+            // no recordings: HW2's podcast and street-market clips had no licence and went with HumPerHW2 (PB-29);
+            // the Sound row offers the generated noises only (the panel's clips stay empty)
+            var clips = new AudioClip[0];
+            var names = new string[0];
 
             EnsureFloor(MaterialsDir);
             var stimuli = UiSetup.EnsureGroup("Stimuli");
@@ -111,7 +97,7 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
             logic.reverb = reverb;
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
-            Debug.Log(Log + "Step 2: floor, source, " + clips.Length + " recordings and room linked. Save the scene.");
+            Debug.Log(Log + "Step 2: floor, source and room linked (generated sounds only). Save the scene.");
         }
 
         /// <summary>Checks the scene against Design.md.</summary>
@@ -128,8 +114,7 @@ namespace AcousticChamber.Chambers.MovingSource.Editor
             if (Object.FindAnyObjectByType<UiPointer>(FindObjectsInactive.Include) == null) Problem("no UI Pointer (Step 1)");
             if (logic.sourceRoot == null || logic.grab == null || logic.source == null) Problem("source not linked (Step 2)");
             if (logic.reverb == null || logic.reverb.room == null) Problem("reverb or shoebox not linked (Step 2)");
-            if (logic.clips == null || logic.clips.Length != Sounds.Length) Problem("sounds not linked (Step 2)");
-            else foreach (var c in logic.clips) if (c == null) Problem("a sound is missing (Step 2)");
+            if (logic.clips != null && logic.clips.Length > 0) Problem("the removed HW2 recordings are still linked (re-run Step 2)");
             if (logic.source != null && (!logic.source.spatialize || logic.source.spatialBlend < 1f)) Problem("the source is not spatialized");
             foreach (var s in ReflectionMixer.Unrouted())
                 Problem(s.name + " is not routed to a mixer with the '" + ReflectionMixer.EffectName + "' effect (room would be dry)");
