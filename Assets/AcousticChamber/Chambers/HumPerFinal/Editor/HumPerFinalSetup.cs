@@ -129,13 +129,59 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             Undo.RegisterCreatedObjectUndo(light.gameObject, "HumPerFinal prop light");
             ApplyLighting(light);
 
+            float panelBottom = PanelMinBottom(roomModel.transform);
+            var panel = logic.GetComponent<GPL.UI.OverlayPanel>();
+            if (panel != null)
+            {
+                Undo.RecordObject(panel, "HumPerFinal panel on the table");
+                panel.minBottomM = panelBottom;
+                panel.standOnBottom = true;
+                EditorUtility.SetDirty(panel);
+            }
+
             Undo.RecordObject(logic, "HumPerFinal room");
             logic.room = room;
             if (logic.reverb != null) { logic.reverb.room = ShoeboxComponent(); logic.reverb.roomSize = room; EditorUtility.SetDirty(logic.reverb); }
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
             Debug.Log(Log + "Step 3: dining room placed (seat on the origin, table ahead), shoebox " + size.Width + " × " + size.Depth + " × " +
-                      size.Height + " m, prop light; no lightmaps. Save the scene.");
+                      size.Height + " m, prop light; no lightmaps; menu panel upright on the table at " + panelBottom.ToString("0.00") + " m. Save the scene.");
+        }
+
+        /// <summary>What the menu panel stands on (renderer name in Models.json; PO 2026-11-18: upright, resting on the table top).</summary>
+        static readonly string[] PanelObstacles = { "table" };
+        /// <summary>Gap between the table top and the panel's lowest point (m).</summary>
+        public const float PanelMarginM = 0.01f;
+        /// <summary>
+        /// The space between the eye and the panel (2 m ahead, 2 m wide), seat on the origin, metres: x within ±1.1, z from 0.4
+        /// (nearer is the participant's own chair) to 2.1 (farther is behind the panel and cannot cover it).
+        /// </summary>
+        const float CorridorHalfWidthM = 1.1f, CorridorNearM = 0.4f, CorridorFarM = 2.1f;
+
+        /// <summary>
+        /// The menu panel's lowest point (<see cref="GPL.UI.OverlayPanel.minBottomM"/>, with <c>standOnBottom</c>): the table top
+        /// under the panel plus <see cref="PanelMarginM"/>, so the upright panel stands on the table instead of being covered by it
+        /// (the panel is a punched hole in the scene). The default floor clearance when no table is found.
+        /// </summary>
+        static float PanelMinBottom(Transform roomModel)
+        {
+            float top = float.NegativeInfinity;
+            var found = new List<string>();
+            foreach (var r in roomModel.GetComponentsInChildren<Renderer>(true))
+            {
+                if (System.Array.IndexOf(PanelObstacles, r.name) < 0) continue;
+                var b = r.bounds;
+                if (b.max.z < CorridorNearM || b.min.z > CorridorFarM || b.max.x < -CorridorHalfWidthM || b.min.x > CorridorHalfWidthM) continue;
+                top = Mathf.Max(top, b.max.y);
+                found.Add(r.name + " top " + b.max.y.ToString("0.00") + " m");
+            }
+            if (float.IsNegativeInfinity(top))
+            {
+                Debug.LogWarning(Log + "No table or chair ahead in the room model: the menu panel keeps the floor clearance.");
+                return GPL.UI.OverlayPanel.MinClearanceM;
+            }
+            Debug.Log(Log + "Menu panel clearance from " + string.Join(", ", found));
+            return top + PanelMarginM;
         }
 
         /// <summary>
@@ -438,6 +484,9 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
                 var roomModel = logic.room.transform.Find("Model");
                 if (roomModel == null || roomModel.GetComponentsInChildren<Renderer>(true).Length == 0) Problem("Environment/Room has no dining-room model (Step 3)");
                 foreach (var r in HumPerFinalModels.MissingMaterials(roomModel)) Problem("room renderer '" + r + "' has a missing material (Step 3)");
+                var panel = logic.GetComponent<GPL.UI.OverlayPanel>();
+                if (roomModel != null && panel != null && (!panel.standOnBottom || Mathf.Abs(panel.minBottomM - PanelMinBottom(roomModel)) > 1e-3f))
+                    Problem("menu panel does not stand on the table top (Step 3 sets it; Step 1 rebuilds the menu without it)");
             }
             if (a != null && HumPerFinalModels.Available)
             {

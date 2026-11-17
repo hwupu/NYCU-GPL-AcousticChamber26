@@ -6,10 +6,11 @@ odd with the time, so it can be found in the CSV.
 ## 1. Config page (Hall > C05 > Config)
 | # | Do | Expect |
 |---|---|---|
+| 0 | Enter C05 | the menu panel stands upright on the table 2 m ahead (move handle on the table top), not covered by the table; after Start it steps down onto the table; side chairs do not cover its corners |
 | 1 | Open Config | Acoustics **Room 0.7 s** selected, Hearing **Normal**, Anchors **Off**, Sound sphere **After confirm**; RT60 warning only if this headset has no table |
 | 2 | **Play stimulus** | white-noise pulses (2 s on, **0.7 s** off) straight ahead at 3 m, the radio model in front of them at eye height |
 | 3 | Hearing **L −80**, then **R −80**, **L −40**, **R −40**, **Normal** (stimulus playing) | the pulse goes muffled and moves toward the good ear; −80 clearly stronger than −40; Normal = as before |
-| 4 | Anchors **On** | yellow cube ahead, brass bar to the right at 3 m; rubber-duck quacks (about 5 s), 1.5 s, trumpet fanfare (about 15 s), 2.5 s, quacks, ... one at a time |
+| 4 | Anchors **On** | the rubber duck on the table ahead (behind the panel while it is open), the trumpet player standing to the right at 3 m; rubber-duck quacks (about 5 s), 1.5 s, trumpet fanfare (about 15 s), 2.5 s, quacks, ... one at a time |
 | 5 | Turn the head 90° | the anchors stay where they were in the room |
 | 6 | Hearing **L −80** with anchors on | the anchors are filtered too (the filter is on the whole output) |
 | 7 | **Measure RT60** (Anchors on) | the anchors pause during the measurement and resume after; status T_mid close to 0.7 s; Measure RT60 is selected only while it runs and never changes the Acoustics choice |

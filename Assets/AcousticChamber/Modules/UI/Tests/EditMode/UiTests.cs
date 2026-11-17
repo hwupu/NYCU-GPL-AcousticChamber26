@@ -84,6 +84,39 @@ namespace GPL.UI.Tests
         }
     }
 
+    public class OverlayPanelPlacementTests
+    {
+        /// <summary>How far below the eye the panel's lowest point reaches (m) at a pitch (down positive), facing the eye.</summary>
+        static float Drop(float pitchDeg, float d, float h) =>
+            d * Mathf.Sin(pitchDeg * Mathf.Deg2Rad) + h * Mathf.Cos(pitchDeg * Mathf.Deg2Rad);
+
+        [Test]
+        public void KeepsThePitchWhenThereIsRoom()
+        {
+            // 2 m ahead, 1.4 m tall, eye 1.2 m above a 0.15 m floor clearance: the 8° pitch stays
+            Assert.AreEqual(8f, OverlayPanel.ClearancePitch(8f, 2f, 0.7f, 1.05f), 1e-5f);
+        }
+
+        [Test]
+        public void TiltsUpJustEnoughToClearATable()
+        {
+            // the C05 case: eye 1.2 m, table top 0.83 m with margin → 0.37 m below the eye
+            float p = OverlayPanel.ClearancePitch(8f, 2f, 0.7f, 0.37f);
+            Assert.Less(p, 0f, "tilted above eye level");
+            Assert.AreEqual(0.37f, Drop(p, 2f, 0.7f), 1e-4f, "the lowest point sits exactly on the clearance");
+            Assert.Greater(p, -15f);
+        }
+
+        [Test]
+        public void NeverTiltsDownAndStaysFinite()
+        {
+            Assert.AreEqual(-20f, OverlayPanel.ClearancePitch(-20f, 2f, 0.7f, 0.1f), 1e-5f, "already above: unchanged");
+            float p = OverlayPanel.ClearancePitch(8f, 2f, 0.7f, -5f);   // impossible clearance: as far up as the formula goes
+            Assert.IsFalse(float.IsNaN(p));
+            Assert.LessOrEqual(p, 8f);
+        }
+    }
+
     public class ScrollModelTests
     {
         static ScrollModel Model()
