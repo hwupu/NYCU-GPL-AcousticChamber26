@@ -142,6 +142,8 @@ namespace AcousticChamber.Chambers.HumPerFinal
         }
 
         protected override string ChamberId => Id;
+        /// <summary>Design.md "Flow" 4: the last instruction slide's button reads "Start Practice" / "開始練習".</summary>
+        protected override System.Func<UiLanguage, string> InstructionsLastLabel => l => Loc.Get(l, Strings.StartPractice); // the table is registered in StartRun, before the onboarding
         public override ParameterSchema Schema => _schema ?? (_schema = CreateSchema());
         public override LogSchema LogSchema => _log ?? (_log = CreateLogSchema());
         public override ProtocolPlan CreatePlan(ParameterSet values) => Plan(values);
@@ -215,8 +217,11 @@ namespace AcousticChamber.Chambers.HumPerFinal
             public const string PracticeAsk = "humperfinal.practice_ask";
             public const string PracticeAgain = "humperfinal.practice_again";
             public const string Ready = "humperfinal.ready";
+            /// <summary>Next on the last instruction slide ("Ready?"): the practice follows (PO 2026-11-18).</summary>
+            public const string StartPractice = "humperfinal.start_practice";
 
             public static readonly StringTable Table = new StringTable(Id)
+                .Add(StartPractice, "Start Practice", "開始練習")
                 .Add(PracticeAsk, "Practice again, or start the experiment?", "要再練習一次，還是開始正式實驗？")
                 .Add(PracticeAgain, "Practice again", "再練習一次")
                 .Add(Ready, "I'm ready", "我準備好了");

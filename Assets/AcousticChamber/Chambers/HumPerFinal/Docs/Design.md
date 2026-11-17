@@ -1,13 +1,13 @@
 # HumPerFinal (C05) — Design
 
-**Status:** approved by the PO 2026-11-17 (PB-28); built in PB-28 (headset test pending). Base: HumPerHW2 (the former C05, removed in PB-29; its Design.md is in git history, commit 1d3b29f); PO answers of Relabelled C06 → C05 when HumPerHW2 was removed (PB-29, PO 2026-11-17).
+**Status:** approved by the PO 2026-11-17 (PB-28); built in PB-28 (headset test passed 2026-11-18). Base: HumPerHW2 (the former C05, removed in PB-29; its Design.md is in git history, commit 1d3b29f); PO answers of Relabelled C06 → C05 when HumPerHW2 was removed (PB-29, PO 2026-11-17).
 2026-11-17. Items marked *(default)* were proposed by the agent and approved with the rest. Differences from HW2 are marked
 **(new)**.
 
 **Change 2026-11-18 (PB-28, PO):** fewer trials per block. Each radio position is tested from **one** start side (a
 *position pair*), chosen so that each hemisphere still has one start from each side; the participant's **pairing set**
 (`study_id % 4`) is the same in every block and both repeats. 16 → **8 trials per block, 160 → 80 trials** (5 hearing ×
-2 anchors × 4 position pairs × 2 repeats). Approved by the PO 2026-11-18 and built (headset test pending).
+2 anchors × 4 position pairs × 2 repeats). Approved by the PO 2026-11-18 and built (headset test passed 2026-11-18).
 
 **Change 2026-11-18 (PO): dining room and real models.** The white HW2 room is replaced by a furnished dining room (the PO's
 `C05.blend`, from the Sketchfab "Dining room | Kichen baked"), and the boxes by real models: rubber duck, a standing trumpet
@@ -114,7 +114,7 @@ Chamber menu → (Start) → stages as HW2 (onboarding stages switchable by `onb
 | 1 | `handover` | stock; again after every resume | StageStart |
 | 2 | `language` | English / 中文; skipped on a resume | StageStart |
 | 3 | `recenter` | stock Meta-button recenter on the PO's slide 1 "Before we start" / "開始之前" (`Slides/*-1-reposition.jpg`; the buttons leading back to it read "Back" / "上一頁"); again after every resume | StageStart |
-| 4 | `instructions` | the PO's illustrations (2026-11-17), titles English / 中文: "Procedure" / "實驗說明", "Controllers" / "操作說明", "Trials" / "練習回合", "Ready?" / "準備就緒？" (announces the dot); the Back / Next buttons carry the neighbouring titles; they show the Y pause | StageStart |
+| 4 | `instructions` | the PO's illustrations (2026-11-17), titles English / 中文: "Procedure" / "實驗說明", "Controllers" / "操作說明", "Trials" / "練習回合", "Ready?" / "準備就緒？" (announces the dot); the Back / Next buttons carry the neighbouring titles, the last Next reads "Start Practice" / "開始練習" (PO 2026-11-18); they show the Y pause | StageStart |
 | 5 | `ready` | stock dot + head gate (GPL.Protocol with GPL.Homing; the dot 1° above eye level, `gate.dot_elevation_deg`), `volume_check`; again after every resume | StageStart |
 | 6 | `practice` | as HW2 with the radio: 0°, 1.5 m, start +30°, **normal hearing, no anchors**, no helper text; after each trial "Practice again" / "I'm ready"; at least one trial | StageStart |
 | 7 | `experiment` | **10 blocks × 8 trials = 80 (2026-11-18; was 160), back to back: no block break screens, no prompted breaks (new)**; the cell changes silently in the inter-trial interval (the anchors appear or disappear) | `next_trial` |

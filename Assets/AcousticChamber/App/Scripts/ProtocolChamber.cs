@@ -124,6 +124,12 @@ namespace AcousticChamber.App
             Cleanup();
         }
 
+        /// <summary>
+        /// Label of the last instruction slide's Next button, naming what follows (e.g. "Start Practice" / "開始練習"); null (the
+        /// default) = the stock "Continue". The arrow is added by the slide screen.
+        /// </summary>
+        protected virtual System.Func<UiLanguage, string> InstructionsLastLabel => null;
+
         /// <summary>The stage name in the rows of the bench's Practice trial (default <c>practice</c>).</summary>
         protected virtual string PracticeStageName => "practice";
 
@@ -161,6 +167,7 @@ namespace AcousticChamber.App
             Onboarding = new Onboarding(Screens, rec, run.Log, run.Values)
             {
                 Save = run.Save, Rig = Rig, Cue = cue, Listener = listener, Instructions = instructions, RecenterSlide = recenterSlide,
+                InstructionsLastLabel = InstructionsLastLabel,
                 ReadVolume = HeadsetVolume.ReadOrUnknown,
                 VolumeTarget = run.Values.Schema.Contains(HeadsetVolume.TargetKey) ? run.Values.GetInt(HeadsetVolume.TargetKey) : -1,
             };
