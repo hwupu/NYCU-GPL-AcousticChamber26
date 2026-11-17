@@ -19,7 +19,7 @@ odd with the time, so it can be found in the CSV.
 ## 2. Debug run (Config > Run experiment trials)
 | # | Do | Expect |
 |---|---|---|
-| 9 | Onboarding, practice | slides "Before we start" (Meta recenter), "Procedure", "Controllers", "Trials", "Ready?" with the PO's pictures (中文 too); Back on "Procedure" reads "← Back" ("← 上一頁"); the dot afterwards sits slightly above eye level (1°); practice: radio at 0°, 1.5 m, start +30°, normal hearing, no anchors, no helper text |
+| 9 | Onboarding, practice | slides "Before we start" (Meta recenter), "Procedure", "Controllers", "Trials", "Ready?" with the PO's pictures (中文 too); Back on "Procedure" reads "← Back" ("← 上一頁"); Next on "Ready?" reads "Start Practice →" ("開始練習 →"); the dot afterwards sits slightly above eye level (1°); practice: radio at 0°, 1.5 m, start +30°, normal hearing, no anchors, no helper text |
 | 10 | Hold one trigger for over 40 s | the sound goes all the way round (behind you and back in front); no stop at ±90° |
 | 11 | Answer after a full turn | the Debug line shows the difference within ±180° |
 | 12 | Experiment (fixed or Williams order) | no break screen between blocks; anchors appear / disappear between trials when the cell changes; hearing changes without notice |

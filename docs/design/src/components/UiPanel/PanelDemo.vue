@@ -41,6 +41,18 @@ const dialog = ref(false), shown = ref(true), digits = ref(''), ear = ref('both'
     </section>
 
     <section>
+      <h3 class="mb-16 text-small font-bold text-text2">Last slide, named by the chamber (ProtocolChamber.InstructionsLastLabel): C05 "Start Practice" / "開始練習" (PO 2026-11-18)</h3>
+      <UiPanel :height="520">
+        <template #navigationBar><UiNavigationBar title="Ready?" leading="none" centered /></template>
+        <div class="flex flex-1 items-center justify-center text-body text-text2">Slide content</div>
+        <template #toolbar>
+          <UiButton label="Trials" icon-leading="arrow-left" button-style="borderless" />
+          <UiButton label="Start Practice" icon-trailing="arrow-right" button-style="prominent" />
+        </template>
+      </UiPanel>
+    </section>
+
+    <section>
       <h3 class="mb-16 text-small font-bold text-text2">Protocol screen (language, message): the text is centered vertically with a margin above the buttons; one action (Continue) is centered</h3>
       <UiPanel :height="520">
         <div class="flex flex-1 items-center justify-center pb-40 text-center text-heading">Please put on the headset and sit comfortably.</div>

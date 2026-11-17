@@ -35,6 +35,8 @@ namespace GPL.Protocol
         public SlideSet Instructions;
         /// <summary>Title and illustration of the recenter slide; null = the stock text.</summary>
         public SlideSet.Slide RecenterSlide;
+        /// <summary>Label of the last instruction slide's Next button, naming what follows (e.g. "Start Practice"); null = "Continue".</summary>
+        public Func<UiLanguage, string> InstructionsLastLabel;
 
         /// <summary>Reads the headset volume step, -1 when it cannot be read (the ready stage's <c>volume_check</c>).</summary>
         public Func<int> ReadVolume;
@@ -116,7 +118,8 @@ namespace GPL.Protocol
                 Log.Write(LogEvents.Slide, deck.Note(slide.Id, how));
             },
             recenterOn ? (Func<IEnumerator>)Recenter : null,
-            recenterOn ? l => ProtocolScreens.ButtonName(ProtocolScreens.RecenterPage(RecenterSlide), l) : (Func<UiLanguage, string>)null);
+            recenterOn ? l => ProtocolScreens.ButtonName(ProtocolScreens.RecenterPage(RecenterSlide), l) : (Func<UiLanguage, string>)null,
+            InstructionsLastLabel);
         }
 
         /// <summary>The final check: head gate at the dot (<c>homing</c>), then the headset volume against the target (<c>volume_check</c>).</summary>
