@@ -9,11 +9,21 @@
 (`study_id % 4`) is the same in every block and both repeats. 16 → **8 trials per block, 160 → 80 trials** (5 hearing ×
 2 anchors × 4 position pairs × 2 repeats). Approved by the PO 2026-11-18 and built (headset test pending).
 
+**Change 2026-11-18 (PO): dining room and real models.** The white HW2 room is replaced by a furnished dining room (the PO's
+`C05.blend`, from the Sketchfab "Dining room | Kichen baked"), and the boxes by real models: rubber duck, a standing trumpet
+player, radio. The sounds keep the positions of the table below (eye height, 3 m); the duck and the player models stand on
+their surfaces under their sounds (table top, floor). PO: "With a generic HRTF, people can't differentiate the 0.4 m
+incongruence", so the visual and the sound may be apart vertically. Approved by the PO 2026-11-18.
+
 ## Posture and setting
-Seated, posture `Seated`, the participant does not move. The HW2 room: 8.72 m wide × 15 m deep × 3.5 m high, white walls and
-ceiling, light-gray floor, soft baked lighting, the participant near the middle; Meta XR Audio shoebox of the same size, one
+Seated, posture `Seated`, the participant does not move. **Dining room (2026-11-18):** 8.75 m wide × 15 m deep × 3.5 m high
+(the PO kept 8.75 m; the acoustic shoebox stays 8.72 m), the participant seated at the room centre at the near end of an oval
+dining table (2.6 × 1.6 m, top 0.78 m, from 0.59 to 3.19 m ahead), facing the kitchen wall (+z); window on the left, plain wall
+on the right; the chair straight ahead at the far end of the table and the vase and flower on the table removed (they would
+stand between the participant and the radio positions). The room is URP Unlit with the light baked into its textures (no
+lightmaps); one real-time light from the window side and flat ambient light the props (URP Lit, no shadows; soft contact
+shadows under the duck, the player and the music stand). Meta XR Audio shoebox 8.72 × 15 × 3.5 m (the calibrated room), one
 uniform reflection coefficient on all six surfaces, Meta XR Audio Reflection on the mixer, every spatial source routed to it.
-The room geometry and materials are copied from HW2 (chambers do not share assets).
 
 **Acoustics (new):** one condition, `rt60_target_s` = **0.7 s** (coefficient from the RT60 calibration table, ADR-0010), no
 background noise (silent room).
@@ -21,7 +31,8 @@ background noise (silent room).
 ## Stimuli
 | | Target (audio) | Radio (visual) | Anchors **(new)** |
 |---|---|---|---|
-| Object | Gaussian white noise, GPL.Stimuli (ADR-0008): 2 s, 20 ms cos² ramps, −26 dBFS RMS, seed 1; **looped 2 s on, 0.7 s off (new)** until A | Radio model; for now a **box placeholder** (`Stimuli/Radio/Model`, built by Step 4) 0.25 × 0.18 × 0.12 m, URP Lit, facing the participant *(default size)* | Rubber duck at **0°**, trumpet at **+90°**; for now **box placeholders** (`Stimuli/Anchors/Duck/Model`, `.../Trumpet/Model`: duck 0.15 m cube, yellow; trumpet 0.30 × 0.10 × 0.10 m, brass) *(default)*; a real model replaces the `Model` child |
+| Object | Gaussian white noise, GPL.Stimuli (ADR-0008): 2 s, 20 ms cos² ramps, −26 dBFS RMS, seed 1; **looped 2 s on, 0.7 s off (new)** until A | Radio model (Sketchfab "Radio", 0.26 × 0.23 × 0.08 m), URP Lit, facing the participant, floating (no surface at 3 m and eye height; PO 2026-11-18) | Rubber duck at **0°** (Sketchfab "Rubber Duck", 0.12 m long, facing the participant) and a trumpet player at **+90°** (Sketchfab "Character Walk" posed playing the Sketchfab "Trumpet", bell toward the participant), URP Lit; the box placeholders remain only when the models are missing |
+| Model position **(2026-11-18)** | — | centred on the sound | x / z under the sound; the duck's bottom on the table top (0.78 m), the player standing on the floor with the bell about 1.61 m high (`AnchorLoop.duckModelY`, `trumpetModelY`, set by Step 4 from the model export) |
 | Sound | invisible | none | One at a time, looped: **duck sound, 1.5 s silence, trumpet sound, 2.5 s silence**, repeat. Each recording leveled to −26 dBFS RMS at load like the target (`StimulusClips.Leveled`). Both from the GPL.Stimuli library (PO 2026-11-17): duck = Freesound 348791 "Toy Ducks Quacking" (`Freesound/348791__nebyoolae__toy-ducks-quacking.mp3`, CC0, about 4.9 s), trumpet = OpenAIR `Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` (**14.72 s**); one loop is about 24 s |
 | Height | eye height | centre at eye height | centre at eye height |
 | Distance | **3 m** (practice **1.5 m**), radius locked (PO 2026-11-17; HW2: 2 m / 1.2 m) | 3 m (practice 1.5 m) | 3 m |

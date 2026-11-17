@@ -134,7 +134,7 @@ Console only. Not participant data (no Study ID).
 | `Runtime/ClipLevels.cs` | clip RMS dBFS (needs Decompress On Load), source level = RMS + gain boost + volume |
 | `Editor/Rt60CalibrationImport.cs` | `Magic > Acoustics > Import RT60 Calibration...`: sweep CSV -> table asset + report copies in `docs/calibration/` |
 | `Editor/ReflectionMixer.cs` | create a mixer with the effect on Master (Unity's internal mixer API, by reflection), route sources, list unrouted spatial sources |
-| `Editor/RoomBuilder.cs` | `ApplyBakedLighting(settingsPath)` (no directional light, flat ambient, baked GI), `Build(parent, options)` (white box room, area lights, probes, shoebox of the same size; idempotent), `Bake()` |
+| `Editor/RoomBuilder.cs` | `ApplyBakedLighting(settingsPath)` (no directional light, flat ambient, baked GI), `Build(parent, options)` (white box room, area lights, probes, shoebox of the same size; idempotent), `Shoebox(parent, options)` (the shoebox alone, for a chamber with its own room model; idempotent), `Bake()` |
 | `Editor/ClipImport.cs` | `DecompressOnLoad(clip)`, `SetLoadType(clip, type)` |
 | `Editor/AudioBuildSettingsGuard.cs` | `IPreprocessBuildWithReport`, last: sample rate 0 (system), DSP buffer 1024, requested 0 = `ProjectSettings/AudioManager.asset` |
 

@@ -2,7 +2,7 @@
 
 **Status:** approved by the PO 2026-11-17 (PB-28).
 
-The final study of course 115A-535655, built on HumPerHW2 (the former C05, removed in PB-29): the same seated adjustment task in the same white room, now with
+The final study of course 115A-535655, built on HumPerHW2 (the former C05, removed in PB-29): the same seated adjustment task, in a furnished dining room of the same size (2026-11-18; was HW2's white room), now with
 a simulated **unilateral hearing loss** and visible, sounding **audio anchors**. The acoustics are fixed (RT60 0.7 s, silent room).
 
 A seated participant rotates a looped white-noise source around them with the triggers, freely through 360°, until it seems to

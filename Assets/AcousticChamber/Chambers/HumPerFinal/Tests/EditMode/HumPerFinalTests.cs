@@ -289,5 +289,37 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
                 "rt60_target_s", "rt60_measured_s", "stim_level_dbfs", "anchor_level_dbfs", "gate_s", "stop_dialog", "volume_step",
             }, HumPerFinalChamber.CreateLogSchema().ChamberColumns.ToArray());
         }
+
+        // ---- anchor models on their surfaces (Design.md "Stimuli", PO 2026-11-18) -------------------------------
+
+        [Test]
+        public void Ground_PutsTheModelOnTheSurfaceUnderTheSound()
+        {
+            var anchor = new UnityEngine.GameObject("Anchor");
+            var model = new UnityEngine.GameObject("Model");
+            try
+            {
+                model.transform.SetParent(anchor.transform, false);
+                anchor.transform.SetPositionAndRotation(new UnityEngine.Vector3(0.2f, 1.2f, 3f), UnityEngine.Quaternion.Euler(0f, 180f, 0f));
+                AnchorLoop.Ground(model.transform, 0.778f);
+                Assert.AreEqual(0.2f, model.transform.position.x, 1e-5f);
+                Assert.AreEqual(0.778f, model.transform.position.y, 1e-5f);
+                Assert.AreEqual(3f, model.transform.position.z, 1e-5f);
+                Assert.AreEqual(1.2f, anchor.transform.position.y, 1e-5f, "the sound stays at eye height");
+
+                anchor.transform.position = new UnityEngine.Vector3(-3f, 1.1f, 0f); // next block: placed again, grounded again
+                AnchorLoop.Ground(model.transform, 0.013f);
+                Assert.AreEqual(-3f, model.transform.position.x, 1e-5f);
+                Assert.AreEqual(0.013f, model.transform.position.y, 1e-5f);
+
+                AnchorLoop.Ground(model.transform, float.NaN);
+                Assert.AreEqual(0.013f, model.transform.position.y, 1e-5f, "NaN keeps the model where it is");
+                AnchorLoop.Ground(null, 1f); // no model: no exception
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(anchor);
+            }
+        }
     }
 }

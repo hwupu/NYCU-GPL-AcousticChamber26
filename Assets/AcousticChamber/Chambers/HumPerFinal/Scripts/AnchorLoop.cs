@@ -21,6 +21,11 @@ namespace AcousticChamber.Chambers.HumPerFinal
         [Tooltip("Recordings (Decompress On Load). GPL.Stimuli library: Freesound 348791 toy ducks quacking, OpenAIR tr-1780d-fanfare.wav (Step 4).")]
         public AudioClip duckRecording, trumpetRecording;
         public float levelDbfs = -26f;
+        [Tooltip("World height (m) of the duck model's origin, its bottom: the table top. NaN = the model stays centred on the sound. " +
+                 "Set by Step 4 from Models/Models.json; the sound itself stays at eye height (Design.md \"Stimuli\").")]
+        public float duckModelY = float.NaN;
+        [Tooltip("World height (m) of the trumpet player's origin, the floor below the bell. NaN = centred on the sound. Set by Step 4.")]
+        public float trumpetModelY = float.NaN;
 
         AudioClip _duck, _trumpet;
         double _duckGainDb, _trumpetGainDb;
@@ -76,6 +81,10 @@ namespace AcousticChamber.Chambers.HumPerFinal
             if (duck == null || trumpet == null || !EnsureClips()) return;
             Put(duck, origin, yaw, radiusM, duckAzDeg);
             Put(trumpet, origin, yaw, radiusM, trumpetAzDeg);
+            var d = DuckModel;
+            var t = TrumpetModel;
+            Ground(d != null ? d.transform : null, duckModelY);
+            Ground(t != null ? t.transform : null, trumpetModelY);
             _gapAfterDuck = Mathf.Max(0f, gapAfterDuckS);
             _gapAfterTrumpet = Mathf.Max(0f, gapAfterTrumpetS);
             _paused = false;
@@ -89,6 +98,18 @@ namespace AcousticChamber.Chambers.HumPerFinal
             s.Anchor = PlacedSource.Anchoring.RoomFixed;
             s.Place(origin, yaw, radius, az);
             s.transform.rotation = Ring.FacingOrigin(s.transform.position, origin);
+        }
+
+        /// <summary>
+        /// Puts a model on a surface (Design.md "Stimuli", PO 2026-11-18): it keeps its x / z under the sound and gets the world
+        /// height <paramref name="y"/> (the duck on the table, the trumpet player on the floor); the sound stays where it is.
+        /// NaN or no model: nothing changes.
+        /// </summary>
+        public static void Ground(Transform model, float y)
+        {
+            if (model == null || float.IsNaN(y)) return;
+            var p = model.position;
+            model.position = new Vector3(p.x, y, p.z);
         }
 
         /// <summary>Stops the sound and hides the models.</summary>

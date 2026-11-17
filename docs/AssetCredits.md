@@ -41,7 +41,18 @@ Generated (no credit needed): every tone and noise made by GPL.Stimuli (recipes 
 | `Assets/TextMesh Pro/Fonts/LiberationSans.ttf` | Liberation Sans | Red Hat / Liberation Fonts | Unity TextMeshPro Essentials | SIL OFL 1.1 | shipped by Unity | — | — | yes |
 
 ## Models
-None yet (scene objects are Unity primitives).
+Exported by the PO's Blender pipeline from `C05.blend` (2026-11-18, PB-28) into `Chambers/HumPerFinal/Models/` (FBX +
+`Textures/`). CC BY 4.0 requires the credit line as given by the PO, e.g. *"Rubber Duck" (https://skfb.ly/owTOR) by ElOsitoAzul is
+licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/)*, and an indication of changes.
+
+| Path | Title | Creator | Source | Licence | Notes | Retrieved | Changes | Public repo |
+|---|---|---|---|---|---|---|---|---|
+| `Chambers/HumPerFinal/Models/Room.fbx`, `Textures/` (all but the ones below) | Dining room \| Kichen baked | ChristyHsu | https://skfb.ly/owqH6 | CC BY 4.0 | baked textures; `FLOOR_C05.png`, `house1_C05.png`, `TABLE_C05.png` are our edited copies | 2026-11-18 | scaled to real size, walls / floor / window stretched to 15 × 8.75 × 3.5 m, table set rotated and moved, one chair, vase and flower removed, unbaked (black) texture areas filled, kitchen cabinets extended to the ceiling | yes |
+| `Chambers/HumPerFinal/Models/Duck.fbx`, `Textures/Material.png` | Rubber Duck | ElOsitoAzul | https://skfb.ly/owTOR | CC BY 4.0 | | 2026-11-18 | parts joined, scaled to 0.12 m, contact shadow added | yes |
+| `Chambers/HumPerFinal/Models/TrumpetPlayer.fbx` (trumpet), `Textures/Bell_001_*` | Trumpet | kii | https://skfb.ly/oHsXs | CC BY 4.0 | the source .blend also packs a BlenderKit "ballroom" HDR and material images; only the trumpet's own textures are used | 2026-11-18 | scaled to 0.48 m, posed in the player's hands; normal map converted EXR → PNG | yes |
+| `Chambers/HumPerFinal/Models/TrumpetPlayer.fbx` (player) | Character Walk | SentientCoffee | **to check** (Sketchfab; the PO's credit line has no link) | CC BY 4.0 (PO) | **link needed before commit** | 2026-11-18 | walk animation removed, arms posed to play the trumpet, baked to a static mesh, clothes coloured by body part | to check |
+| `Chambers/HumPerFinal/Models/Radio.fbx`, `Textures/SM_Radio_*`, `Textures/Emissive.png` | Radio | Nicola Hynes | https://skfb.ly/6TrLG | CC BY 4.0 | | 2026-11-18 | parts joined | yes |
+| `Chambers/HumPerFinal/Models/Textures/C05_ContactShadow.png`, music stand | — | lab (generated in Blender) | own work | own work | | 2026-11-18 | — | yes |
 
 ## Packages (not listed per file)
 Meta XR Core SDK, Meta XR Audio SDK, Unity packages (URP, OpenXR, Input System, TextMeshPro): their own licences in `Packages/` /

@@ -14,7 +14,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
 {
     /// <summary>
     /// Magic steps of the HumPerFinal chamber (Docs/Design.md, Docs/SceneSetup.md). Idempotent; they edit only the HumPerFinal
-    /// scene and never touch the Building Blocks (the Camera Rig comes with the copy of MainHall). Same room as HW2, own assets.
+    /// scene and never touch the Building Blocks (the Camera Rig comes with the copy of MainHall). The dining room and the real models come from Models/ (HumPerFinalModels).
     /// </summary>
     public static class HumPerFinalSetup
     {
@@ -76,35 +76,111 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             Debug.Log(Log + "Step 2: fixation dot and recenter listener added. Save the scene.");
         }
 
-        // ---- Step 3: room and lighting (as HW2) -----------------------------------------------------------
+        // ---- Step 3: the dining room and its lighting (PO 2026-11-18) ----------------------------------------
 
         public const string LightingPath = Folder + "/Settings/HumPerFinal.lighting";
         public const string MaterialsDir = Folder + "/Materials";
+        public const string PropLightName = "Prop Light";
+        /// <summary>Flat ambient for the Lit props (the room itself is Unlit with baked textures).</summary>
+        const float Ambient = 0.55f;
 
-        /// <summary>Step 3: baked lighting settings and the HW2 room in Environment (8.72 × 15 × 3.5 m, white, shoebox of the same size). Bake separately.</summary>
+        /// <summary>
+        /// Step 3 (Design.md "Posture and setting"): <c>Environment/Room</c> = the dining room from <c>Models/Room.fbx</c> (URP Unlit,
+        /// the light is baked into its textures), the participant's seat on the origin and the table ahead (+z); the room info and
+        /// <c>Environment/Shoebox Acoustics</c> stay 8.72 × 15 × 3.5 m (the calibrated acoustic room); no lightmaps; one real-time
+        /// light from the window side (<c>Environment/Prop Light</c>, no shadows) and flat ambient for the Lit props. Rebuilds Room,
+        /// Shoebox Acoustics and Prop Light; nothing else.
+        /// </summary>
         [MenuItem("Magic/HumPerFinal/Step 3 - Room and lighting", priority = 112)]
         public static void RoomStep()
         {
             if (!ChamberSetup.IsOpen(ScenePath)) return;
             var logic = Logic();
             if (logic == null) return;
-            UiSetup.EnsureFolder(Folder + "/Settings");
-            int removed = RoomBuilder.ApplyBakedLighting(LightingPath);
+            var man = HumPerFinalModels.Load();
+            if (man == null) return;
+            HumPerFinalModels.ConfigureImports(man);
+            var mats = HumPerFinalModels.Materials(man);
+
             var env = UiSetup.EnsureGroup("Environment");
-            var room = RoomBuilder.Build(env, RoomBuilder.Options.Default(MaterialsDir));
+            foreach (var n in new[] { RoomBuilder.RoomName, RoomBuilder.ShoeboxName, PropLightName })
+                for (int i = env.childCount - 1; i >= 0; i--)
+                    if (env.GetChild(i).name == n) Undo.DestroyObjectImmediate(env.GetChild(i).gameObject);
+
+            var size = RoomBuilder.Options.Default(MaterialsDir);
+            var roomGo = new GameObject(RoomBuilder.RoomName);
+            roomGo.transform.SetParent(env, false);
+            Undo.RegisterCreatedObjectUndo(roomGo, "HumPerFinal room");
+            var room = roomGo.AddComponent<ShoeboxRoom>();
+            room.width = size.Width; room.depth = size.Depth; room.height = size.Height;
+            var roomModel = HumPerFinalModels.Place(man, HumPerFinalModels.Room, roomGo.transform, "Model", mats, true);
+            if (roomModel == null) return;
+            WindowBackdrop(roomGo.transform, roomModel.transform);
+            RoomBuilder.Shoebox(env, size);
+
+            var light = new GameObject(PropLightName).AddComponent<Light>();
+            light.transform.SetParent(env, false);
+            light.transform.localRotation = Quaternion.Euler(50f, 90f, 0f); // from the window (left) toward the right, 50° down
+            light.type = LightType.Directional;
+            light.lightmapBakeType = LightmapBakeType.Realtime;
+            light.intensity = 1f;
+            light.color = new Color(1f, 0.96f, 0.9f);
+            light.shadows = LightShadows.None;
+            Undo.RegisterCreatedObjectUndo(light.gameObject, "HumPerFinal prop light");
+            ApplyLighting(light);
+
             Undo.RecordObject(logic, "HumPerFinal room");
             logic.room = room;
             if (logic.reverb != null) { logic.reverb.room = ShoeboxComponent(); logic.reverb.roomSize = room; EditorUtility.SetDirty(logic.reverb); }
             EditorUtility.SetDirty(logic);
             EditorSceneManager.MarkSceneDirty(logic.gameObject.scene);
-            Debug.Log(Log + "Step 3: room built (" + removed + " directional light(s) removed). Save the scene, then Magic > HumPerFinal > Bake Lighting.");
+            Debug.Log(Log + "Step 3: dining room placed (seat on the origin, table ahead), shoebox " + size.Width + " × " + size.Depth + " × " +
+                      size.Height + " m, prop light; no lightmaps. Save the scene.");
         }
 
-        [MenuItem("Magic/HumPerFinal/Bake Lighting (slow)", priority = 130)]
-        public static void BakeLighting()
+        /// <summary>
+        /// A bright Unlit quad 0.3 m outside the window ("Window Backdrop", child of the room): between the blind's slats the eye
+        /// cameras would otherwise show their clear colour (the Camera Rig is a Building Block and is not changed).
+        /// </summary>
+        static void WindowBackdrop(Transform room, Transform roomModel)
         {
-            if (!ChamberSetup.IsOpen(ScenePath)) return;
-            if (RoomBuilder.Bake()) Debug.Log(Log + "Lighting baked and the scene saved.");
+            Renderer window = null;
+            foreach (var r in roomModel.GetComponentsInChildren<Renderer>(true))
+                if (r.name == "window") { window = r; break; }
+            if (window == null) { Debug.LogWarning(Log + "No 'window' in the room model: no backdrop."); return; }
+            var b = window.bounds;
+            bool alongX = b.size.x < b.size.z; // the window lies in a wall facing ±x
+            var outward = alongX ? new Vector3(Mathf.Sign(b.center.x), 0f, 0f) : new Vector3(0f, 0f, Mathf.Sign(b.center.z));
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "Window Backdrop";
+            Object.DestroyImmediate(quad.GetComponent<Collider>());
+            quad.transform.SetParent(room, false);
+            quad.transform.position = b.center + outward * 0.3f;
+            quad.transform.rotation = Quaternion.LookRotation(outward, Vector3.up); // a quad faces -forward: toward the room
+            quad.transform.localScale = new Vector3((alongX ? b.size.z : b.size.x) + 4f, b.size.y + 1f, 1f); // generous: it is outside the wall
+            var mat = UnlitMat("Window Backdrop", new Color(0.93f, 0.95f, 0.98f));
+            quad.GetComponent<Renderer>().sharedMaterial = mat;
+            quad.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            GameObjectUtility.SetStaticEditorFlags(quad, StaticEditorFlags.BatchingStatic);
+            Undo.RegisterCreatedObjectUndo(quad, "HumPerFinal window backdrop");
+        }
+
+        /// <summary>No baked GI (the room's light is in its textures), flat ambient, no skybox, the prop light as the sun; drops the old lightmaps of the white HW2 room.</summary>
+        static void ApplyLighting(Light sun)
+        {
+            UiSetup.EnsureFolder(Folder + "/Settings");
+            var ls = AssetDatabase.LoadAssetAtPath<LightingSettings>(LightingPath);
+            if (ls == null) { ls = new LightingSettings(); AssetDatabase.CreateAsset(ls, LightingPath); }
+            ls.bakedGI = false;
+            ls.realtimeGI = false;
+            ls.autoGenerate = false;
+            EditorUtility.SetDirty(ls);
+            Lightmapping.lightingSettings = ls;
+            Lightmapping.lightingDataAsset = null;
+            RenderSettings.skybox = null;
+            RenderSettings.sun = sun;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = new Color(Ambient, Ambient, Ambient);
         }
 
         // ---- Step 4: target, radio, anchors, mixer -------------------------------------------------------
@@ -165,6 +241,21 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             loop.trumpet = Anchor(anchorsGo.transform, "Trumpet", 90f, TrumpetSize, LitMat("Trumpet", new Color(0.8f, 0.62f, 0.2f)), group);
             loop.duckRecording = duckClip;
             loop.trumpetRecording = trumpetClip;
+
+            // the real models (PO 2026-11-18) replace the boxes; the PO's own Model children are kept
+            loop.duckModelY = loop.trumpetModelY = float.NaN;
+            if (HumPerFinalModels.Available)
+            {
+                var man = HumPerFinalModels.Load();
+                if (man == null) return;
+                HumPerFinalModels.ConfigureImports(man);
+                var mats = HumPerFinalModels.Materials(man);
+                bool duckOk = UseModel(loop.duck.transform, HumPerFinalModels.Duck, man, mats, false);
+                bool trumpetOk = UseModel(loop.trumpet.transform, HumPerFinalModels.TrumpetPlayer, man, mats, false);
+                UseModel(radio.transform, HumPerFinalModels.Radio, man, mats, true);
+                if (duckOk) loop.duckModelY = man.duckSurfaceY;         // on the table top
+                if (trumpetOk) loop.trumpetModelY = man.trumpetSurfaceY; // the player on the floor
+            }
             EditorUtility.SetDirty(loop);
 
             // Debug marker
@@ -214,6 +305,28 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             placed.Anchor = PlacedSource.Anchoring.RoomFixed;
             Box(go.transform, "Model", size, mat).SetActive(false);
             return placed;
+        }
+
+        /// <summary>
+        /// Replaces <paramref name="parent"/>'s 'Model' with <paramref name="file"/> when it is the box placeholder or an earlier copy
+        /// of the same model; the PO's own model is kept (returns false then). The new 'Model' is active only when
+        /// <paramref name="active"/> (the anchors' models are shown by AnchorLoop).
+        /// </summary>
+        static bool UseModel(Transform parent, string file, HumPerFinalModels.Manifest man, Dictionary<string, Material> mats, bool active)
+        {
+            var old = parent.Find("Model");
+            if (old != null && !HumPerFinalModels.IsBox(old) && !HumPerFinalModels.IsOurs(old, file))
+            {
+                Debug.Log(Log + parent.name + "/Model is not the placeholder: kept as it is.");
+                return false;
+            }
+            if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
+            var holder = new GameObject("Model");
+            holder.transform.SetParent(parent, false);
+            Undo.RegisterCreatedObjectUndo(holder, "HumPerFinal model");
+            if (HumPerFinalModels.Place(man, file, holder.transform, Path.GetFileNameWithoutExtension(file), mats, false) == null) return false;
+            holder.SetActive(active);
+            return true;
         }
 
         // ---- Step 5: onboarding slides (the PO's C05 illustrations, 2026-11-17) ------------------------------
@@ -319,7 +432,33 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
                 Problem("shoebox size differs from the visual room");
             string spatializer = AudioSettings.GetSpatializerPluginName();
             if (spatializer != "Meta XR Audio") Problem("spatializer plugin is '" + spatializer + "', not 'Meta XR Audio' (Project Settings > Audio)");
-            if (Lightmapping.lightingDataAsset == null) Debug.LogWarning(Log + "Validate: lighting not baked yet (Magic > HumPerFinal > Bake Lighting).");
+            // the dining room and the models (PO 2026-11-18)
+            if (logic.room != null)
+            {
+                var roomModel = logic.room.transform.Find("Model");
+                if (roomModel == null || roomModel.GetComponentsInChildren<Renderer>(true).Length == 0) Problem("Environment/Room has no dining-room model (Step 3)");
+                foreach (var r in HumPerFinalModels.MissingMaterials(roomModel)) Problem("room renderer '" + r + "' has a missing material (Step 3)");
+            }
+            if (a != null && HumPerFinalModels.Available)
+            {
+                var models = new (Transform model, string file)[]
+                {
+                    (a.DuckModel != null ? a.DuckModel.transform : null, HumPerFinalModels.Duck),
+                    (a.TrumpetModel != null ? a.TrumpetModel.transform : null, HumPerFinalModels.TrumpetPlayer),
+                    (logic.picture != null ? logic.picture.Find("Model") : null, HumPerFinalModels.Radio),
+                };
+                foreach (var (model, file) in models)
+                {
+                    if (HumPerFinalModels.IsBox(model)) Debug.LogWarning(Log + "Validate: " + file + " not used yet, a box is shown (Step 4).");
+                    foreach (var r in HumPerFinalModels.MissingMaterials(model)) Problem(file + " renderer '" + r + "' has a missing material (Step 4)");
+                }
+                if (HumPerFinalModels.IsOurs(models[0].model, HumPerFinalModels.Duck) && float.IsNaN(a.duckModelY)) Problem("duck model height not set (Step 4)");
+                if (HumPerFinalModels.IsOurs(models[1].model, HumPerFinalModels.TrumpetPlayer) && float.IsNaN(a.trumpetModelY)) Problem("trumpet player height not set (Step 4)");
+            }
+            int directional = 0;
+            foreach (var l in Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                if (l.type == LightType.Directional) directional++;
+            if (directional != 1) Debug.LogWarning(Log + "Validate: " + directional + " directional lights (expected 1, the Prop Light of Step 3).");
             Debug.Log(Log + "Validate: " + (problems == 0 ? "OK." : problems + " problem(s)."));
             return problems;
         }
@@ -438,7 +577,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             return def;
         }
 
-        /// <summary>Headless (mirror project): Steps 1 to 5 (no bake), save, Validate (an error exit when it finds a problem).</summary>
+        /// <summary>Headless (mirror project): Steps 1 to 5, save, Validate (an error exit when it finds a problem).</summary>
         public static void BatchSteps()
         {
             ChamberStep();
