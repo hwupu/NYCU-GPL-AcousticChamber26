@@ -11,9 +11,10 @@ come from a radio (eye level, 2 m), then confirms with A. Per radio position and
 series). Mean absolute error is the robustness check.
 
 Factors (all within subject): **hearing** (normal, left −40 dB, right −40 dB, left −80 dB, right −80 dB) × **anchors** (none;
-rubber duck at 0° and trumpet at +90°, both visible and sounding in turn) × **radio position** (−22.5, −7.5, +7.5, +22.5°) ×
-**start side** (−60°, +60°) × 2 repeats = 160 trials. 10 participants, order by a balanced 10 × 10 Latin square
-(`study_id % 10`).
+rubber duck at 0° and trumpet at +90°, both visible and sounding in turn) × 4 **position pairs** (radio position −22.5, −7.5,
++7.5, +22.5°, each with one start side, −60° or +60°, one of each per hemisphere; pairing set `study_id % 4`) × 2 repeats =
+80 trials (2026-11-18; was 4 positions × 2 start sides × 2 repeats = 160). 10 participants, order by a balanced 10 × 10 Latin
+square (`study_id % 10`).
 
 - **RQ / hypotheses:** to be written by the PO.
 

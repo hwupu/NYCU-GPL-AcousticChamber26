@@ -30,12 +30,13 @@ odd with the time, so it can be found in the CSV.
 |---|---|---|
 | 15 | S0012: Start, run into block 2, quit the app while the sound is on | — |
 | 16 | Start again with ID 12 → Resume | handover, recenter, dot, then **the same trial** again; the block's hearing and anchors are back |
-| 17 | Finish S0012 (about 35 min) | 160 trials; thanks screen |
+| 17 | Finish S0012 (about 21 min) | 80 trials; thanks screen |
 | 18 | Start S0013 | order row 3 (S0012 had row 2): first cell `left40_on` instead of `left40_none` |
 
 ## 4. Data (copy the folder off the headset)
-- `.session`: `custom.order_row=2`, `custom.condition_order=left40_none,left40_on,normal_on,...`, `status=Completed`, no `custom.open_trial`.
-- 160 `trial` rows with `stage=experiment`, 16 per `block`; per block each `visual_az_deg` × `start_side` twice (`repeat` 1, 2).
+- `.session`: `custom.order_row=2`, `custom.pair_set=0`, `custom.condition_order=left40_none,left40_on,normal_on,...`, `status=Completed`, no `custom.open_trial`.
+- 80 `trial` rows with `stage=experiment`, 8 per `block`, `pair_set=0`; per block each `visual_az_deg` twice (`repeat` 1, 2), always
+  with the same `start_side`: −22.5 L, −7.5 R, +7.5 L, +22.5 R (set 0). S0013: `pair_set=1` (−22.5 L, −7.5 R, +7.5 R, +22.5 L).
 - One `trial_restart` with `reason=app_closed` (step 15) and the completed `trial` row after it with `restarts=1`; in the Debug
   file a `trial_restart` with `reason=stop_dialog` (step 13).
 - `audio_final_az_deg` within (−180, 180]; `audio_final_unwrapped_deg` beyond ±180 on the trial of step 10 (Debug file).

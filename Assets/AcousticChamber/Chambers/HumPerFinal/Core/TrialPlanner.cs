@@ -11,7 +11,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
         public string Condition;
         /// <summary>1-based position in the cell's planned list (<c>trial_index</c>; stable over restarts).</summary>
         public int Index;
-        /// <summary>1-based repeat of this radio position × start side within the block, in the order they come.</summary>
+        /// <summary>1-based repeat of this position pair (radio position × its start side) within the block, in the order they come.</summary>
         public int Repeat;
         public float VisualAzDeg;
         public float AudioStartAzDeg;
@@ -25,30 +25,66 @@ namespace AcousticChamber.Chambers.HumPerFinal
     }
 
     /// <summary>
-    /// Trial lists of a cell (Design.md "Trials per block"): every radio azimuth (the pool mirrored left) × start ±a × repeats,
-    /// shuffled without constraints with the seed <c>session seed + cell index</c>, so a cell's list does not depend on its block
-    /// position. <see cref="TrialSpec.Repeat"/> counts the copies of a position × side in the order they come after the shuffle.
+    /// Pairing sets (Design.md "Position pairs"): each radio position gets one start side, one L and one R per hemisphere.
+    /// Set s = 2a + b (a: left hemisphere, b: right). a = 0: −outer from L, −inner from R; a = 1: the reverse. b = 0: +inner from
+    /// L, +outer from R; b = 1: the reverse. So set 0 = outer positions start on their own side, set 3 = on the opposite side.
+    /// </summary>
+    public static class PairSet
+    {
+        public const int Count = 4;
+
+        /// <summary>Study ID number mod 4 (S0012 → 0, S0013 → 1); 0 when not a formatted ID (Debug runs).</summary>
+        public static int Of(string studyId)
+        {
+            if (!StudyId.IsFormatted(studyId)) return 0;
+            return int.Parse(studyId.Substring(StudyId.Prefix.Length), Fmt.Inv) % Count;
+        }
+
+        /// <summary>−1 (start left, L) or +1 (start right, R) for a radio position of set <paramref name="set"/>.</summary>
+        /// <param name="outer">true for the outer position of its hemisphere (larger |azimuth|).</param>
+        public static int StartSign(int set, float visualDeg, bool outer)
+        {
+            if (set < 0 || set >= Count) throw new ArgumentOutOfRangeException(nameof(set));
+            int hemi = visualDeg < 0f ? -1 : 1;
+            int bit = hemi < 0 ? set / 2 : set % 2;
+            int outerSign = bit == 0 ? hemi : -hemi;   // bit 0: the outer position starts on its own side
+            return outer ? outerSign : -outerSign;
+        }
+    }
+
+    /// <summary>
+    /// Trial lists of a cell (Design.md "Trials per block"): the 4 position pairs of the pairing set (radio azimuths = the two
+    /// pool values mirrored left, each with one start side) × repeats, shuffled without constraints with the seed
+    /// <c>session seed + cell index</c>, so a cell's list does not depend on its block position. <see cref="TrialSpec.Repeat"/>
+    /// counts the copies of a position pair in the order they come after the shuffle.
     /// </summary>
     public static class TrialPlanner
     {
-        public static int TrialsPerBlock(int poolCount, int repeats) => poolCount * 2 * 2 * repeats;
+        public const int PositionPairs = 4;
 
-        /// <param name="poolDeg">Right-side azimuths (positive), mirrored for the left; default 7.5, 22.5.</param>
-        public static List<TrialSpec> Plan(int cell, int sessionSeed, IReadOnlyList<float> poolDeg, float audioStartDeg, int repeats, float radiusM)
+        public static int TrialsPerBlock(int repeats) => PositionPairs * repeats;
+
+        /// <param name="poolDeg">The inner and outer right-side azimuths (exactly two), mirrored for the left; default 7.5, 22.5.</param>
+        /// <param name="pairSet">0-3, <see cref="PairSet"/>.</param>
+        public static List<TrialSpec> Plan(int cell, int sessionSeed, IReadOnlyList<float> poolDeg, float audioStartDeg, int repeats, float radiusM, int pairSet)
         {
-            if (poolDeg == null || poolDeg.Count == 0) throw new ArgumentException("empty azimuth pool");
+            if (poolDeg == null || poolDeg.Count != 2) throw new ArgumentException("the azimuth pool needs exactly two values (inner, outer)");
             if (repeats < 1) throw new ArgumentException("repeats must be ≥ 1");
+            float inner = Math.Min(Math.Abs(poolDeg[0]), Math.Abs(poolDeg[1]));
+            float outer = Math.Max(Math.Abs(poolDeg[0]), Math.Abs(poolDeg[1]));
+            if (inner == outer) throw new ArgumentException("the two pool values must differ");
             string name = Cells.Name(cell);
-            var visuals = new List<float>();
-            foreach (float a in poolDeg) visuals.Add(-Math.Abs(a));
-            foreach (float a in poolDeg) visuals.Add(Math.Abs(a));
-            visuals.Sort();
+            float start = Math.Abs(audioStartDeg);
+            var visuals = new[] { -outer, -inner, inner, outer };
 
             var trials = new List<TrialSpec>();
             for (int r = 0; r < repeats; r++)
                 foreach (float v in visuals)
-                    foreach (float start in new[] { -Math.Abs(audioStartDeg), Math.Abs(audioStartDeg) })
-                        trials.Add(new TrialSpec { Condition = name, VisualAzDeg = v, AudioStartAzDeg = start, RadiusM = radiusM });
+                    trials.Add(new TrialSpec
+                    {
+                        Condition = name, VisualAzDeg = v, RadiusM = radiusM,
+                        AudioStartAzDeg = start * PairSet.StartSign(pairSet, v, Math.Abs(v) == outer),
+                    });
 
             new Rng(unchecked(sessionSeed + cell)).Shuffle(trials);
 

@@ -21,14 +21,15 @@ namespace AcousticChamber.Chambers.HumPerFinal
 {
     /// <summary>
     /// HumPerFinal (C05, Docs/Design.md): HW2's ventriloquist task in one 0.7 s room, with 5 hearing conditions × anchors off / on
-    /// (10 cells, Williams order by Study ID mod 10), 16 trials per cell back to back, free 360° adjustment, and a trial restart
-    /// after the Stop dialog's Keep going or after a resume.
+    /// (10 cells, Williams order by Study ID mod 10), 8 trials per cell (4 position pairs, pairing set by Study ID mod 4 × 2 repeats)
+    /// back to back, free 360° adjustment, and a trial restart after the Stop dialog's Keep going or after a resume.
     /// </summary>
     public class HumPerFinalChamber : ProtocolChamber
     {
         public const string Id = "HumPerFinal";
-        /// <summary>Session file keys (DataFormat "Files"): <c>custom.order_row</c>, <c>custom.condition_order</c>, <c>custom.open_trial</c>.</summary>
+        /// <summary>Session file keys (DataFormat "Files"): <c>custom.order_row</c>, <c>custom.pair_set</c>, <c>custom.condition_order</c>, <c>custom.open_trial</c>.</summary>
         public const string OrderRowKey = "order_row";
+        public const string PairSetKey = "pair_set";
         public const string OrderKey = "condition_order";
         public const string OpenTrialKey = "open_trial";
 
@@ -78,13 +79,13 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 ParamDef.Choice(OrderKey, CellOrder.Williams, CellOrder.Modes, "Condition order", "Procedure")
                         .Describe("williams: row = Study ID mod 10; fixed: cells 0-9"),
                 ParamDef.Float("iti_s", 0.6f, 0f, 5f, 0.1f, "Inter-trial interval", "s", "Procedure"),
-                ParamDef.Int("repeats", 2, 1, 4, "Repeats", "", "Procedure").Describe("per radio position × start side and block"),
+                ParamDef.Int("repeats", 2, 1, 4, "Repeats", "", "Procedure").Describe("per position pair and block"),
                 ParamDef.Float("radius_m", 3f, 0.5f, 5f, 0.1f, "Radius", "m", "Stimuli"),
                 ParamDef.Float("practice.radius_m", 1.5f, 0.5f, 5f, 0.1f, "Practice radius", "m", "Stimuli"),
                 ParamDef.Float("audio_start_deg", 60f, 0f, 90f, 2.5f, "Sound start", "deg", "Stimuli").Describe("−a or +a"),
                 ParamDef.Float("practice.audio_start_deg", 30f, -90f, 90f, 2.5f, "Practice sound start", "deg", "Stimuli"),
                 ParamDef.Float("practice.visual_deg", 0f, -90f, 90f, 2.5f, "Practice radio", "deg", "Stimuli"),
-                ParamDef.Text("visual_pool_deg", "7.5,22.5", "Radio azimuths", "Stimuli").Describe("right side, mirrored left"),
+                ParamDef.Text("visual_pool_deg", "7.5,22.5", "Radio azimuths", "Stimuli").Describe("inner,outer: right side, mirrored left"),
                 ParamDef.Float("stim.on_s", 2f, 0.1f, 5f, 0.1f, "Pulse on", "s", "Stimuli"),
                 ParamDef.Float("stim.off_s", 0.7f, 0f, 5f, 0.1f, "Pulse off", "s", "Stimuli"),
                 ParamDef.Float("anchor.duck_deg", 0f, -180f, 180f, 2.5f, "Duck azimuth", "deg", "Anchors"),
@@ -116,16 +117,12 @@ namespace AcousticChamber.Chambers.HumPerFinal
 
         /// <summary>DataFormat.md "Columns" (chamber columns, in this order).</summary>
         public static LogSchema CreateLogSchema() => new LogSchema(
-            "hearing", "anchors", "order_row", "trial_index", "repeat", "visual_az_deg", "audio_start_az_deg", "start_side",
+            "hearing", "anchors", "order_row", "pair_set", "trial_index", "repeat", "visual_az_deg", "audio_start_az_deg", "start_side",
             "audio_final_az_deg", "audio_final_unwrapped_deg", "signed_error_deg", "duration_s", "restarts", "reversals", "radius_m",
             "rt60_target_s", "rt60_measured_s", "stim_level_dbfs", "anchor_level_dbfs", "gate_s", "stop_dialog", ChamberMenu.VolumeColumn);
 
-        /// <summary>Trials per block from the preset (4 radio positions × 2 sides × repeats = 16 by default).</summary>
-        public static int TrialsPerBlock(ParameterSet v)
-        {
-            int pool = TrialPlanner.TryParseList(v.GetText("visual_pool_deg"), out var list) ? list.Count : 2;
-            return TrialPlanner.TrialsPerBlock(pool, v.GetInt("repeats"));
-        }
+        /// <summary>Trials per block from the preset (4 position pairs × repeats = 8 by default).</summary>
+        public static int TrialsPerBlock(ParameterSet v) => TrialPlanner.TrialsPerBlock(v.GetInt("repeats"));
 
         /// <summary>
         /// Design.md "Flow": onboarding, practice, 10 cell blocks back to back (no break screens), thanks. The cell order comes from
@@ -152,11 +149,14 @@ namespace AcousticChamber.Chambers.HumPerFinal
         /// <summary>The session's cell order (from the session file; set on a new session); null in the bench's practice trial.</summary>
         protected int[] Order { get; private set; }
         protected int OrderRow { get; private set; }
+        /// <summary>The session's pairing set (Design.md "Position pairs"), 0-3.</summary>
+        protected int PairSetOfRun { get; private set; }
 
         public override IEnumerator Run(ChamberRun run)
         {
             Order = EnsureOrder(run.Record, run.Values, out int row);
             OrderRow = row;
+            PairSetOfRun = EnsurePairSet(run.Record);
             StartRun();
             yield return base.Run(run);
             EndRun();
@@ -166,6 +166,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
         {
             Order = null;
             OrderRow = 0;
+            PairSetOfRun = 0;
             StartRun();
             yield return base.PracticeTrial(run);
             EndRun();
@@ -187,6 +188,21 @@ namespace AcousticChamber.Chambers.HumPerFinal
             record.Custom[OrderRowKey] = Fmt.I(row);
             record.Custom[OrderKey] = CellOrder.Format(order);
             return order;
+        }
+
+        /// <summary>
+        /// The pairing set of a session: read from <c>custom.pair_set</c>, or (new session) <c>study_id % 4</c>, stored in the record
+        /// so a resume keeps it.
+        /// </summary>
+        public static int EnsurePairSet(SessionRecord record)
+        {
+            if (record.Custom.TryGetValue(PairSetKey, out var text)
+                && int.TryParse(text, System.Globalization.NumberStyles.Integer, Fmt.Inv, out int stored)
+                && stored >= 0 && stored < PairSet.Count)
+                return stored;
+            int set = PairSet.Of(record.StudyId);
+            record.Custom[PairSetKey] = Fmt.I(set);
+            return set;
         }
 
         /// <summary>The cell of an experiment block (0-based) in this session (Debug practice trial: cell 0).</summary>
@@ -385,12 +401,13 @@ namespace AcousticChamber.Chambers.HumPerFinal
         {
             if (_lists.TryGetValue(cell, out var list)) return list;
             var v = CurrentRun.Values;
-            if (!TrialPlanner.TryParseList(v.GetText("visual_pool_deg"), out var pool))
+            if (!TrialPlanner.TryParseList(v.GetText("visual_pool_deg"), out var pool) || pool.Count != 2
+                || Mathf.Approximately(Mathf.Abs(pool[0]), Mathf.Abs(pool[1])))
             {
-                Debug.LogError("[Chamber:" + Id + "] visual_pool_deg '" + v.GetText("visual_pool_deg") + "' is not a list of numbers; using 7.5,22.5");
+                Debug.LogError("[Chamber:" + Id + "] visual_pool_deg '" + v.GetText("visual_pool_deg") + "' is not two different numbers (inner,outer); using 7.5,22.5");
                 pool = new List<float> { 7.5f, 22.5f };
             }
-            list = TrialPlanner.Plan(cell, CurrentRun.Record.Seed, pool, v.GetFloat("audio_start_deg"), v.GetInt("repeats"), v.GetFloat("radius_m"));
+            list = TrialPlanner.Plan(cell, CurrentRun.Record.Seed, pool, v.GetFloat("audio_start_deg"), v.GetInt("repeats"), v.GetFloat("radius_m"), PairSetOfRun);
             _lists[cell] = list;
             return list;
         }
@@ -496,6 +513,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 .Set("hearing", practice ? Hearing.Normal : Cells.HearingOf(cell))
                 .Set("anchors", practice ? Anchors.None : Cells.AnchorsOf(cell))
                 .Set("order_row", practice && Order == null ? "" : Fmt.I(OrderRow))
+                .Set("pair_set", practice && Order == null ? "" : Fmt.I(PairSetOfRun))
                 .Set("trial_index", spec.Index)
                 .Set("repeat", spec.Repeat)
                 .Set("visual_az_deg", spec.VisualAzDeg)
@@ -611,6 +629,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 .Set("hearing", hearing)
                 .Set("anchors", wanted ? Anchors.On : Anchors.None)
                 .Set("order_row", Order != null ? Fmt.I(OrderRow) : "")
+                .Set("pair_set", Order != null ? Fmt.I(PairSetOfRun) : "")
                 .Set("rt60_target_s", _rt60Target)
                 .Set("anchor_level_dbfs", AnchorLevel()),
                 Hearing.Note(hearing) + " anchors=" + (wanted ? Anchors.On : Anchors.None) + " rt60_target_s=" + Fmt.F(_rt60Target) + " " +

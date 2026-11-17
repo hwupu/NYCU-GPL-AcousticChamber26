@@ -107,33 +107,82 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
 
         // ---- trial lists ---------------------------------------------------------------------------------------
 
+        /// <summary>Design.md "Position pairs" table: start side (L / R) of −22.5, −7.5, +7.5, +22.5 per set.</summary>
+        static readonly string[] SetTable = { "LRLR", "LRRL", "RLLR", "RLRL" };
+
         [Test]
-        public void Trials_EveryPositionAndSideTwice([Values(0, 5, 9)] int cell)
+        public void PairSets_AreTheDesignTable([Values(0, 1, 2, 3)] int set)
         {
-            var t = TrialPlanner.Plan(cell, 12345, Pool, 60f, 2, 2f);
-            Assert.AreEqual(16, t.Count);
-            Assert.AreEqual(16, TrialPlanner.TrialsPerBlock(Pool.Length, 2));
-            foreach (float v in new[] { -22.5f, -7.5f, 7.5f, 22.5f })
-                foreach (float s in new[] { -60f, 60f })
-                {
-                    var same = t.Where(x => x.VisualAzDeg == v && x.AudioStartAzDeg == s).ToList();
-                    Assert.AreEqual(2, same.Count, v + " / " + s);
-                    CollectionAssert.AreEqual(new[] { 1, 2 }, same.Select(x => x.Repeat).ToArray()); // repeat in order of appearance
-                }
-            CollectionAssert.AreEqual(Enumerable.Range(1, 16), t.Select(x => x.Index));
+            var visuals = new[] { -22.5f, -7.5f, 7.5f, 22.5f };
+            string sides = string.Concat(visuals.Select(v => PairSet.StartSign(set, v, System.Math.Abs(v) == 22.5f) < 0 ? "L" : "R"));
+            Assert.AreEqual(SetTable[set], sides);
+            // each hemisphere: one L and one R
+            Assert.AreEqual(1, sides.Substring(0, 2).Count(c => c == 'L'));
+            Assert.AreEqual(1, sides.Substring(2, 2).Count(c => c == 'L'));
+        }
+
+        [Test]
+        public void PairSet_IsStudyIdMod4()
+        {
+            Assert.AreEqual(0, PairSet.Of("S0012"));
+            Assert.AreEqual(1, PairSet.Of("S0013"));
+            Assert.AreEqual(3, PairSet.Of("S0015"));
+            Assert.AreEqual(1, PairSet.Of("S0021"));
+            Assert.AreEqual(0, PairSet.Of(""));
+            // Study IDs 12-21: sets used 3, 3, 2, 2 times (Design.md)
+            var counts = Enumerable.Range(12, 10).GroupBy(n => PairSet.Of("S" + n.ToString("D4"))).ToDictionary(g => g.Key, g => g.Count());
+            CollectionAssert.AreEqual(new[] { 3, 3, 2, 2 }, Enumerable.Range(0, 4).Select(s => counts[s]).ToArray());
+        }
+
+        [Test]
+        public void EnsurePairSet_StoresOnceAndKeepsIt()
+        {
+            var record = new SessionRecord { StudyId = "S0015" };
+            Assert.AreEqual(3, HumPerFinalChamber.EnsurePairSet(record));
+            Assert.AreEqual("3", record.Custom[HumPerFinalChamber.PairSetKey]);
+            record.StudyId = "S0016";                                                // the stored set wins on a resume
+            Assert.AreEqual(3, HumPerFinalChamber.EnsurePairSet(record));
+        }
+
+        [Test]
+        public void Trials_EveryPositionPairTwice([Values(0, 5, 9)] int cell, [Values(0, 1, 2, 3)] int set)
+        {
+            var t = TrialPlanner.Plan(cell, 12345, Pool, 60f, 2, 2f, set);
+            Assert.AreEqual(8, t.Count);
+            Assert.AreEqual(8, TrialPlanner.TrialsPerBlock(2));
+            var visuals = new[] { -22.5f, -7.5f, 7.5f, 22.5f };
+            for (int i = 0; i < visuals.Length; i++)
+            {
+                float v = visuals[i];
+                var same = t.Where(x => x.VisualAzDeg == v).ToList();
+                Assert.AreEqual(2, same.Count, "visual " + v);
+                Assert.IsTrue(same.All(x => x.StartSide == SetTable[set][i].ToString()), "visual " + v + " side");
+                Assert.IsTrue(same.All(x => System.Math.Abs(x.AudioStartAzDeg) == 60f));
+                CollectionAssert.AreEqual(new[] { 1, 2 }, same.Select(x => x.Repeat).ToArray()); // repeat in order of appearance
+            }
+            CollectionAssert.AreEqual(Enumerable.Range(1, 8), t.Select(x => x.Index));
             Assert.IsTrue(t.All(x => x.Condition == Cells.Name(cell) && x.RadiusM == 2f));
-            Assert.AreEqual("L", t.First(x => x.AudioStartAzDeg < 0).StartSide);
+        }
+
+        [Test]
+        public void Trials_PoolOrderDoesNotMatter_AndNeedsTwoValues()
+        {
+            string Sides(float[] pool) => string.Join(";", TrialPlanner.Plan(0, 1, pool, 60f, 1, 3f, 1).Select(x => x.VisualAzDeg + "/" + x.AudioStartAzDeg));
+            Assert.AreEqual(Sides(new[] { 7.5f, 22.5f }), Sides(new[] { 22.5f, 7.5f }));
+            Assert.Throws<System.ArgumentException>(() => TrialPlanner.Plan(0, 1, new[] { 7.5f }, 60f, 1, 3f, 0));
+            Assert.Throws<System.ArgumentException>(() => TrialPlanner.Plan(0, 1, new[] { 7.5f, 15f, 22.5f }, 60f, 1, 3f, 0));
+            Assert.Throws<System.ArgumentException>(() => TrialPlanner.Plan(0, 1, new[] { 7.5f, -7.5f }, 60f, 1, 3f, 0));
         }
 
         [Test]
         public void Trials_AreReproducible_AndIndependentOfBlockPosition()
         {
-            string List(int seed, int cell) => string.Join(";", TrialPlanner.Plan(cell, seed, Pool, 60f, 2, 2f).Select(x => x.VisualAzDeg + "/" + x.AudioStartAzDeg));
+            string List(int seed, int cell) => string.Join(";", TrialPlanner.Plan(cell, seed, Pool, 60f, 2, 2f, 2).Select(x => x.VisualAzDeg + "/" + x.AudioStartAzDeg));
             Assert.AreEqual(List(777, 3), List(777, 3));
             Assert.AreEqual(List(780, 0), List(777, 3)); // seed = session seed + cell index
             var distinct = new HashSet<string>();
             for (int s = 0; s < 30; s++) distinct.Add(List(s, 0));
-            Assert.Greater(distinct.Count, 25);
+            Assert.Greater(distinct.Count, 20);          // 8 trials with pairs: 8!/2^4 = 2520 distinct orders
         }
 
         [Test]
@@ -208,15 +257,15 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
         }
 
         [Test]
-        public void Plan_HasPracticeThenTenBlocksOf16()
+        public void Plan_HasPracticeThenTenBlocksOf8()
         {
             var plan = HumPerFinalChamber.Plan(HumPerFinalChamber.CreateDefaults());
             CollectionAssert.AreEqual(new[] { "handover", "language", "recenter", "instructions", "ready", "practice", "experiment", "thanks" },
                                       plan.Stages.Select(s => s.Name).ToList());
             var exp = plan.Stages[plan.IndexOf("experiment")];
             Assert.AreEqual(10, exp.Blocks);
-            Assert.IsTrue(exp.TrialsPerBlock.All(n => n == 16));
-            Assert.AreEqual(160, exp.TrialsPerBlock.Sum());
+            Assert.IsTrue(exp.TrialsPerBlock.All(n => n == 8));
+            Assert.AreEqual(80, exp.TrialsPerBlock.Sum());
             Assert.AreEqual(ResumeFrom.NextTrial, exp.Policy);
             Assert.IsTrue(plan.Stages[plan.IndexOf("thanks")].Has(StageFlags.CompletesSession));
         }
@@ -235,7 +284,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
         {
             CollectionAssert.AreEqual(new[]
             {
-                "hearing", "anchors", "order_row", "trial_index", "repeat", "visual_az_deg", "audio_start_az_deg", "start_side",
+                "hearing", "anchors", "order_row", "pair_set", "trial_index", "repeat", "visual_az_deg", "audio_start_az_deg", "start_side",
                 "audio_final_az_deg", "audio_final_unwrapped_deg", "signed_error_deg", "duration_s", "restarts", "reversals", "radius_m",
                 "rt60_target_s", "rt60_measured_s", "stim_level_dbfs", "anchor_level_dbfs", "gate_s", "stop_dialog", "volume_step",
             }, HumPerFinalChamber.CreateLogSchema().ChamberColumns.ToArray());

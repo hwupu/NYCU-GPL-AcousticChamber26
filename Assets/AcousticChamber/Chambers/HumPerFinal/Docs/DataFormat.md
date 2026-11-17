@@ -8,7 +8,7 @@ In `persistentDataPath/HumPerFinal/` (Quest: `/sdcard/Android/data/com.nycu.Acou
 - `yyyyMMdd_HHmmss_HumPerFinal_S0012.csv`: one row per event, long format, UTF-8, comma-separated, header row, flushed per row.
   A resumed session appends to the same file.
 - `yyyyMMdd_HHmmss_HumPerFinal_S0012.session`: key=value (status, seed, language, cursor, attempts, `param.<key>` snapshot) plus
-  `custom.order_row` (0-9), `custom.condition_order` (the 10 cells, e.g. `left40_none,left40_on,...`) and, while a trial's
+  `custom.order_row` (0-9), `custom.pair_set` (0-3, 2026-11-18), `custom.condition_order` (the 10 cells, e.g. `left40_none,left40_on,...`) and, while a trial's
   target is on, `custom.open_trial` (`block:trial:restarts`, 0-based; removed with the trial row). See
   `Modules/Session/README.md`.
 - Debug runs: `..._HumPerFinal_DEBUG.csv`, no session file.
@@ -24,11 +24,12 @@ params_hash, stage, block, condition, trial, attempt`, then the HumPerFinal colu
 | `hearing` | `normal`, `left40`, `right40`, `left80`, `right80` | `condition`, `trial`, `trial_restart` | simulated loss (on other rows: the part of `condition` before `_`) |
 | `anchors` | `none`, `on` | same | anchors visible and sounding (other rows: the part after `_`) |
 | `order_row` | int 0-9 | same (empty in the bench's single practice trial) | `study_id % 10`; also `custom.order_row` in the session file |
-| `trial` | int 1-16 within the block | trial, homing, restart rows | practice counts up without limit |
-| `trial_index` | int 1-16 | `trial`, `trial_restart` | position in the cell's planned list (stable over restarts) |
-| `repeat` | 1 / 2 | `trial`, `trial_restart` | repeat of this position × start side in the block |
+| `pair_set` | int 0-3 | same as `order_row` (empty where it is) | `study_id % 4`: which start side each radio position gets (Design "Position pairs"); also `custom.pair_set` in the session file. New 2026-11-18, inserted after `order_row` |
+| `trial` | int 1-8 within the block | trial, homing, restart rows | practice counts up without limit |
+| `trial_index` | int 1-8 | `trial`, `trial_restart` | position in the cell's planned list (stable over restarts) |
+| `repeat` | 1 / 2 | `trial`, `trial_restart` | repeat of this position pair in the block |
 | `visual_az_deg` | degrees | `trial`, `trial_restart` | radio azimuth (0 ahead, negative left) |
-| `audio_start_az_deg` | degrees | `trial`, `trial_restart` | −60 or +60 (practice +30) |
+| `audio_start_az_deg` | degrees | `trial`, `trial_restart` | −60 or +60, set by `pair_set` and `visual_az_deg` (practice +30) |
 | `start_side` | `L`, `R` | `trial`, `trial_restart` | `L` = start −60°, `R` = start +60° |
 | `audio_final_az_deg` | degrees, (−180, 180] | `trial`, `trial_restart` | sound azimuth at A (or at the interruption), wrapped |
 | `audio_final_unwrapped_deg` | degrees | `trial`, `trial_restart` | the same without wrapping: start + total rotation (can exceed ±180) |
@@ -61,4 +62,4 @@ Common (as HW2): `session_start`, `language`, `stage_begin/end`, `handover`, `ho
 
 ## Rebuilding the trial table
 Keep `event == trial`, `mode == EXPERIMENT`, `stage == experiment`; one row per `block` × `trial_index` (the completed try).
-Expect 160 rows per complete session. Drop sessions marked `Superseded` or with a `participant_dropout` row.
+Expect 80 rows per complete session (sessions before 2026-11-18: 160, no `pair_set` column). Drop sessions marked `Superseded` or with a `participant_dropout` row.

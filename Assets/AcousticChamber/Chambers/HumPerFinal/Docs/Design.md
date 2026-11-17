@@ -4,6 +4,11 @@
 2026-11-17. Items marked *(default)* were proposed by the agent and approved with the rest. Differences from HW2 are marked
 **(new)**.
 
+**Change 2026-11-18 (PB-28, PO):** fewer trials per block. Each radio position is tested from **one** start side (a
+*position pair*), chosen so that each hemisphere still has one start from each side; the participant's **pairing set**
+(`study_id % 4`) is the same in every block and both repeats. 16 → **8 trials per block, 160 → 80 trials** (5 hearing ×
+2 anchors × 4 position pairs × 2 repeats). Approved by the PO 2026-11-18 and built (headset test pending).
+
 ## Posture and setting
 Seated, posture `Seated`, the participant does not move. The HW2 room: 8.72 m wide × 15 m deep × 3.5 m high, white walls and
 ceiling, light-gray floor, soft baked lighting, the participant near the middle; Meta XR Audio shoebox of the same size, one
@@ -20,7 +25,7 @@ background noise (silent room).
 | Sound | invisible | none | One at a time, looped: **duck sound, 1.5 s silence, trumpet sound, 2.5 s silence**, repeat. Each recording leveled to −26 dBFS RMS at load like the target (`StimulusClips.Leveled`). Both from the GPL.Stimuli library (PO 2026-11-17): duck = Freesound 348791 "Toy Ducks Quacking" (`Freesound/348791__nebyoolae__toy-ducks-quacking.mp3`, CC0, about 4.9 s), trumpet = OpenAIR `Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` (**14.72 s**); one loop is about 24 s |
 | Height | eye height | centre at eye height | centre at eye height |
 | Distance | **3 m** (practice **1.5 m**), radius locked (PO 2026-11-17; HW2: 2 m / 1.2 m) | 3 m (practice 1.5 m) | 3 m |
-| Azimuth | starts at **−60° or +60°** (practice +30°) | **−22.5, −7.5, +7.5, +22.5°** (practice 0°) | 0° and +90° |
+| Azimuth | starts at **−60° or +60°**, fixed per radio position by the pairing set (practice +30°) | **−22.5, −7.5, +7.5, +22.5°** (practice 0°) | 0° and +90° |
 | When | from stimulus onset to A | with the target | the whole anchor block, visible and sounding: placed around the head position when an anchor block starts (after the inter-trial interval, before the first head gate), fixed in the room (not moved by a recenter), until the next no-anchor block starts *(default)*; two anchor blocks in a row keep the same loop and positions; models hidden and the loop paused while the Stop dialog is open; hidden and silent in no-anchor blocks and the practice |
 
 Origin = head position at the trial start; forward = the Meta-button recenter of the onboarding. Azimuth 0 = forward, negative =
@@ -68,8 +73,26 @@ row 3), which the analysis reports.
 
 `condition_order = fixed` (cells 0-9 in order) is for Debug runs only.
 
-**Trials per block:** 16 = 4 radio positions × 2 start sides × 2 repeats, shuffled without constraints *(default)* with seed
-`session seed + cell index`, so the trial list of a cell does not depend on its block position.
+**Trials per block:** 8 = 4 position pairs × 2 repeats, shuffled without constraints *(default)* with seed
+`session seed + cell index`, so the trial list of a cell does not depend on its block position. *(2026-11-18; was 16 = 4
+radio positions × 2 start sides × 2 repeats.)*
+
+**Position pairs (2026-11-18).** A position pair is one radio position with one start side (L = start −60°, the sound comes
+in from the left; R = start +60°). In each hemisphere one position starts from L and the other from R, so the hemisphere
+average still has an ascending and a descending series. Left hemisphere: way a ∈ {0, 1}; right hemisphere: way b ∈ {0, 1};
+**pairing set** s = 2a + b = **`study_id % 4`**, fixed for the session (every block, both repeats).
+
+| Set s | −22.5° | −7.5° | +7.5° | +22.5° | Note |
+|---|---|---|---|---|---|
+| 0 (a 0, b 0) | L | R | L | R | outer positions start on their own side, inner on the opposite side (mirror-symmetric) |
+| 1 (a 0, b 1) | L | R | R | L | |
+| 2 (a 1, b 0) | R | L | L | R | |
+| 3 (a 1, b 1) | R | L | R | L | outer start on the opposite side, inner on their own side (mirror-symmetric) |
+
+Within a participant the radio position (inner / outer) and the start side are confounded inside a hemisphere; only the
+balance of sets across participants separates them. With 10 participants (Study IDs 12-21) the sets are used 3, 3, 2, 2
+times (s 0, 1, 2, 3: IDs 12/16/20, 13/17/21, 14/18, 15/19), which the analysis reports; 20 participants would balance both
+the Williams rows and the sets. Debug runs use the set of the Study ID entered (0 without one), as `order_row`.
 
 ## Flow
 Chamber menu → (Start) → stages as HW2 (onboarding stages switchable by `onboarding.<stage>`):
@@ -83,12 +106,12 @@ Chamber menu → (Start) → stages as HW2 (onboarding stages switchable by `onb
 | 4 | `instructions` | the PO's illustrations (2026-11-17), titles English / 中文: "Procedure" / "實驗說明", "Controllers" / "操作說明", "Trials" / "練習回合", "Ready?" / "準備就緒？" (announces the dot); the Back / Next buttons carry the neighbouring titles; they show the Y pause | StageStart |
 | 5 | `ready` | stock dot + head gate (GPL.Protocol with GPL.Homing; the dot 1° above eye level, `gate.dot_elevation_deg`), `volume_check`; again after every resume | StageStart |
 | 6 | `practice` | as HW2 with the radio: 0°, 1.5 m, start +30°, **normal hearing, no anchors**, no helper text; after each trial "Practice again" / "I'm ready"; at least one trial | StageStart |
-| 7 | `experiment` | **10 blocks × 16 trials = 160, back to back: no block break screens, no prompted breaks (new)**; the cell changes silently in the inter-trial interval (the anchors appear or disappear) | `next_trial` |
+| 7 | `experiment` | **10 blocks × 8 trials = 80 (2026-11-18; was 160), back to back: no block break screens, no prompted breaks (new)**; the cell changes silently in the inter-trial interval (the anchors appear or disappear) | `next_trial` |
 | 8 | `thanks` | "Thank you. Please return the headset." | — |
 
 No GUI during real trials (only the fixation dot before each trial), no feedback, no progress display.
-Estimated duration (calculated, not measured): about 10.5 s per trial → about 28 min of trials, about 35 min per session with
-onboarding and practice.
+Estimated duration (calculated, not measured): about 10.5 s per trial → about 14 min of trials, about 21 min per session with
+onboarding and practice (2026-11-18; was 28 / 35 min). A block lasts about 85 s, about 3.5 anchor loops (about 24 s each).
 
 ## Trial
 1. **Inter-trial interval** `iti_s` = 0.6 s, empty view (not before the first trial of the session or after a resume).
@@ -121,8 +144,8 @@ illustration presents it as the pause). While it is open everything is frozen: t
 | `iti_s` | 0.6 | 0-5, step 0.1 | Procedure |
 | `radius_m`, `practice.radius_m` | 3.0, 1.5 | 0.5-5, step 0.1 | Stimuli |
 | `audio_start_deg`, `practice.audio_start_deg`, `practice.visual_deg` | 60, 30, 0 | −90..90 | Stimuli |
-| `visual_pool_deg` | `7.5,22.5` (mirrored left) | list | Stimuli |
-| `repeats` | 2 | 1-4 | Procedure |
+| `visual_pool_deg` | `7.5,22.5` (mirrored left; exactly two values, the inner and outer position, for the pairing sets) | list | Stimuli |
+| `repeats` | 2 | 1-4 | Procedure (per position pair and block) |
 | `stim.on_s`, `stim.off_s` | 2, 0.7 | 0.1-5 | Stimuli |
 | `anchor.duck_deg`, `anchor.trumpet_deg`, `anchor.radius_m` | 0, 90, 3 | | Anchors |
 | `anchor.gap_after_duck_s`, `anchor.gap_after_trumpet_s` | 1.5, 2.5 | 0-10, step 0.1 | Anchors |
@@ -134,7 +157,7 @@ illustration presents it as the pause). While it is open everything is frozen: t
 | `volume.target_step` | 12 | 0-15 | Audio |
 | `onboarding.*` | true | switch | Onboarding |
 
-Not preset keys: the 10 cells, the hearing curves and the Williams square (Design, `Core`); the room size (scene).
+Not preset keys: the 10 cells, the hearing curves, the Williams square and the pairing sets (Design, `Core`); the room size (scene).
 
 ## Config page (Debug mode)
 As HW2 (Run / Playground / Presets / Log files / Practice trial, Sound sphere), with **Acoustics** (Room 0.7 s / Meta preset, one choice) and **RT60** (Measure RT60, its own group: an action, not a room choice), plus
