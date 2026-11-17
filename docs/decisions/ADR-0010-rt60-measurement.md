@@ -79,3 +79,4 @@ button in the dialog, imported wins, separate state; "C04 is used to generate th
 - **Separate state**: with only a headset table a chamber shows "RT60 calibrated on this headset only: import it before the study."
   (text2) instead of the warning; reports list it under PROBLEMS; `ReverbTuner.Note()` adds `table=headset` (e.g. HumPerHW2 log notes).
 - **C04** shows no table status at all (neither "Calibrated…" nor the warning) and its panel is centered ahead.
+- 2026-11-17 (PB-29): HumPerHW2 is removed; HumPerFinal is now **C05**. The HumPerHW2 reports under `docs/calibration` and `docs/measures` and the Android table built from them stay (same room, 8.72 x 15 x 3.5 m).

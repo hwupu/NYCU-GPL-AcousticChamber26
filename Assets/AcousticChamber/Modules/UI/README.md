@@ -50,7 +50,7 @@ Run time (screens are built by code into the canvas):
 var panel = UiPanel.Create(canvas.transform, "Menu", new Vector2(1000, 700));
 var surface = panel.Surface;
 surface.RootBack = BackToHall;
-UiNavigationBar.Create(surface, "C05 · HumPerHW2", UiNavigationBar.Leading.Back, debugTag: true);
+UiNavigationBar.Create(surface, "C05 · HumPerFinal", UiNavigationBar.Leading.Back, debugTag: true);
 var status = surface.AddStatus("");                       // status line (or surface.AddToolbar())
 var section = UiKit.Section(surface.Body, "Path", "PATH");
 UiKit.Row(section, "Circle", "Circle", "Around the head", iconLeading: "arrow-clockwise", onClick: OnCircle);

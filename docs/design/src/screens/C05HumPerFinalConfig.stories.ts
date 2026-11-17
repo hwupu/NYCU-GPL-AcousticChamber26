@@ -1,17 +1,17 @@
 import { h } from 'vue'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import C06HumPerFinalConfig from './C06HumPerFinalConfig.vue'
+import C05HumPerFinalConfig from './C05HumPerFinalConfig.vue'
 
 const meta = {
-  title: 'Screens/C06 HumPerFinal Config',
-  component: C06HumPerFinalConfig,
+  title: 'Screens/C05 HumPerFinal Config',
+  component: C05HumPerFinalConfig,
   parameters: { layout: 'fullscreen' },
-} satisfies Meta<typeof C06HumPerFinalConfig>
+} satisfies Meta<typeof C05HumPerFinalConfig>
 export default meta
 type Story = StoryObj<typeof meta>
 
 type State = 'idle' | 'testing' | 'uncalibrated'
-const wrap = (state: State) => () => h('div', { class: 'bg-black p-48 pb-200' }, [h(C06HumPerFinalConfig, { state })])
+const wrap = (state: State) => () => h('div', { class: 'bg-black p-48 pb-200' }, [h(C05HumPerFinalConfig, { state })])
 const fixed = { controls: { disable: true } }
 
 /** Opened from the chamber menu: room 0.7 s, normal hearing, anchors off, nothing playing, empty status. */

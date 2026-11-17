@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * C01 · Moving Source experience panel (Unity: Chambers/MovingSource MovingSourceExperience). 1100 x 1040 u, movable.
- * Rows: Sound (generated sounds + the scene's recordings), Room, Distance, Hearing (ear + level), Path (+ Stop), Speed; Status (text2)
+ * Rows: Sound (generated sounds only; the HW2 recordings were removed, PB-29), Room, Distance, Hearing (ear + level), Path (+ Stop), Speed; Status (text2)
  * and, under it, the RT60 warning (debug color) while the room is not calibrated on this device (PB-26, PO 2026-11-15).
  * Toolbar: Reset source (left); Measure RT60 (right) = the selected room, 4 positions x 3 repeats; the sound and the path stop while
  * it runs. Progress and result are shown in the RT60 run dialog (Screens/RT60 Run Dialog), not in the status (PB-27).
@@ -29,7 +29,7 @@ const status = 'Click a sound to play it; click it again to pause.\nPoint at the
     <div class="flex flex-col gap-12">
       <div class="flex items-center gap-20">
         <span class="w-160 flex-none text-body text-text2">Sound</span>
-        <UiChoiceGroup v-model="sound" class="flex-1" :options="opts(['White noise', 'Pink noise', 'Recording 1', 'Recording 2'])" />
+        <UiChoiceGroup v-model="sound" class="flex-1" :options="opts(['White noise', 'Pink noise'])" />
       </div>
       <div class="flex items-center gap-20">
         <span class="w-160 flex-none text-body text-text2">Room</span>

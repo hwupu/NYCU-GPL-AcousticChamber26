@@ -35,7 +35,7 @@ Chamber menu → (Start) → stages (onboarding stages 1–5 each have a preset 
 | `response_timeout_s` | 5 | 1–30, step 1 | Procedure |
 | `iti_s` | 1.0 | 0–5, step 0.1 | Procedure |
 | `resume_from` | `block_start` | `next_trial`, `block_start`, `stage_start`, `session_start`, `not_resumable` | Resume |
-| `gate.yaw_tol_deg`, `gate.pitch_tol_deg`, `gate.hold_s`, `gate.hint_after_s`, `gate.dot_elevation_deg` | 10, 15, 0.5, 4, +3 | GPL.Homing | Head gate |
+| `gate.yaw_tol_deg`, `gate.pitch_tol_deg`, `gate.hold_s`, `gate.hint_after_s`, `gate.dot_elevation_deg` | 10, 15, 0.5, 4, +1 | GPL.Homing | Head gate |
 | `volume.target_step` | 8 (proposed, PB-20b) | 0–15 | Audio |
 | `onboarding.handover`, `.language`, `.recenter`, `.instructions`, `.ready` | true | switch | Onboarding |
 

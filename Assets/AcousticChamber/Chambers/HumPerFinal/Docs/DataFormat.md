@@ -1,4 +1,4 @@
-# HumPerFinal (C06) — Data format
+# HumPerFinal (C05) — Data format
 
 **Status:** approved by the PO 2026-11-17 (PB-28). Raw data only (PO 2026-11-17): the columns below are logged; derived
 measures and formatting are decided at the analysis step. Written for an analyst (human or AI).
@@ -14,7 +14,7 @@ In `persistentDataPath/HumPerFinal/` (Quest: `/sdcard/Android/data/com.nycu.Acou
 - Debug runs: `..._HumPerFinal_DEBUG.csv`, no session file.
 
 ## Columns
-Common columns as C05: `event, timestamp_local, elapsed_s, session_id, chamber, chamber_version, study_id, mode, preset,
+Common columns as HW2: `event, timestamp_local, elapsed_s, session_id, chamber, chamber_version, study_id, mode, preset,
 params_hash, stage, block, condition, trial, attempt`, then the HumPerFinal columns, then `note`.
 
 | Column | Type / unit | Rows | Meaning |
@@ -47,7 +47,7 @@ params_hash, stage, block, condition, trial, attempt`, then the HumPerFinal colu
 | `note` | text | any | `key=value` pairs (below) |
 
 ## Events
-Common (as C05): `session_start`, `language`, `stage_begin/end`, `handover`, `homing`, `volume_check`, `recenter`, `slide`,
+Common (as HW2): `session_start`, `language`, `stage_begin/end`, `handover`, `homing`, `volume_check`, `recenter`, `slide`,
 `block_begin/end`, `trial`, `session_resume`, `participant_dropout`, `session_superseded`, `session_end`, `app_paused/app_resumed`,
 `debug_begin/end`, `param_change`, `practice_choice`. HumPerFinal:
 - `condition`: the cell was applied (before a block's first trial, the practice, and again after a resume); note
@@ -57,7 +57,7 @@ Common (as C05): `session_start`, `language`, `stage_begin/end`, `handover`, `ho
 - `trial_restart`: a trial interrupted by the Stop dialog (Keep going; note `reason=stop_dialog` + the adjustment note) or by the
   app closing (written at the resume; note `reason=app_closed`, answer columns empty); the interrupted try's columns. The trial
   then runs again; its completed `trial` row carries `restarts`. Rows are never deleted.
-- `rt60_measured`: as C05 (off by default).
+- `rt60_measured`: as HW2 (off by default).
 
 ## Rebuilding the trial table
 Keep `event == trial`, `mode == EXPERIMENT`, `stage == experiment`; one row per `block` × `trial_index` (the completed try).

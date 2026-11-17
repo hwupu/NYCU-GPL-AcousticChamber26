@@ -66,7 +66,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
             return trials;
         }
 
-        /// <summary>Practice trial (as C05): radio at <paramref name="visualDeg"/>, sound from <paramref name="audioStartDeg"/>, closer circle.</summary>
+        /// <summary>Practice trial (as HW2): radio at <paramref name="visualDeg"/>, sound from <paramref name="audioStartDeg"/>, closer circle.</summary>
         public static TrialSpec Practice(int index, float visualDeg, float audioStartDeg, float radiusM) => new TrialSpec
         {
             Condition = Cells.Practice, Index = index, Repeat = 1, VisualAzDeg = visualDeg, AudioStartAzDeg = audioStartDeg, RadiusM = radiusM,

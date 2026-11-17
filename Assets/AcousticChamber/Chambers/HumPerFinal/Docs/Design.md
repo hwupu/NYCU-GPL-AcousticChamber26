@@ -1,14 +1,14 @@
-# HumPerFinal (C06) — Design
+# HumPerFinal (C05) — Design
 
-**Status:** approved by the PO 2026-11-17 (PB-28); built in PB-28 (headset test pending). Base: C05 HumPerHW2 [Design](../../HumPerHW2/Docs/Design.md); PO answers of
-2026-11-17. Items marked *(default)* were proposed by the agent and approved with the rest. Differences from C05 are marked
+**Status:** approved by the PO 2026-11-17 (PB-28); built in PB-28 (headset test pending). Base: HumPerHW2 (the former C05, removed in PB-29; its Design.md is in git history, commit 1d3b29f); PO answers of Relabelled C06 → C05 when HumPerHW2 was removed (PB-29, PO 2026-11-17).
+2026-11-17. Items marked *(default)* were proposed by the agent and approved with the rest. Differences from HW2 are marked
 **(new)**.
 
 ## Posture and setting
-Seated, posture `Seated`, the participant does not move. The C05 room: 8.72 m wide × 15 m deep × 3.5 m high, white walls and
+Seated, posture `Seated`, the participant does not move. The HW2 room: 8.72 m wide × 15 m deep × 3.5 m high, white walls and
 ceiling, light-gray floor, soft baked lighting, the participant near the middle; Meta XR Audio shoebox of the same size, one
 uniform reflection coefficient on all six surfaces, Meta XR Audio Reflection on the mixer, every spatial source routed to it.
-The room geometry and materials are copied from C05 (chambers do not share assets).
+The room geometry and materials are copied from HW2 (chambers do not share assets).
 
 **Acoustics (new):** one condition, `rt60_target_s` = **0.7 s** (coefficient from the RT60 calibration table, ADR-0010), no
 background noise (silent room).
@@ -19,12 +19,12 @@ background noise (silent room).
 | Object | Gaussian white noise, GPL.Stimuli (ADR-0008): 2 s, 20 ms cos² ramps, −26 dBFS RMS, seed 1; **looped 2 s on, 0.7 s off (new)** until A | Radio model; for now a **box placeholder** (`Stimuli/Radio/Model`, built by Step 4) 0.25 × 0.18 × 0.12 m, URP Lit, facing the participant *(default size)* | Rubber duck at **0°**, trumpet at **+90°**; for now **box placeholders** (`Stimuli/Anchors/Duck/Model`, `.../Trumpet/Model`: duck 0.15 m cube, yellow; trumpet 0.30 × 0.10 × 0.10 m, brass) *(default)*; a real model replaces the `Model` child |
 | Sound | invisible | none | One at a time, looped: **duck sound, 1.5 s silence, trumpet sound, 2.5 s silence**, repeat. Each recording leveled to −26 dBFS RMS at load like the target (`StimulusClips.Leveled`). Both from the GPL.Stimuli library (PO 2026-11-17): duck = Freesound 348791 "Toy Ducks Quacking" (`Freesound/348791__nebyoolae__toy-ducks-quacking.mp3`, CC0, about 4.9 s), trumpet = OpenAIR `Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` (**14.72 s**); one loop is about 24 s |
 | Height | eye height | centre at eye height | centre at eye height |
-| Distance | **3 m** (practice **1.5 m**), radius locked (PO 2026-11-17; C05: 2 m / 1.2 m) | 3 m (practice 1.5 m) | 3 m |
+| Distance | **3 m** (practice **1.5 m**), radius locked (PO 2026-11-17; HW2: 2 m / 1.2 m) | 3 m (practice 1.5 m) | 3 m |
 | Azimuth | starts at **−60° or +60°** (practice +30°) | **−22.5, −7.5, +7.5, +22.5°** (practice 0°) | 0° and +90° |
 | When | from stimulus onset to A | with the target | the whole anchor block, visible and sounding: placed around the head position when an anchor block starts (after the inter-trial interval, before the first head gate), fixed in the room (not moved by a recenter), until the next no-anchor block starts *(default)*; two anchor blocks in a row keep the same loop and positions; models hidden and the loop paused while the Stop dialog is open; hidden and silent in no-anchor blocks and the practice |
 
 Origin = head position at the trial start; forward = the Meta-button recenter of the onboarding. Azimuth 0 = forward, negative =
-left. Levels: all gains at unity, Meta gain boost 0 dB, flat rolloff; loudness by the headset volume (`volume.target_step` 8).
+left. Levels: all gains at unity, Meta gain boost 0 dB, flat rolloff; loudness by the headset volume (`volume.target_step` 12, PO 2026-11-18).
 
 ## Hearing loss (new)
 `GPL.HearingLoss` `OutputHearingLoss` on the AudioListener: the final left / right output after the spatializer, one ear filtered,
@@ -72,17 +72,17 @@ row 3), which the analysis reports.
 `session seed + cell index`, so the trial list of a cell does not depend on its block position.
 
 ## Flow
-Chamber menu → (Start) → stages as C05 (onboarding stages switchable by `onboarding.<stage>`):
+Chamber menu → (Start) → stages as HW2 (onboarding stages switchable by `onboarding.<stage>`):
 
 | # | Stage | What happens | Resume policy |
 |---|---|---|---|
-| — | menu | Study ID, Start, Config; "Audio level: N (target 8)" | — |
+| — | menu | Study ID, Start, Config; "Audio level: N (target 12)" | — |
 | 1 | `handover` | stock; again after every resume | StageStart |
 | 2 | `language` | English / 中文; skipped on a resume | StageStart |
 | 3 | `recenter` | stock Meta-button recenter on the PO's slide 1 "Before we start" / "開始之前" (`Slides/*-1-reposition.jpg`; the buttons leading back to it read "Back" / "上一頁"); again after every resume | StageStart |
 | 4 | `instructions` | the PO's illustrations (2026-11-17), titles English / 中文: "Procedure" / "實驗說明", "Controllers" / "操作說明", "Trials" / "練習回合", "Ready?" / "準備就緒？" (announces the dot); the Back / Next buttons carry the neighbouring titles; they show the Y pause | StageStart |
-| 5 | `ready` | stock dot + head gate (GPL.Protocol with GPL.Homing; the dot 3° above eye level, `gate.dot_elevation_deg`), `volume_check`; again after every resume | StageStart |
-| 6 | `practice` | as C05 with the radio: 0°, 1.5 m, start +30°, **normal hearing, no anchors**, no helper text; after each trial "Practice again" / "I'm ready"; at least one trial | StageStart |
+| 5 | `ready` | stock dot + head gate (GPL.Protocol with GPL.Homing; the dot 1° above eye level, `gate.dot_elevation_deg`), `volume_check`; again after every resume | StageStart |
+| 6 | `practice` | as HW2 with the radio: 0°, 1.5 m, start +30°, **normal hearing, no anchors**, no helper text; after each trial "Practice again" / "I'm ready"; at least one trial | StageStart |
 | 7 | `experiment` | **10 blocks × 16 trials = 160, back to back: no block break screens, no prompted breaks (new)**; the cell changes silently in the inter-trial interval (the anchors appear or disappear) | `next_trial` |
 | 8 | `thanks` | "Thank you. Please return the headset." | — |
 
@@ -92,7 +92,7 @@ onboarding and practice.
 
 ## Trial
 1. **Inter-trial interval** `iti_s` = 0.6 s, empty view (not before the first trial of the session or after a resume).
-2. **Head gate:** fixation dot ahead, 3° above eye level (GPL.Homing default since 2026-11-17: the head drops while resting, the dot sits higher); C05
+2. **Head gate:** fixation dot ahead, 1° above eye level (GPL.Homing default since 2026-11-18: the head drops while resting, the dot sits higher); HW2
    values otherwise (yaw ±5°, pitch ±10° around the dot, held 1 s, hint after 4 s: only the dot, the black text "Look at the dot" appears only when the gate is not passed by then, PO 2026-11-17). `homing` row.
 3. **Stimuli on:** radio at `visual_az_deg`, target at `audio_start_az_deg`, both on the 3 m circle around the trial origin; the
    pulse loop starts.
@@ -108,8 +108,8 @@ illustration presents it as the pause). While it is open everything is frozen: t
   `trial_restart` row (`reason=stop_dialog`) records the interrupted try (position, time), then the same trial runs again from
   the head gate with the same radio and start position (no inter-trial interval). The anchors resume. Opened during the
   inter-trial interval or the head gate, the trial simply continues (nothing was answered yet).
-- **Drop out:** `participant_dropout`, not resumable (as C05).
-- **App closed or crashed:** resume as C05: handover, recenter and the ready dot, then the **same unfinished trial** from the
+- **Drop out:** `participant_dropout`, not resumable (as HW2).
+- **App closed or crashed:** resume as HW2: handover, recenter and the ready dot, then the **same unfinished trial** from the
   start (`next_trial`); the block's cell is re-applied (hearing filter, anchors placed anew around the new origin). If the
   target had already started, the resume writes a `trial_restart` row (`reason=app_closed`, no answer columns); the session
   file keeps the trial in progress (`custom.open_trial`) for this.
@@ -130,14 +130,14 @@ illustration presents it as the pause). While it is open everything is frozen: t
 | `rt60_s` | 0.7 | 0.3-6 (table range) | Acoustics |
 | `rt60.measure_at_block_start` | false | switch | Acoustics |
 | `resume_from` | `next_trial` | as Template | Resume |
-| `gate.*` | C05 values; `gate.dot_elevation_deg` +3 | GPL.Homing | Head gate |
-| `volume.target_step` | 8 | 0-15 | Audio |
+| `gate.*` | HW2 values; `gate.dot_elevation_deg` +1 | GPL.Homing | Head gate |
+| `volume.target_step` | 12 | 0-15 | Audio |
 | `onboarding.*` | true | switch | Onboarding |
 
 Not preset keys: the 10 cells, the hearing curves and the Williams square (Design, `Core`); the room size (scene).
 
 ## Config page (Debug mode)
-As C05 (Run / Playground / Presets / Log files / Practice trial, Sound sphere), with **Acoustics** (Room 0.7 s / Meta preset, one choice) and **RT60** (Measure RT60, its own group: an action, not a room choice), plus
+As HW2 (Run / Playground / Presets / Log files / Practice trial, Sound sphere), with **Acoustics** (Room 0.7 s / Meta preset, one choice) and **RT60** (Measure RT60, its own group: an action, not a room choice), plus
 **Hearing** (5 choices: Normal, L −40, R −40, L −80, R −80) and **Anchors** (On / Off: shows the models and plays the loop).
-These new sections are designed in the Storybook first (`Screens/C06 HumPerFinal Config`), then built. Leaving Config returns
+These new sections are designed in the Storybook first (`Screens/C05 HumPerFinal Config`), then built. Leaving Config returns
 to normal hearing, no anchors.

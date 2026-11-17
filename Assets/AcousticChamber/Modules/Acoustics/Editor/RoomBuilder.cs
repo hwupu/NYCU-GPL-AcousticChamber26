@@ -16,7 +16,7 @@ namespace GPL.Acoustics.Editor
     {
         public const string RoomName = "Room";
         public const string ShoeboxName = "Shoebox Acoustics";
-        /// <summary>Baked area light intensities: ceiling (down) and fill (up). PO 2026-11-17, set in the editor on C05 / C06 (was 2 / 1, too white).</summary>
+        /// <summary>Baked area light intensities: ceiling (down) and fill (up). PO 2026-11-17, set in the editor on HumPerHW2 and HumPerFinal (was 2 / 1, too white).</summary>
         public const float CeilingIntensity = 1f, FillIntensity = 0.5f;
 
         public struct Options

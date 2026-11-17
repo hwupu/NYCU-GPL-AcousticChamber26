@@ -32,11 +32,11 @@ namespace GPL.Homing.Tests
             Assert.AreEqual(15f, gate.Settings.PitchToleranceDeg);
             Assert.AreEqual(0.5f, gate.Settings.HoldSec);
             Assert.AreEqual(4f, gate.Settings.HintAfterSec);
-            Assert.AreEqual(3f, gate.Settings.DotElevationDeg, "dot 3 deg above eye level (PO 2026-11-17)");
+            Assert.AreEqual(1f, gate.Settings.DotElevationDeg, "dot 1 deg above eye level (PO 2026-11-18)");
 
             Assert.IsFalse(gate.Update(30f, 0f, Dt), "outside");
             Assert.AreEqual(30f, gate.YawAtStart);
-            Assert.IsFalse(gate.Update(9f, 17f, Dt), "the entering frame starts the hold at 0");
+            Assert.IsFalse(gate.Update(9f, 15f, Dt), "the entering frame starts the hold at 0");
             Assert.AreEqual(0f, gate.Held);
             for (int i = 0; i < 3; i++) Assert.IsFalse(gate.Update(5f, 0f, Dt));
             Assert.IsTrue(gate.Update(-2f, 1f, Dt), "0.5 s held");
@@ -55,14 +55,14 @@ namespace GPL.Homing.Tests
             gate.Update(0f, 0f, Dt);
             gate.Update(0f, 0f, Dt);
             Assert.AreEqual(0.25f, gate.Held, 1e-5f);
-            gate.Update(0f, 19f, Dt); // pitch out (above the dot at +3 + 15)
+            gate.Update(0f, 19f, Dt); // pitch out (above the dot at +1 + 15)
             Assert.AreEqual(0f, gate.Held);
             Assert.AreEqual(1, gate.Breaks);
             gate.Update(10.5f, 0f, Dt); // still out: no second break
             Assert.AreEqual(1, gate.Breaks);
-            Assert.IsTrue(gate.Inside(10f, 18f), "the edges are inside (pitch centred on the dot at +3)");
-            Assert.IsTrue(gate.Inside(-10f, -12f));
-            Assert.IsFalse(gate.Inside(0f, -12.5f), "more than 15 deg below the dot");
+            Assert.IsTrue(gate.Inside(10f, 16f), "the edges are inside (pitch centred on the dot at +1)");
+            Assert.IsTrue(gate.Inside(-10f, -14f));
+            Assert.IsFalse(gate.Inside(0f, -14.5f), "more than 15 deg below the dot");
             Assert.IsTrue(new HeadGate(new GateSettings { DotElevationDeg = 0f }).Inside(0f, 15f), "dot at eye level");
             Assert.IsFalse(gate.ShowHint, "hint 0 = never");
         }
@@ -131,7 +131,7 @@ namespace GPL.Homing.Tests
             Assert.AreEqual(5f, s.YawToleranceDeg);
             Assert.AreEqual(1f, s.HoldSec);
             Assert.AreEqual(15f, s.PitchToleranceDeg);
-            Assert.AreEqual(3f, s.DotElevationDeg);
+            Assert.AreEqual(1f, s.DotElevationDeg);
             set.Set(HomingParams.DotElevation, 0f);
             Assert.AreEqual(0f, HomingParams.ReadGate(set).DotElevationDeg);
 

@@ -1,4 +1,4 @@
-# HumPerFinal (C06) preset Default. Design: Docs/Design.md
+# HumPerFinal (C05) preset Default. Design: Docs/Design.md
 condition_order=williams
 iti_s=0.6
 repeats=2
@@ -20,7 +20,7 @@ confirm_ignore_s=0.3
 rt60_s=0.7
 rt60.measure_at_block_start=false
 resume_from=next_trial
-volume.target_step=8
+volume.target_step=12
 onboarding.handover=true
 onboarding.language=true
 onboarding.recenter=true
@@ -30,4 +30,4 @@ gate.yaw_tol_deg=5
 gate.pitch_tol_deg=10
 gate.hold_s=1
 gate.hint_after_s=4
-gate.dot_elevation_deg=3
+gate.dot_elevation_deg=1

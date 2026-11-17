@@ -4,12 +4,12 @@ namespace GPL.Homing
 {
     /// <summary>
     /// Head gate tolerances and the fixation dot's elevation. Defaults: PO 2026-11-06 ("looser" than HW2's 5 deg / 10 deg /
-    /// 1 s); the dot 3 deg above eye level, against the head's natural drop (PO 2026-11-17).
+    /// 1 s); the dot 1 deg above eye level, against the head's natural drop (PO 2026-11-18).
     /// </summary>
     public sealed class GateSettings
     {
-        /// <summary>Default elevation of the fixation dot (deg; positive = above eye level; PO 2026-11-17: +3, the head drops while resting).</summary>
-        public const float DefaultDotElevationDeg = 3f;
+        /// <summary>Default elevation of the fixation dot (deg; positive = above eye level; PO 2026-11-18: +1, the head drops while resting).</summary>
+        public const float DefaultDotElevationDeg = 1f;
 
         /// <summary>Allowed |yaw| from forward (deg).</summary>
         public float YawToleranceDeg = 10f;

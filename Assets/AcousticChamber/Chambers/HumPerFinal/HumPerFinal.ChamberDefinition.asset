@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HumPerFinal.ChamberDefinition
   m_EditorClassIdentifier: AcousticChamber.App::AcousticChamber.App.ChamberDefinition
   id: HumPerFinal
-  label: C06
+  label: C05
   title: HumPerFinal
   description: Ventriloquist effect with simulated one-sided hearing loss and audio anchors (duck, trumpet) in a 0.7 s room.
   thumbnail: {fileID: 2800000, guid: 7304e86dcf5a8a74a9f0fec6d1ed6778, type: 3}

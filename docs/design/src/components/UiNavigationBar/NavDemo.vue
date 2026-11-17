@@ -7,7 +7,7 @@ import DocBlock from '@/docs/DocBlock.vue'
 <template>
   <DocBlock title="Navigation bar: back, title, DEBUG tag, header actions, close" note="Bars are 120 u high: 40 u top padding + 80 u row. Back and close never appear together.">
     <div class="flex w-904 flex-col gap-24">
-      <UiNavigationBar title="C05 · HumPerHW2" debug-tag />
+      <UiNavigationBar title="C05 · HumPerFinal" debug-tag />
       <UiNavigationBar title="Config" />
       <UiNavigationBar title="Log files"><UiButton label="Delete all" button-style="destructiveText" small :min-width="false" /></UiNavigationBar>
       <UiNavigationBar title="Parameters"><UiButton label="Revert" button-style="borderless" small :min-width="false" /></UiNavigationBar>

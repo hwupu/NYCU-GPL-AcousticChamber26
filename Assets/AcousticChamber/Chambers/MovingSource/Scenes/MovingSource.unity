@@ -2071,14 +2071,8 @@ MonoBehaviour:
   sourceRoot: {fileID: 1762598530}
   grab: {fileID: 1762598531}
   source: {fileID: 1924077970}
-  clips:
-  - {fileID: 8300000, guid: 34007ab183fa4d3459efb796ba54de76, type: 3}
-  - {fileID: 8300000, guid: 3a1b8bf5f7473534993d0ef08c0b9f0d, type: 3}
-  - {fileID: 8300000, guid: 07861a3621602024e9e2fe6e9ab6c84e, type: 3}
-  clipNames:
-  - Podcast 1
-  - Podcast 2
-  - Street market
+  clips: []
+  clipNames: []
   reverb: {fileID: 744120032}
 --- !u!114 &296442140
 MonoBehaviour:

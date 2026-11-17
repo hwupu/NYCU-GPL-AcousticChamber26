@@ -20,7 +20,7 @@ using UnityEngine;
 namespace AcousticChamber.Chambers.HumPerFinal
 {
     /// <summary>
-    /// HumPerFinal (C06, Docs/Design.md): C05's ventriloquist task in one 0.7 s room, with 5 hearing conditions × anchors off / on
+    /// HumPerFinal (C05, Docs/Design.md): HW2's ventriloquist task in one 0.7 s room, with 5 hearing conditions × anchors off / on
     /// (10 cells, Williams order by Study ID mod 10), 16 trials per cell back to back, free 360° adjustment, and a trial restart
     /// after the Stop dialog's Keep going or after a resume.
     /// </summary>
@@ -97,14 +97,14 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 ParamDef.Float("rt60_s", 0.7f, 0.3f, 6f, 0.05f, "RT60", "s", "Acoustics"),
                 ParamDef.Bool("rt60.measure_at_block_start", false, "Measure RT60 at block start", "Acoustics"),
                 ParamDef.Choice("resume_from", "next_trial", ResumeNames.All, "Resume from", "Resume").Describe("experiment stage after an interruption"),
-                HeadsetVolume.TargetDef(8),
+                HeadsetVolume.TargetDef(12),
             };
             defs.AddRange(OnboardingStages.SwitchDefs());
             defs.AddRange(HomingParams.GateDefs());
             return new ParameterSchema(defs);
         }
 
-        /// <summary>The preset Default: the schema with C05's head gate (±5°, ±10°, 1 s).</summary>
+        /// <summary>The preset Default: the schema with HW2's head gate (±5°, ±10°, 1 s).</summary>
         public static ParameterSet CreateDefaults()
         {
             var v = CreateSchema().Defaults();
@@ -280,7 +280,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
 
         // ---- practice -------------------------------------------------------------------------------------------
 
-        /// <summary>As C05: practice trials (normal hearing, no anchors), each followed by "Practice again" / "I'm ready".</summary>
+        /// <summary>As HW2: practice trials (normal hearing, no anchors), each followed by "Practice again" / "I'm ready".</summary>
         IEnumerator Practice()
         {
             var run = CurrentRun;
@@ -343,7 +343,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
         }
 
         /// <summary>
-        /// Q46 (as C05): the rendered RT60 before a block's first trial, with the anchors paused; one <c>rt60_measured</c> row.
+        /// Q46 (as HW2): the rendered RT60 before a block's first trial, with the anchors paused; one <c>rt60_measured</c> row.
         /// </summary>
         IEnumerator MeasureAtBlockStart()
         {
@@ -530,7 +530,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
             if (stimulus != null) stimulus.Place(origin, yaw, _spec.RadiusM, _spec.AudioStartAzDeg);
         }
 
-        /// <summary>A recenter during a trial rebuilds the circle around the new head pose (as C05); the anchors stay fixed in the room.</summary>
+        /// <summary>A recenter during a trial rebuilds the circle around the new head pose (as HW2); the anchors stay fixed in the room.</summary>
         void OnRecenter(HomingResult r)
         {
             if (!_inTrial) return;
@@ -619,7 +619,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
             return true;
         }
 
-        // ---- Debug sections (Design.md "Config page"; Storybook Screens/C06 HumPerFinal Config) -------------
+        // ---- Debug sections (Design.md "Config page"; Storybook Screens/C05 HumPerFinal Config) -------------
 
         DebugBench _bench;
         bool _measuring;
@@ -786,7 +786,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
             Status(always ? "Sound sphere: always visible in Debug trials." : "Sound sphere: shown after confirm in Debug trials.");
         }
 
-        /// <summary>Measure RT60 (as C05): the room at its Playground RT60 with the GPL.Acoustics protocol, in the RT60 run dialog. No log row.</summary>
+        /// <summary>Measure RT60 (as HW2): the room at its Playground RT60 with the GPL.Acoustics protocol, in the RT60 run dialog. No log row.</summary>
         void DebugMeasure()
         {
             if (DebugBusy()) return;

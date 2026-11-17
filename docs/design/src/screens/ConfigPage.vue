@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * The study chambers' Config page (Debug mode; Unity: DebugBench.OpenDebugPage). Not a UiKit component: the shared screen the
- * chamber screens (C05, C06) fill with their sections (Unity: ChamberDefinition DebugSections, between Parameters and Data).
+ * chamber screens (C05) fill with their sections (Unity: ChamberDefinition DebugSections, between Parameters and Data).
  * Each chamber section is UiColumn.Label + UiColumn.Buttons: a raised group of equal-width borderless buttons; UiKit.Select marks
  * the state (selected fill). Rule (PO 2026-11-17): one group = one choice or one toggle; an action that is not part of the choice
  * (Measure RT60) gets its own group.

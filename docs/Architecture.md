@@ -46,7 +46,7 @@ Each module:
   Tests/EditMode/  GPL.<Module>.Tests.asmdef
   Assets/          materials, prefabs, images owned by the module
 ```
-A module may reference `GPL.Core`, the GPL modules named in its README (no cycles) and the packages named there; never the App or a chamber. HW2 code was refactored into modules (generic parts) and the `HumPerHW2` chamber (HW2-specific logic). Modules stay plain folders (copy the folder plus `GPL.Core`).
+A module may reference `GPL.Core`, the GPL modules named in its README (no cycles) and the packages named there; never the App or a chamber. HW2 code was refactored into modules (generic parts) and the `HumPerHW2` chamber (HW2-specific logic; removed in PB-29, HumPerFinal builds on it). Modules stay plain folders (copy the folder plus `GPL.Core`).
 
 | Module | Core (pure, unit-tested) | Runtime (Unity) |
 |---|---|---|
@@ -68,7 +68,7 @@ A module may reference `GPL.Core`, the GPL modules named in its README (no cycle
 Per-module detail: each module's README ([index](../Assets/AcousticChamber/Modules/README.md)).
 
 ## 5. App shell (`Assets/AcousticChamber/App`)
-- **`ChamberDefinition`** (ScriptableObject in each chamber folder): `id` (the chamber name, e.g. `HumPerHW2`: folder, data folder, file names, `chamber` column), `label` (display ID `C01`..., `C00` = the hidden Template; Hall and README only), title (English / 中文), description, thumbnail, scene, `version` (written into every log row), supported modes, default `ResumePolicy`, input bindings, posture, enabled flag.
+- **`ChamberDefinition`** (ScriptableObject in each chamber folder): `id` (the chamber name, e.g. `HumPerFinal`: folder, data folder, file names, `chamber` column), `label` (display ID `C01`..., `C00` = the hidden Template; Hall and README only), title (English / 中文), description, thumbnail, scene, `version` (written into every log row), supported modes, default `ResumePolicy`, input bindings, posture, enabled flag.
 - **Chamber ID rule** (PB-06a): letters, digits and `-` only (it is a token of data file names split on `_`). The folder is the ID or `_` + ID; the definition is `Chambers/<Folder>/<Folder>.ChamberDefinition.asset`.
 - **`ChamberCatalog`** (`App/ChamberCatalog.asset`): the Hall list, ordered by label, then ID. `Magic > App > Sync Chambers` collects every `ChamberDefinition`, leaves out (with an error) those that break the ID rule, lack their scene or repeat an ID, updates the catalog and sets the build scene list to MainHall + chamber scenes. Removing a chamber = delete its folder + Sync. `Validate Setup` flags orphans.
 - **Main Hall** (`MainHall.unity`, `HallMenu`): own rig and GUI; 2-column card grid of the enabled chambers (title, number of unfinished sessions). No Study ID and no Debug mode here: Debug mode lives in each chamber (its menu's Config button).
@@ -179,7 +179,7 @@ asset has an entry in `docs/AssetCredits.md` before it is committed ([ADR-0008](
 **Chamber logic:** a chamber's MonoBehaviour derives from `ProtocolChamber` (App; itself a `ChamberBehaviour`), which owns the run loop (walker + structure rows), the onboarding stages, the head gate before a trial, block break, thanks, recenter rows, the plan-hash check on resume and the cleanup after Stop. The chamber overrides `Schema`, `LogSchema`, `CreatePlan`, `RunTrial` and optionally `RunStage` / `BlockEnd` / `OnAbort` / `BeforeRow` (sets context columns such as `condition` before a structure row). A chamber without a staged protocol may derive from `ChamberBehaviour` directly. A chamber supplies a protocol (stages + resume policies), a trial runner, condition appliers (push parameter values into modules; shared by real runs and Debug), log columns, parameter schema, bindings, posture and docs.
 
 Chambers (independent; order is a backlog decision):
-- **C05 HumPerHW2** — HW2 rebuilt on the modules (same data format where possible); C04 until PB-27.
+- **C05 HumPerFinal** — the final study: HW2's ventriloquist task with one-sided hearing loss and audio anchors (PB-28; C06 until PB-29). HumPerHW2 (HW2 rebuilt on the modules, PB-08) was removed in PB-29 once HumPerFinal replaced it; it is in git history.
 - **C04 Reverberation** — tool chamber (experience-style panel, no data): RT60 calibration per room size, profiles, run dialog (PB-27, ADR-0010).
 - **C03 HearingLoss**, **C01 MovingSource**, **C02 HiddenSource** — experience chambers (ADR-0006): own panel, no logs.
 - Realistic room, outdoor (later).

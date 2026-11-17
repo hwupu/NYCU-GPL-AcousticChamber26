@@ -1,4 +1,4 @@
-# HumPerFinal (C06) — Analysis plan
+# HumPerFinal (C05) — Analysis plan
 
 **Status:** stub (PB-28, 2026-11-17). PO 2026-11-17: record raw data first; the analysis is planned and done outside the repo
 (no scripts). The intended measures, for reference:

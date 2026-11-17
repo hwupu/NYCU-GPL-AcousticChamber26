@@ -21,4 +21,4 @@ some licences require it (CC BY, OFL, MIT). Credits so far were scattered (HW2's
 **Consequences**
 - A Credits page in the app (needed when CC BY assets ship in a build) is a later UI ticket, designed in the Storybook first.
 - Open items in the file now: `Radio.jpg` and the HW2 slides (source not recorded), the HW2 recordings (licence problems, to be
-  replaced).
+  replaced). Resolved 2026-11-17 (PB-29): all three were deleted with the HumPerHW2 chamber; slide illustrations are not listed (PO).

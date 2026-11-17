@@ -1,8 +1,8 @@
-# HumPerFinal (C06) — Brief
+# HumPerFinal (C05) — Brief
 
 **Status:** approved by the PO 2026-11-17 (PB-28).
 
-The final study of course 115A-535655, built on C05 HumPerHW2: the same seated adjustment task in the same white room, now with
+The final study of course 115A-535655, built on HumPerHW2 (the former C05, removed in PB-29): the same seated adjustment task in the same white room, now with
 a simulated **unilateral hearing loss** and visible, sounding **audio anchors**. The acoustics are fixed (RT60 0.7 s, silent room).
 
 A seated participant rotates a looped white-noise source around them with the triggers, freely through 360°, until it seems to
@@ -17,5 +17,5 @@ rubber duck at 0° and trumpet at +90°, both visible and sounding in turn) × *
 
 - **RQ / hypotheses:** to be written by the PO.
 
-Chamber ID `HumPerFinal`, label `C06`, folder `Chambers/HumPerFinal`. Docs: [Design](Design.md), [DataFormat](DataFormat.md),
+Chamber ID `HumPerFinal`, label `C05`, folder `Chambers/HumPerFinal`. Docs: [Design](Design.md), [DataFormat](DataFormat.md),
 [AnalysisPlan](AnalysisPlan.md). No new modules: GPL.Acoustics, SpatialSources, Responses, Stimuli, HearingLoss, Homing, Session.

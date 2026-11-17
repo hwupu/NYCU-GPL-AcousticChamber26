@@ -14,7 +14,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
 {
     /// <summary>
     /// Magic steps of the HumPerFinal chamber (Docs/Design.md, Docs/SceneSetup.md). Idempotent; they edit only the HumPerFinal
-    /// scene and never touch the Building Blocks (the Camera Rig comes with the copy of MainHall). Same room as C05, own assets.
+    /// scene and never touch the Building Blocks (the Camera Rig comes with the copy of MainHall). Same room as HW2, own assets.
     /// </summary>
     public static class HumPerFinalSetup
     {
@@ -25,7 +25,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
         public const string CoverPath = "Assets/AcousticChamber/App/Covers/IMG-C-06.jpeg";
         const string Log = "[Chamber:HumPerFinal] ";
 
-        /// <summary>Step 1: the ChamberDefinition (C06), the scene (a copy of MainHall without the Hall panel), Config/default.params and the chamber menu; Sync Chambers.</summary>
+        /// <summary>Step 1: the ChamberDefinition (C05), the scene (a copy of MainHall without the Hall panel), Config/default.params and the chamber menu; Sync Chambers.</summary>
         [MenuItem("Magic/HumPerFinal/Step 1 - Chamber, scene and menu", priority = 110)]
         public static void ChamberStep()
         {
@@ -52,7 +52,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             if (hall != null) Object.DestroyImmediate(hall.gameObject);
 
             var text = ChamberSetup.EnsureDefaultParams(DefaultParamsPath,
-                HumPerFinalChamber.CreateDefaults().Serialize("HumPerFinal (C06) preset Default. Design: Docs/Design.md"));
+                HumPerFinalChamber.CreateDefaults().Serialize("HumPerFinal (C05) preset Default. Design: Docs/Design.md"));
             if (ChamberSetup.AddChamberMenu<HumPerFinalChamber>(def, text) == null) return;
             EditorSceneManager.SaveOpenScenes();
             AssetDatabase.SaveAssets();
@@ -76,12 +76,12 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             Debug.Log(Log + "Step 2: fixation dot and recenter listener added. Save the scene.");
         }
 
-        // ---- Step 3: room and lighting (as C05) -----------------------------------------------------------
+        // ---- Step 3: room and lighting (as HW2) -----------------------------------------------------------
 
         public const string LightingPath = Folder + "/Settings/HumPerFinal.lighting";
         public const string MaterialsDir = Folder + "/Materials";
 
-        /// <summary>Step 3: baked lighting settings and the C05 room in Environment (8.72 × 15 × 3.5 m, white, shoebox of the same size). Bake separately.</summary>
+        /// <summary>Step 3: baked lighting settings and the HW2 room in Environment (8.72 × 15 × 3.5 m, white, shoebox of the same size). Bake separately.</summary>
         [MenuItem("Magic/HumPerFinal/Step 3 - Room and lighting", priority = 112)]
         public static void RoomStep()
         {
@@ -216,13 +216,13 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             return placed;
         }
 
-        // ---- Step 5: onboarding slides (the PO's C06 illustrations, 2026-11-17) ------------------------------
+        // ---- Step 5: onboarding slides (the PO's C05 illustrations, 2026-11-17) ------------------------------
 
         public const string SlidesFolder = Folder + "/Slides";
         public const string SlidesPath = SlidesFolder + "/Instructions.asset";
 
         /// <summary>
-        /// The C06 onboarding slides (PO 2026-11-17): id, file stem (<c>Slides/&lt;en|zh&gt;-&lt;stem&gt;.jpg</c>, 2000 × 936), title
+        /// The C05 onboarding slides (PO 2026-11-17): id, file stem (<c>Slides/&lt;en|zh&gt;-&lt;stem&gt;.jpg</c>, 2000 × 936), title
         /// English / 中文, and the label of the Back / Next buttons that lead to the slide (empty = the title). Slide 1 is the
         /// recenter slide (stage <c>recenter</c>; its buttons read "Back" / "上一頁"); 2-5 are the instruction deck. The last one
         /// announces the fixation dot; the dot itself is the stock <c>ready</c> stage (GPL.Protocol with the GPL.Homing gate).
@@ -416,7 +416,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Editor
             {
                 def = ScriptableObject.CreateInstance<ChamberDefinition>();
                 def.id = HumPerFinalChamber.Id;
-                def.label = "C06";
+                def.label = "C05";
                 def.title = "HumPerFinal";
                 def.description = "Ventriloquist effect with simulated one-sided hearing loss and audio anchors (duck, trumpet) in a 0.7 s room.";
                 def.version = "0.1";

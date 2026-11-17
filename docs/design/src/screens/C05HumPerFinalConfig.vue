@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * C06 · HumPerFinal, Config page (Debug mode; PB-28. Unity: HumPerFinalChamber.DebugSections on the shared Config page).
+ * C05 · HumPerFinal, Config page (Debug mode; PB-28. Unity: HumPerFinalChamber.DebugSections on the shared Config page).
  * Chamber sections (Playground values; nothing here writes a log row):
  *  Acoustics     Room 0.7 s (the study's only room) · Meta preset: one choice, the room in use = selected.
  *  RT60          Measure RT60: its own group (an action, not a room choice); opens the RT60 run dialog, selected while it runs.

@@ -53,7 +53,7 @@ const dialog = ref(false), shown = ref(true), digits = ref(''), ear = ref('both'
     <section>
       <h3 class="mb-16 text-small font-bold text-text2">Chamber menu (default window, movable): grabber below the surface, status line at the bottom</h3>
       <UiPanel movable>
-        <template #navigationBar><UiNavigationBar title="C05 · HumPerHW2" debug-tag /></template>
+        <template #navigationBar><UiNavigationBar title="C05 · HumPerFinal" debug-tag /></template>
         <div class="flex flex-1 items-start gap-48">
           <div class="min-w-0 flex-[2]"><UiNumberPad v-model="digits" fill /></div>
           <div class="flex min-w-0 flex-[3] flex-col gap-20">

@@ -17,7 +17,7 @@ namespace AcousticChamber.Chambers.Template.Tests
             "volume.target_step=8", "onboarding.handover=true", "onboarding.language=true", "onboarding.recenter=true",
             "onboarding.instructions=true", "onboarding.ready=true", "gate.yaw_tol_deg=10", "gate.pitch_tol_deg=15", "gate.hold_s=0.5",
             "gate.hint_after_s=4",
-            "gate.dot_elevation_deg=3", // added with GPL.Homing's dot elevation (PO 2026-11-17); resume checks the plan hash, not this
+            "gate.dot_elevation_deg=1", // added with GPL.Homing's dot elevation (PO 2026-11-17); resume checks the plan hash, not this
         };
 
         [Test]

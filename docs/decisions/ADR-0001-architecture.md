@@ -17,3 +17,5 @@ Status: **accepted** (PO answers round 1; the Q&A is in the git history of `docs
 **Consequences.** More structure up front; each chamber needs Design/DataFormat/AnalysisPlan before code. Chamber scenes duplicate the rig (accepted for independence).
 
 Amended 2026-11-06 (PB-05c: system recenter, rig at identity), 2026-11-07 (PB-20b: recenter by the Meta button; modules may depend on other GPL modules named in their README).
+
+Amended 2026-11-17 (PB-29): the `HumPerHW2` chamber is removed; HumPerFinal (C05) carries HW2's task forward. Point 4 stays true for the modules.

@@ -203,7 +203,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
             Assert.AreEqual(2.5f, v.GetFloat("anchor.gap_after_trumpet_s"));
             Assert.AreEqual(5f, v.GetFloat("gate.yaw_tol_deg"));
             Assert.AreEqual(1f, v.GetFloat("gate.hold_s"));
-            Assert.AreEqual(8, v.GetInt("volume.target_step"));
+            Assert.AreEqual(12, v.GetInt("volume.target_step"));
             Assert.IsFalse(v.Schema.Contains("adjust.limit_deg"));
         }
 

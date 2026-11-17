@@ -107,7 +107,7 @@ Button fills, **normal → hover → pressed, each brighter**:
 Title **"Acoustic Chambers"**, centered, no ‹ (PO 2026-11-10). 2-column grid of cards (PO 2026-11-10; Storybook `Screens/Main Hall`), 24 u between the columns, 28 u between the rows, 8 u of room around the grid (a hovered card grows into it); two rows fit the 1000 x 700 window. A card is only its 16:9 cover, 432 x 243 u, radius 36 (the chamber's image from `App/Covers`, cropped to 16:9; solid `cover` placeholder without one). On the cover: the C-ID top left (small, bold) and the title bottom left (title size 56 u, bold, letter spacing -3 %), both 24 u in, **white at 75 %** with a soft shadow (`drop-shadow(0 0 4px rgb(0 0 0 / 0.3))`; Unity `UiKit.SoftShadow` = TMP underlay). Nothing below the cover: no description, no "N unfinished" pill (the launch routing still opens a chamber with unfinished sessions). The whole card is the target. **Hover:** the card grows to 103 % and the image saturation rises to 125 % (text unchanged), hover timing and settle curve; pressed 101.5 % (Unity: `UiButton.HoverScale` / `PressedScale`, `HallCard`, shader `GPL/UI Saturation`). The status line appears only when a chamber cannot open.
 
 ### Chamber menu
-Header: ‹ (Hall), title "C05 · HumPerHW2", DEBUG tag in Debug mode. Study ID number pad; **Start** (prominent), **Config** (gray); under them in `text2`: "Audio level: 10 (target 8)" (red when off target) and, only when needed, "Preset: Custom" and "Unfinished: S0005, S0012" (one line, ends in … when long).
+Header: ‹ (Hall), title "C05 · HumPerFinal", DEBUG tag in Debug mode. Study ID number pad; **Start** (prominent), **Config** (gray); under them in `text2`: "Audio level: 10 (target 8)" (red when off target) and, only when needed, "Preset: Custom" and "Unfinished: S0005, S0012" (one line, ends in … when long).
 
 ### Stop dialog (Y)
 Real session: **Drop out** (red text) · **Keep going** (prominent); Drop out asks once more: "Drop out S0012?" Cancel · Drop out (destructive). Debug run: Back to the chamber menu (borderless) · Keep going (prominent). The session is frozen while it is open.
@@ -121,7 +121,7 @@ Real session: **Drop out** (red text) · **Keep going** (prominent); Drop out as
 
 ## 8. In the scene
 - Laser pointer: white URP Unlit material asset (single-pass stereo).
-- Fixation dot: `#262626`, 26 u (≈ 1.5°), 2 m ahead and **3° above eye level** (the head drops while resting, so the dot sits higher; `gate.dot_elevation_deg`, PO 2026-11-17); per chamber it must contrast with the room.
+- Fixation dot: `#262626`, 26 u (≈ 1.5°), 2 m ahead and **1° above eye level** (the head drops while resting, so the dot sits higher; `gate.dot_elevation_deg`, PO 2026-11-18); per chamber it must contrast with the room.
 - Cue text (bare text on the room, no panel: gate hint, "Press A or X", Debug readouts): **black**, title size, bold, 260 u below the canvas center (`ProtocolScreens.CueColor`, PO 2026-11-17: the rooms are white). During a head gate only the dot shows; "Look at the dot" appears only when the gate is not passed after `gate.hint_after_s` (default 4 s).
 - Debug markers: orange `#FF731A` (sphere 0.15 m, unlit), never seen by participants.
 

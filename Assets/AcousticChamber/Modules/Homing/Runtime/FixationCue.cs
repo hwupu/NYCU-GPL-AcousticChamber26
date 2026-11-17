@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GPL.Homing
 {
     /// <summary>
-    /// The fixation dot of the head gate (DesignSystem section 8): a small unlit sphere straight ahead, 3 deg above eye level
+    /// The fixation dot of the head gate (DesignSystem section 8): a small unlit sphere straight ahead, 1 deg above eye level
     /// by default (<see cref="GateSettings.DefaultDotElevationDeg"/>, PO 2026-11-17),
     /// <see cref="diameterDeg"/> of visual angle at <see cref="distanceM"/>. The material must be a URP Unlit material
     /// asset (single-pass stereo); <c>Magic</c> sets it up. Hidden until <see cref="Show"/>.
