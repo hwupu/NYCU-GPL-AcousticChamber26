@@ -31,7 +31,7 @@ background noise (silent room).
 ## Stimuli
 | | Target (audio) | Radio (visual) | Anchors **(new)** |
 |---|---|---|---|
-| Object | Gaussian white noise, GPL.Stimuli (ADR-0008): 2 s, 20 ms cos² ramps, −26 dBFS RMS, seed 1; **looped 2 s on, 0.7 s off (new)** until A | Radio model (Sketchfab "Radio", 0.26 × 0.23 × 0.08 m), URP Lit, facing the participant, floating (no surface at 3 m and eye height; PO 2026-11-18) | Rubber duck at **0°** (Sketchfab "Rubber Duck", 0.12 m long, facing the participant) and a trumpet player at **+90°** (Sketchfab "Character Walk" posed playing the Sketchfab "Trumpet", bell toward the participant), URP Lit; the box placeholders remain only when the models are missing |
+| Object | Gaussian white noise, GPL.Stimuli (ADR-0008): 2 s, 20 ms cos² ramps, −26 dBFS RMS, seed 1; **looped 2 s on, 0.7 s off (new)** until A; **the first pulse of each trial (and of each try after a restart) fades in over 0.5 s, cos² (`stim.first_fade_s`; PO 2026-11-18, the first pulse after a hearing-loss block felt too loud)**, later pulses unchanged | Radio model (Sketchfab "Radio", 0.26 × 0.23 × 0.08 m), URP Lit, facing the participant, floating (no surface at 3 m and eye height; PO 2026-11-18) | Rubber duck at **0°** (Sketchfab "Rubber Duck", 0.12 m long, facing the participant) and a trumpet player at **+90°** (Sketchfab "Character Walk" posed playing the Sketchfab "Trumpet", bell toward the participant), URP Lit; the box placeholders remain only when the models are missing |
 | Model position **(2026-11-18)** | — | centred on the sound | x / z under the sound; the duck's bottom on the table top (0.78 m), the player standing on the floor with the bell about 1.61 m high (`AnchorLoop.duckModelY`, `trumpetModelY`, set by Step 4 from the model export) |
 | Sound | invisible | none | One at a time, looped: **duck sound, 1.5 s silence, trumpet sound, 2.5 s silence**, repeat. Each recording leveled to −26 dBFS RMS at load like the target (`StimulusClips.Leveled`). Both from the GPL.Stimuli library (PO 2026-11-17): duck = Freesound 348791 "Toy Ducks Quacking" (`Freesound/348791__nebyoolae__toy-ducks-quacking.mp3`, CC0, about 4.9 s), trumpet = OpenAIR `Natural_Baroque_Trumpet/tr-1780d-fanfare.wav` (**14.72 s**); one loop is about 24 s |
 | Height | eye height | centre at eye height | centre at eye height |
@@ -40,7 +40,7 @@ background noise (silent room).
 | When | from stimulus onset to A | with the target | the whole anchor block, visible and sounding: placed around the head position when an anchor block starts (after the inter-trial interval, before the first head gate), fixed in the room (not moved by a recenter), until the next no-anchor block starts *(default)*; two anchor blocks in a row keep the same loop and positions; models hidden and the loop paused while the Stop dialog is open; hidden and silent in no-anchor blocks and the practice |
 
 Origin = head position at the trial start; forward = the Meta-button recenter of the onboarding. Azimuth 0 = forward, negative =
-left. Levels: all gains at unity, Meta gain boost 0 dB, flat rolloff; loudness by the headset volume (`volume.target_step` 12, PO 2026-11-18).
+left. Levels: all gains at unity, Meta gain boost 0 dB, flat rolloff; loudness by the headset volume (`volume.target_step` 13, PO 2026-11-18; was 12).
 
 ## Hearing loss (new)
 `GPL.HearingLoss` `OutputHearingLoss` on the AudioListener: the final left / right output after the spatializer, one ear filtered,
@@ -158,6 +158,7 @@ illustration presents it as the pause). While it is open everything is frozen: t
 | `visual_pool_deg` | `7.5,22.5` (mirrored left; exactly two values, the inner and outer position, for the pairing sets) | list | Stimuli |
 | `repeats` | 2 | 1-4 | Procedure (per position pair and block) |
 | `stim.on_s`, `stim.off_s` | 2, 0.7 | 0.1-5 | Stimuli |
+| `stim.first_fade_s` | 0.5 | 0-2, step 0.1 (at most `stim.on_s`) | Stimuli |
 | `anchor.duck_deg`, `anchor.trumpet_deg`, `anchor.radius_m` | 0, 90, 3 | | Anchors |
 | `anchor.gap_after_duck_s`, `anchor.gap_after_trumpet_s` | 1.5, 2.5 | 0-10, step 0.1 | Anchors |
 | `adjust.rate_deg_s`, `confirm_ignore_s` | 10, 0.3 | | Response |
@@ -165,7 +166,7 @@ illustration presents it as the pause). While it is open everything is frozen: t
 | `rt60.measure_at_block_start` | false | switch | Acoustics |
 | `resume_from` | `next_trial` | as Template | Resume |
 | `gate.*` | HW2 values; `gate.dot_elevation_deg` +1 | GPL.Homing | Head gate |
-| `volume.target_step` | 12 | 0-15 | Audio |
+| `volume.target_step` | 13 | 0-15 | Audio |
 | `onboarding.*` | true | switch | Onboarding |
 
 Not preset keys: the 10 cells, the hearing curves, the Williams square and the pairing sets (Design, `Core`); the room size (scene).

@@ -245,6 +245,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
             Assert.AreEqual("7.5,22.5", v.GetText("visual_pool_deg"));
             Assert.AreEqual(0.7f, v.GetFloat("stim.off_s"));
             Assert.AreEqual(2f, v.GetFloat("stim.on_s"));
+            Assert.AreEqual(0.5f, v.GetFloat("stim.first_fade_s"));
             Assert.AreEqual(0.7f, v.GetFloat("rt60_s"));
             Assert.AreEqual(0f, v.GetFloat("anchor.duck_deg"));
             Assert.AreEqual(90f, v.GetFloat("anchor.trumpet_deg"));
@@ -252,7 +253,7 @@ namespace AcousticChamber.Chambers.HumPerFinal.Tests
             Assert.AreEqual(2.5f, v.GetFloat("anchor.gap_after_trumpet_s"));
             Assert.AreEqual(5f, v.GetFloat("gate.yaw_tol_deg"));
             Assert.AreEqual(1f, v.GetFloat("gate.hold_s"));
-            Assert.AreEqual(12, v.GetInt("volume.target_step"));
+            Assert.AreEqual(13, v.GetInt("volume.target_step"));
             Assert.IsFalse(v.Schema.Contains("adjust.limit_deg"));
         }
 

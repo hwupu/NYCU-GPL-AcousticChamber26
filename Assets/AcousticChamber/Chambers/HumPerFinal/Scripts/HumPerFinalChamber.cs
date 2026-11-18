@@ -88,6 +88,8 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 ParamDef.Text("visual_pool_deg", "7.5,22.5", "Radio azimuths", "Stimuli").Describe("inner,outer: right side, mirrored left"),
                 ParamDef.Float("stim.on_s", 2f, 0.1f, 5f, 0.1f, "Pulse on", "s", "Stimuli"),
                 ParamDef.Float("stim.off_s", 0.7f, 0f, 5f, 0.1f, "Pulse off", "s", "Stimuli"),
+                ParamDef.Float("stim.first_fade_s", 0.5f, 0f, 2f, 0.1f, "First pulse fade-in", "s", "Stimuli")
+                        .Describe("cos² fade-in of the first pulse of each trial (C05 only; later pulses keep their 20 ms ramps)"),
                 ParamDef.Float("anchor.duck_deg", 0f, -180f, 180f, 2.5f, "Duck azimuth", "deg", "Anchors"),
                 ParamDef.Float("anchor.trumpet_deg", 90f, -180f, 180f, 2.5f, "Trumpet azimuth", "deg", "Anchors"),
                 ParamDef.Float("anchor.radius_m", 3f, 0.5f, 5f, 0.1f, "Anchor radius", "m", "Anchors"),
@@ -98,7 +100,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 ParamDef.Float("rt60_s", 0.7f, 0.3f, 6f, 0.05f, "RT60", "s", "Acoustics"),
                 ParamDef.Bool("rt60.measure_at_block_start", false, "Measure RT60 at block start", "Acoustics"),
                 ParamDef.Choice("resume_from", "next_trial", ResumeNames.All, "Resume from", "Resume").Describe("experiment stage after an interruption"),
-                HeadsetVolume.TargetDef(12),
+                HeadsetVolume.TargetDef(13),
             };
             defs.AddRange(OnboardingStages.SwitchDefs());
             defs.AddRange(HomingParams.GateDefs());
@@ -449,7 +451,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
                 }
                 _restartRequested = false;
                 _inTrial = true;
-                if (pulse != null) pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
+                PlayPulse(v);
                 bool debug = run.IsDebug;
                 if (debug && SphereAlwaysVisible && marker != null) marker.Show(true); // Q45: Debug runs only
 
@@ -576,9 +578,51 @@ namespace AcousticChamber.Chambers.HumPerFinal
             if (marker != null) yield return marker.gameObject;
         }
 
+        Coroutine _fade;
+        AudioSource _pulseSource;
+
+        /// <summary>
+        /// Starts the target's pulse train with a cos² fade-in of <c>stim.first_fade_s</c> on the first pulse (PO 2026-11-18: after a
+        /// hearing-loss block the first pulse of normal hearing felt too loud). The source volume rises 0 → 1 on scaled time (the
+        /// Stop dialog's freeze holds it) and ends at exactly 1 (gains at unity); later pulses play unchanged.
+        /// </summary>
+        void PlayPulse(ParameterSet v)
+        {
+            if (pulse == null) return;
+            StopFade();
+            if (_pulseSource == null) _pulseSource = pulse.GetComponent<AudioSource>();
+            float fadeS = Mathf.Min(v.GetFloat("stim.first_fade_s"), v.GetFloat("stim.on_s"));
+            if (fadeS > 0f && _pulseSource != null)
+            {
+                _pulseSource.volume = 0f;
+                pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
+                _fade = StartCoroutine(FadeIn(fadeS));
+            }
+            else pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
+        }
+
+        IEnumerator FadeIn(float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
+            {
+                _pulseSource.volume = (float)Synth.RampGain(t / seconds, RampShape.RaisedCosine);
+                yield return null;
+            }
+            _pulseSource.volume = 1f;
+            _fade = null;
+        }
+
+        void StopFade()
+        {
+            if (_fade != null) StopCoroutine(_fade);
+            _fade = null;
+            if (_pulseSource != null) _pulseSource.volume = 1f;
+        }
+
         void StopStimuli()
         {
             _inTrial = false;
+            StopFade();
             if (pulse != null) pulse.Stop();
             if (picture != null) picture.gameObject.SetActive(false);
             if (marker != null) marker.Show(false);
@@ -796,7 +840,7 @@ namespace AcousticChamber.Chambers.HumPerFinal
             var v = DebugValues;
             _spec = new TrialSpec { Condition = "debug", Index = 0, VisualAzDeg = 0f, AudioStartAzDeg = 0f, RadiusM = v.GetFloat("radius_m") };
             Place(HeadOrigin(), Yaw());
-            if (pulse != null) pulse.Play(v.GetFloat("stim.on_s"), v.GetFloat("stim.off_s"));
+            PlayPulse(v);
             if (SphereAlwaysVisible && marker != null) marker.Show(true);
             RefreshDebugButtons();
             Status("Stimulus ahead at " + Fmt.F(_spec.RadiusM, 1) + " m with the radio. " + DebugSummary() + ". Press again to stop.");
