@@ -1,6 +1,6 @@
 # HumPerFinal (C05) — Headset test (PB-28)
 
-Standalone build on the Quest 3. Headset volume at the target step (12) unless a step says otherwise. Tick each line; note anything
+Standalone build on the Quest 3. Headset volume at the target step (13) unless a step says otherwise. Tick each line; note anything
 odd with the time, so it can be found in the CSV.
 
 ## 1. Config page (Hall > C05 > Config)
